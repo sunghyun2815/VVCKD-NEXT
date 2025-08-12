@@ -1,0 +1,339 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: #000;
+  border: 2px solid #FF5500;
+  padding: 40px;
+  text-align: center;
+  max-width: 90vw;
+  max-height: 90vh;
+  position: relative;
+  box-shadow: 
+    0 0 20px rgba(255, 85, 0, 0.3),
+    inset 0 0 20px rgba(255, 85, 0, 0.1);
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ===== 헤더 ===== */
+.header {
+  margin-bottom: 30px;
+}
+
+.title {
+  color: #FF5500;
+  font-size: 16px;
+  font-family: 'Press Start 2P', monospace;
+  margin-bottom: 10px;
+  text-shadow: 
+    0 0 5px #FF5500,
+    0 0 10px #FF5500,
+    0 0 20px #FF5500;
+  animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  from { text-shadow: 0 0 5px #FF5500, 0 0 10px #FF5500, 0 0 15px #FF5500; }
+  to { text-shadow: 0 0 10px #FF5500, 0 0 20px #FF5500, 0 0 30px #FF5500; }
+}
+
+.subtitle {
+  color: #fff;
+  font-size: 10px;
+  font-family: 'Press Start 2P', monospace;
+  margin-bottom: 5px;
+}
+
+/* ===== 메인 컨텐츠 ===== */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+/* ===== 입력 섹션 ===== */
+.inputSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.inputLabel {
+  color: #FF5500;
+  font-size: 12px;
+  font-family: 'Press Start 2P', monospace;
+  text-align: left;
+}
+
+.input {
+  background: transparent;
+  border: 1px solid #FF5500;
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #FF8800;
+  box-shadow: 
+    0 0 10px rgba(255, 85, 0, 0.5),
+    inset 0 0 10px rgba(255, 85, 0, 0.1);
+  text-shadow: 0 0 5px #FF5500;
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inputError {
+  border-color: #FF0000 !important;
+  animation: inputShake 0.5s ease-in-out;
+}
+
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.charCounter {
+  color: #666;
+  font-size: 8px;
+  font-family: 'Press Start 2P', monospace;
+  text-align: right;
+  margin-top: 5px;
+}
+
+/* ===== 에러 메시지 ===== */
+.errorMessage {
+  color: #FF0000;
+  font-size: 10px;
+  font-family: 'Press Start 2P', monospace;
+  padding: 10px;
+  border: 1px solid #FF0000;
+  background: rgba(255, 0, 0, 0.1);
+  animation: errorBlink 1s ease-in-out infinite alternate;
+  max-width: 300px;
+  text-align: center;
+}
+
+@keyframes errorBlink {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+/* ===== 로그인 버튼 ===== */
+.loginButton {
+  background: #FF5500;
+  color: #000;
+  border: none;
+  padding: 15px 30px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  min-width: 250px;
+  position: relative;
+  overflow: hidden;
+}
+
+.loginButton:hover:not(:disabled) {
+  background: #FF8800;
+  box-shadow: 0 0 20px rgba(255, 85, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+.loginButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.loginButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loginButton.loading {
+  background: #333;
+  color: #FF5500;
+}
+
+.loadingSpinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== 빠른 로그인 ===== */
+.quickLoginSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid #333;
+  padding-top: 20px;
+  margin-top: 10px;
+}
+
+.quickLoginLabel {
+  color: #666;
+  font-size: 8px;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.quickLoginButtons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quickLoginButton {
+  background: transparent;
+  color: #FF5500;
+  border: 1px solid #FF5500;
+  padding: 8px 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quickLoginButton:hover:not(:disabled) {
+  background: #FF5500;
+  color: #000;
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.5);
+}
+
+.quickLoginButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ===== 시스템 정보 ===== */
+.systemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #333;
+}
+
+.systemLine {
+  color: #666;
+  font-size: 7px;
+  font-family: 'Press Start 2P', monospace;
+  letter-spacing: 1px;
+}
+
+/* ===== 커서 ===== */
+.cursor {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  color: #FF5500;
+  font-size: 16px;
+  animation: blink 1s step-start 0s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ===== 스캔라인 효과 ===== */
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 85, 0, 0.03) 2px,
+    rgba(255, 85, 0, 0.03) 4px
+  );
+  animation: scanlineMove 10s linear infinite;
+}
+
+@keyframes scanlineMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 600px) {
+  .modal {
+    padding: 20px;
+    margin: 20px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .subtitle {
+    font-size: 9px;
+  }
+
+  .input {
+    font-size: 10px;
+    padding: 8px;
+  }
+
+  .loginButton {
+    padding: 12px 20px;
+    font-size: 9px;
+    min-width: 200px;
+  }
+
+  .quickLoginButtons {
+    gap: 8px;
+  }
+
+  .quickLoginButton {
+    padding: 6px 10px;
+    font-size: 7px;
+  }
+}

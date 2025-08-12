@@ -1,0 +1,434 @@
+@font-face {
+  font-family: 'PressStart2P';
+  src: url('/fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DungGeunMo';
+  src: url('/fonts/DungGeunMo.woff2') format('woff2'),
+       url('/fonts/DungGeunMo.woff') format('woff');
+  font-display: swap;
+}
+
+* {
+  font-family: 'PressStart2P', 'DungGeunMo', monospace;
+}
+
+/* 스포티파이 페이지 스타일링 */
+.spotify-section .content-container {
+  overflow-y: auto;
+  max-height: 85vh;
+  width: 90%;
+  max-width: 1200px;
+  padding-top: 80px;
+  margin: 0 auto;
+}
+
+.spotify-container {
+  margin-top: 20px;
+}
+
+/* 차트 컨테이너 크기 조정 */
+.chart-container {
+  width: 95%;
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+  border: 2px solid #FF5500;
+  background-color: #111;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* 차트 제목 스타일링 */
+.chart-title {
+  background-color: #111;
+  padding: 20px 0;
+  margin: 0 0 30px 0;
+  text-align: center;
+  border-bottom: 2px solid #FF5500;
+}
+
+.chart-title .main {
+  font-size: 32px;
+  letter-spacing: -1px;
+  display: block;
+  color: #FF5500;
+}
+
+.chart-title .date {
+  font-size: 18px;
+  letter-spacing: -1px;
+  display: block;
+  margin-top: 10px;
+  color: #FF5500;
+}
+
+/* 차트 아이템 클릭 상호작용 스타일 */
+.chart-item {
+  padding: 12px 10px;
+  margin-bottom: 5px;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.chart-item:hover {
+  background-color: rgba(255, 85, 0, 0.1);
+  transform: translateX(5px);
+}
+
+.info {
+  display: none; /* 기본적으로 숨겨진 상태 */
+}
+
+/* 모달 스타일 - 중앙에 표시 */
+.chart-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 1000px;
+  max-height: 80vh;
+  background-color: #000;
+  border: 2px solid #FF5500;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 30px;
+  box-shadow: 0 0 30px rgba(255, 85, 0, 0.5);
+  display: none;
+}
+
+/* 모달 내용 스타일 */
+.chart-modal-content {
+  position: relative;
+}
+
+/* 모달 닫기 버튼 */
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #FF5500;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border: 1px solid #FF5500;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.close-modal:hover {
+  background-color: rgba(255, 85, 0, 0.2);
+}
+
+/* 모달 열렸을 때 배경 오버레이 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 999;
+  display: none;
+}
+
+/* 모달 제목 스타일 */
+.modal-title {
+  color: #FF5500;
+  font-size: 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #FF5500;
+  padding-bottom: 15px;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* 모달 내 정보 그리드 */
+.modal-info-grid {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+/* 모달 내 한글 폰트 적용 */
+.modal-info-column p,
+.modal-credits-column p {
+  font-family: 'DungGeunMo', 'Press Start 2P', monospace;
+}
+
+.modal-info-column {
+  flex: 3;
+}
+
+.modal-credits-column {
+  flex: 2;
+  border-left: 1px dashed #FF5500;
+  padding-left: 20px;
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rank {
+  width: 50px;
+  color: #FF5500;
+  font-size: 18px;
+}
+
+.title {
+  flex: 1;
+  padding-left: 10px;
+  color: white;
+  font-size: 16px;
+}
+
+.artist {
+  width: 200px;
+  text-align: right;
+  padding-right: 10px;
+  color: #FF5500;
+  font-size: 14px;
+}
+
+.change {
+  width: 60px;
+  text-align: right;
+  color: #FF5500;
+  font-size: 16px;
+}
+
+.stats {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(255, 85, 0, 0.1);
+  border: 1px solid #FF5500;
+}
+
+.stats p {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.credits {
+  margin-top: 10px;
+}
+
+.credits h4 {
+  color: #FF5500;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.credits p {
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+
+.video-grid {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.video-box {
+  flex: 1;
+  min-width: 160px;
+  max-width: 200px;
+  height: 350px;
+  background-color: #222;
+  border-radius: 10px;
+  border: 1px solid #FF5500;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.video-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(255, 85, 0, 0.3);
+}
+
+.video-box::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 70%, #222 100%);
+  z-index: 1;
+}
+
+/* 8비트 스타일 로딩 표시 */
+.chart-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  text-align: center;
+}
+
+/* 8비트 스타일 로딩 텍스트 */
+.loading-text {
+  font-family: 'Press Start 2P', monospace;
+  color: #FF5500;
+  margin-bottom: 20px;
+  animation: blink 1s infinite step-end;
+}
+
+/* 8비트 스타일 로딩 픽셀 애니메이션 */
+.pixel-loader {
+  width: 64px;
+  height: 64px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.pixel-loader::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect x="16" y="16" width="8" height="8" fill="%23FF5500" /><rect x="24" y="16" width="8" height="8" fill="%23FF5500" /><rect x="32" y="16" width="8" height="8" fill="%23FF5500" /><rect x="40" y="16" width="8" height="8" fill="%23FF5500" /><rect x="16" y="24" width="8" height="8" fill="%23FF5500" /><rect x="40" y="24" width="8" height="8" fill="%23FF5500" /><rect x="16" y="32" width="8" height="8" fill="%23FF5500" /><rect x="40" y="32" width="8" height="8" fill="%23FF5500" /><rect x="16" y="40" width="8" height="8" fill="%23FF5500" /><rect x="24" y="40" width="8" height="8" fill="%23FF5500" /><rect x="32" y="40" width="8" height="8" fill="%23FF5500" /><rect x="40" y="40" width="8" height="8" fill="%23FF5500" /></svg>');
+  animation: rotate 2s steps(4) infinite;
+}
+
+/* 8비트 스타일 회전 애니메이션 */
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 로딩 프로그레스 바 */
+.pixel-progress-container {
+  width: 200px;
+  height: 20px;
+  border: 4px solid #FF5500;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  margin-top: 10px;
+}
+
+.pixel-progress-bar {
+  height: 100%;
+  width: 0%;
+  background-color: #FF5500;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: progress 3s steps(10) infinite;
+}
+
+@keyframes progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* 오류 메시지 스타일 */
+.chart-error {
+  font-family: 'Press Start 2P', monospace;
+  color: #FF5500;
+  text-align: center;
+  padding: 40px 20px;
+  border: 4px solid #FF5500;
+  margin: 20px auto;
+  max-width: 80%;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.chart-error p {
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.retry-button {
+  font-family: 'Press Start 2P', monospace;
+  background-color: #FF5500;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 12px;
+  position: relative;
+  margin-top: 20px;
+}
+
+.retry-button:hover {
+  background-color: #FF7700;
+}
+
+.retry-button:active {
+  transform: translateY(2px);
+}
+
+/* 8비트 스타일 화살표 */
+.retry-button::before {
+  content: ">";
+  position: absolute;
+  left: 8px;
+}
+
+/* 깜빡임 애니메이션 */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .chart-modal {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .modal-info-grid {
+    flex-direction: column;
+  }
+  
+  .modal-credits-column {
+    border-left: none;
+    border-top: 1px dashed #FF5500;
+    padding-left: 0;
+    padding-top: 20px;
+    margin-top: 10px;
+  }
+  
+  .info-grid {
+    flex-direction: column;
+  }
+  
+  .credits-column {
+    border-left: none;
+    border-top: 1px dashed #FF5500;
+    padding-left: 0;
+    padding-top: 20px;
+    margin-top: 10px;
+  }
+  
+  .video-grid {
+    justify-content: center;
+  }
+  
+  .video-box {
+    min-width: 140px;
+    height: 300px;
+  }
+  
+  .artist {
+    width: 150px;
+  }
+  
+  .pixel-progress-container {
+    width: 150px;
+  }
+}

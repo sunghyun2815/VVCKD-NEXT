@@ -1,0 +1,166 @@
+[
+  {
+    "rank": 1,
+    "title": "Golden (w/ Ejae, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast)",
+    "artist": "HUNTR/X",
+    "change": "+1",
+    "info": [
+      "feat. Ejae, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast"
+    ],
+    "stats": {
+      "weeks": 1
+    },
+    "credits": [
+      "HUNTR/X",
+      "Ejae",
+      "AUDREY NUNA",
+      "REI AMI",
+      "KPop Demon Hunters Cast"
+    ]
+  },
+  {
+    "rank": 2,
+    "title": "DAISIES",
+    "artist": "Justin Bieber",
+    "change": "+1",
+    "info": [],
+    "stats": {
+      "weeks": 1
+    },
+    "credits": [
+      "Justin Bieber"
+    ]
+  },
+  {
+    "rank": 3,
+    "title": "Ordinary",
+    "artist": "Alex Warren",
+    "change": "+2",
+    "info": [],
+    "stats": {
+      "weeks": 2
+    },
+    "credits": [
+      "Alex Warren"
+    ]
+  },
+  {
+    "rank": 4,
+    "title": "back to friends",
+    "artist": "sombr",
+    "change": "=",
+    "info": [],
+    "stats": {
+      "weeks": 1
+    },
+    "credits": [
+      "sombr"
+    ]
+  },
+  {
+    "rank": 5,
+    "title": "JUMP",
+    "artist": "BLACKPINK",
+    "change": "-4",
+    "info": [],
+    "stats": {
+      "weeks": 2
+    },
+    "credits": [
+      "BLACKPINK"
+    ]
+  },
+  {
+    "rank": 6,
+    "title": "Your Idol (w/ Andrew Choi, Neckwav, Danny Chung, KEVIN WOO, samUIL Lee, KPop Demon Hunters Cast)",
+    "artist": "Saja Boys",
+    "change": "=",
+    "info": [
+      "feat. Andrew Choi, Neckwav, Danny Chung, KEVIN WOO, samUIL Lee, KPop Demon Hunters Cast"
+    ],
+    "stats": {
+      "weeks": 1
+    },
+    "credits": [
+      "Saja Boys",
+      "Andrew Choi",
+      "Neckwav",
+      "Danny Chung",
+      "KEVIN WOO",
+      "samUIL Lee",
+      "KPop Demon Hunters Cast"
+    ]
+  },
+  {
+    "rank": 7,
+    "title": "Saiyaara (From \"Saiyaara\") (w/ Faheem Abdullah, Arslan Nizami, Irshad Kamil)",
+    "artist": "Tanishk Bagchi",
+    "change": "NEW",
+    "info": [
+      "From \"Saiyaara\"",
+      "feat. Faheem Abdullah, Arslan Nizami, Irshad Kamil"
+    ],
+    "stats": {
+      "weeks": 1
+    },
+    "credits": [
+      "Tanishk Bagchi",
+      "Faheem Abdullah",
+      "Arslan Nizami",
+      "Irshad Kamil"
+    ]
+  },
+  {
+    "rank": 8,
+    "title": "Soda Pop (w/ Andrew Choi, Neckwav, Danny Chung, KEVIN WOO, samUIL Lee, KPop Demon Hunters Cast)",
+    "artist": "Saja Boys",
+    "change": "-1",
+    "info": [
+      "feat. Andrew Choi, Neckwav, Danny Chung, KEVIN WOO, samUIL Lee, KPop Demon Hunters Cast"
+    ],
+    "stats": {
+      "weeks": 2
+    },
+    "credits": [
+      "Saja Boys",
+      "Andrew Choi",
+      "Neckwav",
+      "Danny Chung",
+      "KEVIN WOO",
+      "samUIL Lee",
+      "KPop Demon Hunters Cast"
+    ]
+  },
+  {
+    "rank": 9,
+    "title": "How It’s Done (w/ Ejae, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast)",
+    "artist": "HUNTR/X",
+    "change": "=",
+    "info": [
+      "feat. Ejae, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast"
+    ],
+    "stats": {
+      "weeks": 1
+    },
+    "credits": [
+      "HUNTR/X",
+      "Ejae",
+      "AUDREY NUNA",
+      "REI AMI",
+      "KPop Demon Hunters Cast"
+    ]
+  },
+  {
+    "rank": 10,
+    "title": "BIRDS OF A FEATHER",
+    "artist": "Billie Eilish",
+    "change": "-2",
+    "info": [],
+    "stats": {
+      "weeks": 2
+    },
+    "credits": [
+      "Billie Eilish"
+    ]
+  }
+]

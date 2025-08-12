@@ -1,0 +1,244 @@
+/* === 글꼴 === */
+@font-face {
+  font-family: 'PressStart2P';
+  src: url('/fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DungGeunMo';
+  src: url('/fonts/DungGeunMo.woff2') format('woff2'),
+       url('/fonts/DungGeunMo.woff') format('woff');
+  font-display: swap;
+}
+
+* {
+  font-family: 'PressStart2P', 'DungGeunMo', monospace;
+  scrollbar-width: thin;
+  scrollbar-color: #FF5500 #222;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: #FF5500;
+}
+
+/* === 메뉴바 === */
+.menu-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #000;
+  border-bottom: 2px solid #FF5500;
+  padding: 20px 40px;
+  z-index: 3000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.menu-logo {
+  position: relative;
+  color: #FF5500;
+  font-size: 24px;
+  font-family: 'Press Start 2P', monospace;
+  cursor: pointer;
+  user-select: none;
+}
+
+.menu-logo::before,
+.menu-logo::after {
+  content: 'VVCKD';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0.7;
+  mix-blend-mode: lighten;
+}
+
+.menu-logo::before {
+  color: #c92626;
+  z-index: 1;
+  transform: translate(-0.1px, 0);
+  animation: crt-glitch1 1s infinite steps(2, end);
+  clip-path: inset(0 0 40% 0);
+}
+
+.menu-logo::after {
+  color: #0f0006;
+  z-index: 1;
+  transform: translate(1px, 0);
+  animation: crt-glitch2 1s infinite steps(2, end) reverse;
+  clip-path: inset(60% 0 0 0);
+}
+
+@keyframes crt-glitch1 {
+  0%   { transform: translate(-1.5px, 0); }
+  20%  { transform: translate(-1px, 1.5px); }
+  40%  { transform: translate(-1.5px, -1px); }
+  60%  { transform: translate(-1px, 2px); }
+  80%  { transform: translate(-1px, -2px); }
+  100% { transform: translate(-1.5px, 0); }
+}
+
+@keyframes crt-glitch2 {
+  0%   { transform: translate(1.5px, 0); }
+  20%  { transform: translate(1px, -2px); }
+  40%  { transform: translate(1.5px, 1px); }
+  60%  { transform: translate(1px, -1.5px); }
+  80%  { transform: translate(1px, 2px); }
+  100% { transform: translate(1.5px, 0); }
+}
+
+
+.menu-items {
+  display: flex;
+  gap: 30px;
+}
+
+.menu-item {
+  color: #FF5500;
+  text-decoration: none;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  color: #FF8800;
+  text-shadow: 0 0 8px #FF5500;
+}
+
+.loading-indicator {
+  font-size: 8px;
+  color: #FF5500;
+  animation: blink 1.5s infinite;
+  margin-top: 5px;
+}
+
+/* === 페이지 구조 === */
+.pages-container {
+  padding-top: 100px;
+  width: 100%;
+  position: relative;
+}
+
+.page {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 100px);
+  flex-direction: row;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease;
+  padding: 0 60px;
+  z-index: 0;
+}
+
+.page.active {
+  top: 50px;
+  opacity: 1;
+  visibility: visible;
+  z-index: 1;
+}
+/* === 첫 페이지 레이아웃 === */
+.split-content.first-page {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: row;
+}
+
+.terminal-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.terminal {
+  background-color: #111;
+  border: 1px solid #FF5500;
+  padding: 20px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 20px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow: hidden;
+  min-width: 330px;
+  min-height: 340px;
+}
+
+.empty-space {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.empty-space-text {
+  font-size: 20px;
+  line-height: 1.8;
+  max-width: 80%;
+  text-align: left;
+  color: #FF5500;
+  font-family: 'DungGeunMo', monospace;
+}
+
+/* === 애니메이션 커서 === */
+.blink-cursor {
+  display: inline-block;
+  width: 10px;
+  background-color: #FF5500;
+  margin-left: 2px;
+  height: 1em;
+  animation: blink 1.2s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to { visibility: hidden; }
+}
+
+@keyframes glitch-animation {
+  0% { transform: translate(0); }
+  20% { transform: translate(-10px, 5px); }
+  40% { transform: translate(10px, -5px); }
+  60% { transform: translate(-5px, 10px); }
+  80% { transform: translate(5px, -10px); }
+  100% { transform: translate(0); }
+}
+
+@media (max-width: 768px) {
+  .split-content.first-page {
+    flex-direction: column;
+  }
+  .empty-space, .terminal-container {
+    padding: 10px;
+  }
+  .page {
+    padding: 20px 5px;
+  }
+}
+

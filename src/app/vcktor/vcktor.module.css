@@ -1,0 +1,580 @@
+.bg {
+  width: 100vw;
+  height: 100vh;
+  min-height: 900px;
+  background: #181818;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ===== 오른쪽 상단 코인/닉네임/버튼 ===== */
+.topCoinBar {
+  position: fixed;
+  top: 24px;
+  right: 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 3000;
+  min-width: 185px;
+  background: transparent;
+}
+.nickname {
+  color: #FF5500;
+  font-size: 16px;
+  font-family: 'Press Start 2P', 'DungGeunMo';
+  font-weight: bold;
+  letter-spacing: 1.3px;
+  margin-bottom: 4px;
+}
+.coinBtn {
+  background: #FF5500;
+  color: #181818;
+  border: none;
+  border-radius: 9px;
+  font-size: 15px;
+  font-family: 'Press Start 2P', monospace;
+  font-weight: bold;
+  padding: 7px 19px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background .14s, color .14s;
+}
+.coinBtn:hover { background: #FF8800; color: #191919; }
+.topBtnRow {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.convertBtn, .downloadBtn {
+  background: #FF5500;
+  color: #181818;
+  border: none;
+  font-size: 15px;
+  font-family: 'Press Start 2P', monospace;
+  font-weight: bold;
+  padding: 10px 23px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #FF550050;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+  transition: background .14s, color .14s;
+}
+.downloadBtn {
+  background: #191919;
+  color: #FF5500;
+  border: 2px solid #FF5500;
+}
+.convertBtn:hover, .downloadBtn:hover { background: #FF8800; color: #191919; }
+
+/* ===== 메인 그리드 ===== */
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 1.3fr 1.1fr 1.2fr;
+  height: 100vh;
+  width: 100vw;
+  gap: 0;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== g1: 로고+채팅 ===== */
+.g1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.logoWrapTop {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 36px;
+  margin-bottom: 38px;
+}
+.logoBig { width: 185px; }
+.chatBox {
+  width: 100%;
+  max-width: 260px;
+  min-height: 140px;
+  max-height: 360px;
+  background: #101010;
+  border: 2px solid #FF5500;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 0 10px #FF550050;
+  font-size: 11px;
+  color: #FF8800;
+  overflow: hidden;
+}
+.chatLine { white-space: pre-wrap; word-break: break-word; }
+.chatInput {
+  margin-top: auto;
+  padding: 6px 10px;
+  border: 1.5px solid #FF8800;
+  border-radius: 8px;
+  background: #111;
+  color: #FF8800;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  outline: none;
+}
+.chatInput::placeholder { color: #ff8800a0; }
+
+/* ===== g2: 캐릭터 허니컴 ===== */
+.g2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.honeycomb {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 13px;
+  align-items: start;
+  justify-items: center;
+  width: 232px;
+  margin: 0 auto;
+  margin-top: 12px;
+}
+.hexCell {
+  position: relative;
+  width: 100px;
+  height: 116px;
+  margin-bottom: -36px;
+  cursor: pointer;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.13s, transform 0.18s;
+}
+.hexCell:nth-child(even) { margin-top: 44px; }
+.hexBorder,
+.hexBorderActive {
+  position: absolute;
+  width: 100px;
+  height: 116px;
+  left: 0; top: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.hexBorderActive { filter: drop-shadow(0 0 7px #FF5500b8);}
+.hexMask {
+  width: 90px;
+  height: 104px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: #191919;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  z-index: 3;
+  overflow: hidden;
+}
+.hexImage { width: 100%; height: 100%; object-fit: cover; }
+
+/* ===== g3: 캐릭터 정보 ===== */
+.g3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.selectedCharBoxHuge {
+  width: 255px;
+  height: 255px;
+  border: 3.2px solid #FF5500;
+  border-radius: 18px;
+  background: #181818;
+  box-shadow: 0 0 36px #FF550099;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.selectedCharImgHuge { width: 100%; height: 100%; object-fit: contain; }
+.charMetaBox {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.charName {
+  font-size: 27px;
+  color: #FF5500;
+  font-weight: bold;
+  margin-top: 10px;
+  letter-spacing: 2px;
+}
+.meta {
+  font-size: 17px;
+  color: #eee;
+  margin: 2px 0;
+}
+.knobRow {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  margin-top: 18px;
+}
+.knobGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.knobTitle {
+  color: #FF5500;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+.knobCtrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.knobBtn {
+  background: #191919;
+  border: 2px solid #FF5500;
+  color: #FF5500;
+  font-size: 17px;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .14s;
+}
+.knobBtn:hover { background: #FF5500; color: #191919; }
+.knobNum {
+  min-width: 27px;
+  text-align: center;
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+/* ===== g4: 업로드 박스 ===== */
+.g4 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  margin-right: 10px;
+}
+.g4Border {
+  min-width: 340px;
+  max-width: 400px;
+  background: #191919e0;
+  border: 2.5px solid #FF5500;
+  border-radius: 18px;
+  box-shadow: 0 8px 26px 0 #ff550024;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.uploadTitle {
+  color: #FF5500;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+.uploadList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.uploadItem {
+  width: 100%;
+  background: #111;
+  border-radius: 8px;
+  border: 1.6px solid #FF5500;
+  box-shadow: 0 0 8px #FF550033;
+  padding: 10px 11px 6px 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.uploadFileLabel {
+  color: #FF5500;
+  font-size: 13px;
+  margin-top: 5px;
+  text-align: center;
+  word-break: break-all;
+}
+.uploadBtnRow {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ===== g5: 다운로드 박스 ===== */
+.g5 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  margin-left: 10px;
+  padding-top: 110px; 
+}
+.g5Border {
+  margin-right: 20px;
+  min-width: 340px;
+  max-width: 400px;
+  background: #191919e0;
+  border: 2.5px solid #FF5500;
+  border-radius: 18px;
+  box-shadow: 0 8px 26px 0 #ff550024;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.downloadTitle {
+  color: #FF5500;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+.downloadList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.downloadItem {
+  width: 100%;
+  background: #111;
+  border-radius: 8px;
+  border: 1.6px solid #FF5500;
+  box-shadow: 0 0 8px #FF550033;
+  padding: 10px 11px 6px 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.downloadFileLabel {
+  color: #FF5500;
+  font-size: 13px;
+  margin-top: 5px;
+  text-align: center;
+  word-break: break-all;
+}
+.downloadActionBtn {
+  margin-top: 8px;
+  background: #FF5500;
+  color: #181818;
+  border: none;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background .14s, color .14s;
+}
+.downloadActionBtn:hover { background: #FF8800; color: #191919; }
+
+/* ===== 팝업(모달) ===== */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.54);
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modalPopup {
+  min-width: 320px;
+  max-width: 95vw;
+  background: #181818;
+  border-radius: 20px;
+  box-shadow: 0 8px 38px #FF550060;
+  z-index: 4010;
+  padding: 32px 18px 18px 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.modalCloseBtn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: #FF5500;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0;
+  line-height: 1;
+  font-weight: bold;
+  transition: color 0.12s;
+}
+.modalCloseBtn:hover { color: #FF8800; }
+
+/* 업로드/다운로드 목록 영역 */
+.uploadList, .downloadList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  /* 5개/10개 시 아래처럼 조절 */
+  max-height: 285px; /* 업로드 (5개×~55px) */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #FF5500 #111;
+}
+.downloadList {
+  max-height: 535px; /* 다운로드 (10개×~52px) */
+}
+
+/* 아이템 개수 많을 때 작아지도록 */
+.uploadList.shrink .uploadItem,
+.downloadList.shrink .downloadItem {
+  min-height: 36px;
+  padding: 6px 7px 3px 7px;
+  font-size: 11px;
+}
+.uploadList.shrink .uploadFileLabel,
+.downloadList.shrink .downloadFileLabel {
+  font-size: 10px;
+  margin-top: 3px;
+}
+.uploadList.shrink .uploadItem svg,
+.downloadList.shrink .downloadItem svg {
+  height: 28px !important;
+}
+
+.noticeBox {
+  margin: 28px auto 0 auto;
+  padding: 17px 18px 12px 18px;
+  background: #22222b;
+  border-radius: 13px;
+  border: 1.3px solid #323242;
+  color: #e2e2ef;
+  font-size: 13px;
+  max-width: 820px;
+  box-shadow: 0 1px 9px #222b;
+}
+.noticeTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: #b076f4;
+  margin-bottom: 10px;
+  letter-spacing: 1.1px;
+  text-align: left;
+}
+.noticeList {
+  list-style: disc inside;
+  margin: 0;
+  padding-left: 8px;
+}
+.noticeList li {
+  margin-bottom: 7px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.noticeBusiness pre {
+  background: none;
+  color: #b5b5c5;
+  border: none;
+  font-size: 12px;
+  font-family: inherit;
+  white-space: pre-line;
+  margin: 11px 0 0 0;
+  padding: 0;
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .noticeBox {
+    font-size: 12px;
+    padding: 11px 7px 9px 8px;
+    max-width: 99vw;
+  }
+  .noticeTitle { font-size: 13px; }
+  .noticeList li { font-size: 12px; }
+}
+
+
+/* ===== 반응형 ===== */
+@media (max-width: 1400px) {
+  .topCoinBar { right: 16px; }
+  .g4, .g5 { margin-left: 0; margin-right: 0; }
+}
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: 1fr 1fr 1fr; }
+  .g2, .g3, .g4, .g5 { min-width: 0; }
+  .g4, .g5 { margin: 0; padding-top: 80px; }
+}
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; grid-template-rows: repeat(5, auto); }
+  .g1, .g2, .g3, .g4, .g5 {
+    min-width: 0; max-width: 99vw;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .g4Border, .g5Border { min-width: 0; max-width: 99vw; }
+  .selectedCharBoxHuge { width: 96vw; height: 96vw; max-width: 320px; max-height: 320px;}
+  .honeycomb { width: 100%; }
+  .chatBox { max-width: 97vw; }
+  .topCoinBar {
+    position: static;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100vw;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    background: transparent;
+    z-index: 4000;
+    padding: 8px 0;
+  }
+  .g4, .g5 {
+    margin-bottom: 12px;
+    margin-right: 0;
+    margin-left: 0;
+    padding-top: 0;
+  }
+}
+@media (max-width: 600px) {
+  .bg { min-height: 520px; }
+  .grid { grid-template-columns: 1fr; }
+  .logoBig { width: 38vw; min-width: 98px;}
+  .g4Border, .g5Border { padding: 10px 2vw; }
+  .modalPopup { min-width: 90vw; padding: 16px 2vw 12px 2vw; }
+  .chatBox { font-size: 10px; }
+  .selectedCharBoxHuge { width: 90vw; height: 90vw; max-width: 210px; max-height: 210px;}
+  .hexCell, .hexBorder, .hexBorderActive {
+    width: 72px; height: 80px;
+  }
+  .hexMask { width: 63px; height: 73px; left: 5px; top: 4px; }
+}

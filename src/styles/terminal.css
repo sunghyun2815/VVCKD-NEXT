@@ -1,0 +1,68 @@
+/* 터미널 스타일링 */
+.terminal-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.terminal {
+  background-color: #000000;
+  color: #FF5500;
+  width: 90%;
+  max-width: 600px;
+  height: 70vh;
+  padding: 30px;
+  border: 2px solid #FF5500;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: left;
+  box-shadow: 0 0 20px rgba(255, 85, 0, 0.3);
+  overflow-y: auto;
+  position: relative;
+}
+
+.terminal-line {
+  white-space: nowrap;
+  overflow: hidden;
+  animation: typing 2s steps(40, end);
+  margin-bottom: 10px;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+.terminal-line:nth-child(1) { animation-delay: 0.2s; }
+.terminal-line:nth-child(2) { animation-delay: 0.8s; }
+.terminal-line:nth-child(3) { animation-delay: 1.4s; }
+.terminal-line:nth-child(4) { animation-delay: 2.0s; }
+.terminal-line:nth-child(5) { animation-delay: 2.6s; }
+.terminal-line:nth-child(6) { animation-delay: 3.2s; }
+.terminal-line:nth-child(7) { animation-delay: 3.8s; }
+.terminal-line:nth-child(8) { animation-delay: 4.0s; }
+.terminal-line:nth-child(9) { animation-delay: 4.2s; }
+.terminal-line:nth-child(10) { animation-delay: 4.5s; }
+.terminal-line:nth-child(11) { animation-delay: 5.1s; }
+.terminal-line:nth-child(12) { animation-delay: 5.7s; }
+
+.blink-text {
+  color: #ffffff;
+  text-shadow: 0 0 5px #FF5500;
+  animation: typing 2s steps(40, end), blink-animation 1s steps(5, start) infinite;
+}
+
+@media (max-width: 768px) {
+  .terminal-container {
+    padding: 20px;
+  }
+  
+  .terminal {
+    width: 100%;
+    height: 50vh;
+    font-size: 14px;
+  }
+}
