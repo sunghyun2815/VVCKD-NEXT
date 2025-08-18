@@ -1,0 +1,682 @@
+/* ===== ProjectGrid CSS Module ===== */
+
+/* ===== 컨테이너 ===== */
+.container {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.gridHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.headerTitle {
+  color: #ff6600;
+  font-size: 16px;
+  margin: 0;
+  text-shadow: 0 0 10px #ff6600;
+}
+
+.headerSubtitle {
+  color: #fff;
+  font-size: 10px;
+  margin: 5px 0 0 0;
+  opacity: 0.8;
+}
+
+/* ===== 필터 및 액션 ===== */
+.filterSection {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  background: transparent;
+  color: #ff6600;
+  border: 1px solid #ff6600;
+  padding: 8px 15px;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.filterButton:hover {
+  background: #ff6600;
+  color: #000;
+  box-shadow: 0 0 10px #ff6600;
+}
+
+.filterButton.active {
+  background: #ff6600;
+  color: #000;
+  box-shadow: 0 0 10px #ff6600;
+}
+
+.createButton {
+  background: #00ff00;
+  color: #000;
+  border: 1px solid #00ff00;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.createButton:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 20px #00ff00;
+  transform: translateY(-2px);
+}
+
+/* ===== 프로젝트 그리드 ===== */
+.projectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.projectCard {
+  border: 2px solid #ff6600;
+  background: #000;
+  padding: 25px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.projectCard:hover {
+  background: #111;
+  box-shadow: 0 0 25px rgba(255, 102, 0, 0.4);
+  transform: translateY(-5px);
+}
+
+.projectCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff6600, transparent);
+  animation: scan 3s linear infinite;
+}
+
+@keyframes scan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ===== 카드 헤더 ===== */
+.projectHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.projectTitle {
+  color: #ff6600;
+  font-size: 12px;
+  margin: 0;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.projectStatus {
+  font-size: 8px;
+  padding: 4px 8px;
+  border: 1px solid;
+  border-radius: 0;
+  white-space: nowrap;
+}
+
+.statusActive {
+  color: #00ff00;
+  border-color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.statusDevelopment {
+  color: #ffff00;
+  border-color: #ffff00;
+  background: rgba(255, 255, 0, 0.1);
+}
+
+.statusPlanning {
+  color: #ff0000;
+  border-color: #ff0000;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+/* ===== 카드 정보 ===== */
+.projectInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 8px;
+  gap: 10px;
+}
+
+.projectParticipants {
+  color: #ffff00;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.projectMusicCount {
+  color: #00ff00;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.projectDescription {
+  color: #fff;
+  font-size: 9px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  flex: 1;
+  opacity: 0.9;
+}
+
+/* ===== 장르 태그 ===== */
+.projectGenres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.genreTag {
+  background: transparent;
+  color: #ff6600;
+  padding: 3px 6px;
+  font-size: 7px;
+  border: 1px solid #ff6600;
+  transition: all 0.2s ease;
+}
+
+.genreTag:hover {
+  background: #ff6600;
+  color: #000;
+}
+
+/* ===== 카드 액션 ===== */
+.projectActions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.joinButton {
+  flex: 1;
+  background: transparent;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  padding: 10px 15px;
+  font-family: inherit;
+  font-size: 7px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.joinButton:hover {
+  background: #00ff00;
+  color: #000;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+.viewButton {
+  flex: 1;
+  background: transparent;
+  color: #ff6600;
+  border: 1px solid #ff6600;
+  padding: 10px 15px;
+  font-family: inherit;
+  font-size: 7px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.viewButton:hover {
+  background: #ff6600;
+  color: #000;
+  box-shadow: 0 0 10px #ff6600;
+}
+
+/* ===== 빈 상태 ===== */
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  color: #ff6600;
+  margin-bottom: 15px;
+}
+
+.emptyDescription {
+  font-size: 10px;
+  color: #fff;
+  opacity: 0.7;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* ===== 로딩 상태 ===== */
+.loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #ff6600;
+}
+
+.loadingIcon {
+  font-size: 32px;
+  margin-bottom: 15px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loadingText {
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ===== 모달 ===== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: #000;
+  border: 2px solid #ff6600;
+  padding: 30px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.modalTitle {
+  color: #ff6600;
+  font-size: 14px;
+  margin: 0;
+}
+
+.closeButton {
+  background: transparent;
+  color: #ff6600;
+  border: 1px solid #ff6600;
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.closeButton:hover {
+  background: #ff6600;
+  color: #000;
+}
+
+/* ===== 모달 폼 ===== */
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formLabel {
+  color: #ff6600;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.formInput,
+.formTextarea {
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 9px;
+  transition: border-color 0.3s ease;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+  outline: none;
+  border-color: #ff6600;
+  box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ===== 장르 선택 ===== */
+.genreSelection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.genreGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #333;
+  background: #111;
+}
+
+.genreOption {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 7px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.genreOption:hover {
+  border-color: #ff6600;
+  color: #ff6600;
+}
+
+.genreOption.selected {
+  background: #ff6600;
+  color: #000;
+  border-color: #ff6600;
+}
+
+.selectedGenres {
+  font-size: 8px;
+  color: #00ff00;
+  padding: 8px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+/* ===== 룸 미리보기 ===== */
+.roomPreview {
+  background: #111;
+  border: 1px solid #333;
+  padding: 15px;
+}
+
+.roomPreview h4 {
+  color: #ff6600;
+  font-size: 10px;
+  margin: 0 0 15px 0;
+}
+
+.previewCard {
+  background: #000;
+  border: 1px solid #ff6600;
+  padding: 15px;
+}
+
+.previewName {
+  color: #ff6600;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.previewCreator {
+  color: #ffff00;
+  font-size: 8px;
+  margin-bottom: 10px;
+}
+
+.previewGenres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.previewGenreTag {
+  background: transparent;
+  color: #ff6600;
+  border: 1px solid #ff6600;
+  padding: 2px 6px;
+  font-size: 7px;
+}
+
+/* ===== 모달 액션 ===== */
+.modalActions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+}
+
+.cancelButton {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #666;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+  border-color: #fff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.confirmButton {
+  background: #00ff00;
+  color: #000;
+  border: 1px solid #00ff00;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.confirmButton:hover {
+  background: #fff;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+.confirmButton:disabled {
+  background: #333;
+  color: #666;
+  border-color: #333;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ===== 반응형 디자인 ===== */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .gridHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .filterSection {
+    justify-content: center;
+  }
+  
+  .projectGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .projectCard {
+    height: auto;
+    min-height: 240px;
+  }
+  
+  .projectActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modalContent {
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .modalActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .genreGrid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerTitle {
+    font-size: 14px;
+  }
+  
+  .headerSubtitle {
+    font-size: 9px;
+  }
+  
+  .projectCard {
+    padding: 20px;
+  }
+  
+  .projectTitle {
+    font-size: 11px;
+  }
+  
+  .filterButton,
+  .createButton {
+    font-size: 7px;
+    padding: 8px 12px;
+  }
+}
+
+/* ===== 접근성 향상 ===== */
+.projectCard:focus {
+  outline: 2px solid #ff6600;
+  outline-offset: 2px;
+}
+
+.filterButton:focus,
+.createButton:focus,
+.joinButton:focus,
+.viewButton:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ===== 애니메이션 성능 최적화 ===== */
+.projectCard,
+.filterButton,
+.createButton,
+.joinButton,
+.viewButton {
+  will-change: transform, box-shadow;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projectCard::before {
+    animation: none;
+  }
+  
+  .loadingIcon {
+    animation: none;
+  }
+  
+  .projectCard,
+  .filterButton,
+  .createButton,
+  .joinButton,
+  .viewButton,
+  .modalContent,
+  .formInput,
+  .formTextarea,
+  .genreOption {
+    transition: none !important;
+    animation: none !important;
+  }
+}
