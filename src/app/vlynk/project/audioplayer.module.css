@@ -1,0 +1,379 @@
+/* src/app/vlynk/project/audioplayer.module.css */
+
+/* ===== 메인 컨테이너 ===== */
+.audioPlayerContainer {
+  background: rgba(255, 102, 0, 0.05);
+  border-bottom: 1px solid rgba(255, 102, 0, 0.3);
+  padding: 20px;
+  position: relative;
+}
+
+/* ===== 트랙 정보 섹션 ===== */
+.trackInfoSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.trackArtwork {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.artworkPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 102, 0, 0.2);
+  border: 1px solid #ff6600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #ff6600;
+}
+
+.trackDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.trackTitle {
+  font-size: 14px;
+  color: #fff;
+  font-weight: bold;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackUploader {
+  font-size: 10px;
+  color: rgba(255, 102, 0, 0.7);
+  margin-bottom: 3px;
+}
+
+.uploaderName {
+  color: #ffaa00;
+  font-weight: bold;
+}
+
+.trackMeta {
+  font-size: 9px;
+  color: rgba(255, 102, 0, 0.5);
+}
+
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff6600;
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.loadingSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 102, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: #ff6600;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== 메인 컨트롤 ===== */
+.mainControls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.playbackControls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.controlBtn {
+  background: transparent;
+  border: 1px solid #ff6600;
+  color: #ff6600;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.controlBtn:hover:not(:disabled) {
+  background: #ff6600;
+  color: #000;
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+}
+
+.controlBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.playPauseBtn {
+  width: 50px;
+  height: 50px;
+  font-size: 16px;
+  border-width: 2px;
+}
+
+.miniSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 102, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: #ff6600;
+  animation: spin 1s linear infinite;
+}
+
+/* ===== 진행률 섹션 ===== */
+.progressSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.timeDisplay {
+  font-size: 11px;
+  color: #ff6600;
+  min-width: 40px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+
+.progressBar {
+  flex: 1;
+  height: 20px;
+  cursor: pointer;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 102, 0, 0.2);
+  border-radius: 2px;
+  position: relative;
+  border: 1px solid rgba(255, 102, 0, 0.3);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6600, #ffaa00);
+  border-radius: 2px;
+  transition: width 0.1s ease;
+}
+
+.progressHandle {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 2px solid #ff6600;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.progressHandle:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+}
+
+/* ===== 볼륨 섹션 ===== */
+.volumeSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.volumeBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 102, 0, 0.5);
+  color: rgba(255, 102, 0, 0.7);
+  width: 35px;
+  height: 35px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.volumeBtn:hover {
+  border-color: #ff6600;
+  color: #ff6600;
+  background: rgba(255, 102, 0, 0.1);
+}
+
+.volumeSlider {
+  position: absolute;
+  bottom: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #ff6600;
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(5px);
+}
+
+.volumeTrack {
+  width: 6px;
+  height: 80px;
+  background: rgba(255, 102, 0, 0.2);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+
+.volumeFill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(0deg, #ff6600, #ffaa00);
+  border-radius: 3px;
+  transition: height 0.2s ease;
+}
+
+.volumeHandle {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2px solid #ff6600;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.volumeValue {
+  font-size: 9px;
+  color: #ff6600;
+  font-family: 'Courier New', monospace;
+}
+
+/* ===== 트랙 없음 메시지 ===== */
+.noTrackMessage {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 102, 0, 0.5);
+}
+
+.noTrackIcon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.3;
+}
+
+.noTrackText {
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+/* ===== 에러 메시지 ===== */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff0000;
+  border-radius: 4px;
+}
+
+.errorIcon {
+  font-size: 14px;
+}
+
+.errorText {
+  color: #ffaaaa;
+  font-size: 10px;
+  flex: 1;
+}
+
+/* ===== 키보드 단축키 힌트 ===== */
+.shortcutsHint {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 102, 0, 0.2);
+  font-size: 8px;
+  color: rgba(255, 102, 0, 0.4);
+}
+
+.shortcutsHint span:first-child {
+  font-weight: bold;
+  color: rgba(255, 102, 0, 0.6);
+}
+
+/* ===== 반응형 디자인 ===== */
+@media (max-width: 768px) {
+  .trackInfoSection {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .progressSection {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .progressBar {
+    order: -1;
+  }
+  
+  .shortcutsHint {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .playbackControls {
+    gap: 10px;
+  }
+  
+  .controlBtn {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+  
+  .playPauseBtn {
+    width: 45px;
+    height: 45px;
+    font-size: 14px;
+  }
+}

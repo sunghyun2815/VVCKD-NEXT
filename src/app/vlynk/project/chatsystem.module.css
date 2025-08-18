@@ -1,0 +1,469 @@
+/* src/app/vlynk/project/chatsystem.module.css */
+
+/* ===== 메인 컨테이너 ===== */
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 102, 0, 0.3);
+  font-family: 'Courier New', monospace;
+}
+
+/* ===== 채팅 헤더 ===== */
+.chatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(255, 102, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 102, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.chatTitle {
+  font-size: 11px;
+  color: #ff6600;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+.chatStats {
+  display: flex;
+  gap: 10px;
+  font-size: 9px;
+  color: rgba(255, 102, 0, 0.7);
+}
+
+/* ===== 메시지 컨테이너 ===== */
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-height: 0;
+}
+
+.messagesContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messagesContainer::-webkit-scrollbar-track {
+  background: rgba(255, 102, 0, 0.1);
+}
+
+.messagesContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 102, 0, 0.4);
+  border-radius: 3px;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 102, 0, 0.6);
+}
+
+/* ===== 빈 채팅 상태 ===== */
+.emptyChat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(255, 102, 0, 0.4);
+  text-align: center;
+}
+
+.emptyChatIcon {
+  font-size: 36px;
+  margin-bottom: 10px;
+  opacity: 0.3;
+}
+
+.emptyChatText {
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* ===== 메시지 그룹 ===== */
+.messageGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.messageGroupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.messageUser {
+  font-size: 10px;
+  color: #ffaa00;
+  font-weight: bold;
+}
+
+.youIndicator {
+  color: #00ff00;
+  font-weight: normal;
+}
+
+.messageDate {
+  font-size: 8px;
+  color: rgba(255, 102, 0, 0.5);
+}
+
+/* ===== 개별 메시지 ===== */
+.messageItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: rgba(255, 102, 0, 0.05);
+  border-left: 2px solid rgba(255, 102, 0, 0.3);
+  margin-left: 10px;
+}
+
+.messageItem.ownMessage {
+  background: rgba(0, 255, 0, 0.05);
+  border-left-color: rgba(0, 255, 0, 0.3);
+  margin-left: 0;
+  margin-right: 10px;
+}
+
+.messageContent {
+  font-size: 11px;
+  color: #fff;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.textMessage {
+  white-space: pre-wrap;
+}
+
+.voiceMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voiceIcon {
+  font-size: 14px;
+  color: #ff00ff;
+}
+
+.audioPlayer {
+  flex: 1;
+  height: 30px;
+  background: rgba(255, 102, 0, 0.1);
+  border: 1px solid rgba(255, 102, 0, 0.3);
+  border-radius: 4px;
+}
+
+.audioPlayer::-webkit-media-controls-panel {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.messageTimestamp {
+  font-size: 8px;
+  color: #00ffff;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+/* ===== 입력 영역 ===== */
+.inputArea {
+  flex-shrink: 0;
+  background: rgba(255, 102, 0, 0.05);
+  border-top: 1px solid rgba(255, 102, 0, 0.3);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputOptions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timestampToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 9px;
+  color: rgba(255, 102, 0, 0.7);
+}
+
+.timestampToggle input[type="checkbox"] {
+  display: none;
+}
+
+.checkboxCustom {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(255, 102, 0, 0.5);
+  background: transparent;
+  position: relative;
+  border-radius: 2px;
+}
+
+.timestampToggle input[type="checkbox"]:checked + .checkboxCustom {
+  background: #ff6600;
+  border-color: #ff6600;
+}
+
+.timestampToggle input[type="checkbox"]:checked + .checkboxCustom::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.timestampLabel {
+  user-select: none;
+}
+
+.messageInputContainer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.messageInput {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 102, 0, 0.3);
+  color: #fff;
+  padding: 8px 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.messageInput:focus {
+  border-color: #ff6600;
+  box-shadow: 0 0 8px rgba(255, 102, 0, 0.3);
+}
+
+.messageInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.messageInput::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.voiceBtn, .sendBtn {
+  background: transparent;
+  border: 1px solid;
+  width: 35px;
+  height: 35px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.voiceBtn {
+  border-color: rgba(255, 0, 255, 0.5);
+  color: rgba(255, 0, 255, 0.7);
+}
+
+.voiceBtn:hover:not(:disabled) {
+  border-color: #ff00ff;
+  color: #ff00ff;
+  background: rgba(255, 0, 255, 0.1);
+}
+
+.voiceBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.voiceBtn.recording {
+  background: rgba(255, 0, 0, 0.2);
+  border-color: #ff0000;
+  color: #fff;
+  animation: recordingPulse 1s ease-in-out infinite;
+}
+
+@keyframes recordingPulse {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+  }
+}
+
+.recordingIndicator {
+  font-size: 8px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.sendBtn {
+  border-color: rgba(0, 255, 0, 0.5);
+  color: rgba(0, 255, 0, 0.7);
+}
+
+.sendBtn:hover:not(:disabled) {
+  border-color: #00ff00;
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.sendBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ===== 녹음 상태 표시 ===== */
+.recordingStatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: 4px;
+  font-size: 9px;
+  color: #fff;
+}
+
+.recordingWave {
+  display: flex;
+  gap: 2px;
+  align-items: end;
+  height: 12px;
+}
+
+.recordingBar {
+  width: 2px;
+  background: #ff0000;
+  border-radius: 1px;
+  animation: recordingWave 1s ease-in-out infinite;
+}
+
+@keyframes recordingWave {
+  0%, 100% {
+    height: 3px;
+    opacity: 0.3;
+  }
+  50% {
+    height: 12px;
+    opacity: 1;
+  }
+}
+
+/* ===== 권한 경고 ===== */
+.permissionWarning {
+  background: rgba(255, 170, 0, 0.1);
+  border: 1px solid rgba(255, 170, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 9px;
+  color: #ffaa00;
+  text-align: center;
+}
+
+/* ===== 반응형 디자인 ===== */
+@media (max-width: 768px) {
+  .chatContainer {
+    min-height: 300px;
+  }
+  
+  .chatHeader {
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+  
+  .messageInputContainer {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .messageInput {
+    font-size: 10px;
+  }
+  
+  .voiceBtn, .sendBtn {
+    width: 100%;
+    height: 30px;
+  }
+  
+  .inputOptions {
+    justify-content: center;
+  }
+  
+  .messageItem {
+    margin-left: 5px;
+  }
+  
+  .messageItem.ownMessage {
+    margin-right: 5px;
+  }
+  
+  .recordingStatus {
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+}
+
+/* ===== 다크 모드 향상 ===== */
+@media (prefers-color-scheme: dark) {
+  .messageInput {
+    background: rgba(0, 0, 0, 0.9);
+  }
+  
+  .audioPlayer {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+/* ===== 접근성 향상 ===== */
+.messageInput:focus,
+.voiceBtn:focus,
+.sendBtn:focus {
+  outline: 2px solid #ff6600;
+  outline-offset: 2px;
+}
+
+.timestampToggle:focus-within .checkboxCustom {
+  outline: 2px solid #ff6600;
+  outline-offset: 2px;
+}
+
+/* ===== 애니메이션 비활성화 옵션 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .recordingPulse,
+  .recordingWave,
+  .recordingBar {
+    animation: none;
+  }
+  
+  .voiceBtn.recording {
+    background: rgba(255, 0, 0, 0.3);
+  }
+}

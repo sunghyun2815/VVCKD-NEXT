@@ -1,656 +1,672 @@
-.bg {
-  width: 100vw;
-  height: 100vh;
-  min-height: 900px;
-  background: #181818;
-  overflow-x: hidden;
+/* src/app/vlynk/project/project.module.css */
+
+/* ===== 글로벌 스타일 ===== */
+.container {
+  min-height: 100vh;
+  background: #000;
+  color: #ff6600;
+  font-family: 'Courier New', monospace;
   position: relative;
-  font-family: 'Press Start 2P', 'DungGeunMo', monospace;
-  color: #FF5500;
+  overflow-x: hidden;
 }
 
-/* ===== 사용자 정보 표시 ===== */
-.userInfo {
-  position: fixed;
-  top: 80px;
-  left: 20px;
-  font-size: 10px;
-  color: #FF5500;
-  z-index: 1001;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 8px 12px;
-  border: 1px solid #FF5500;
-  border-radius: 3px;
-}
-
-.username {
-  color: #FF5500;
-  font-weight: bold;
-}
-
-.userRole {
-  color: #FFFF00;
-  margin-left: 10px;
-}
-
-.userRole.admin {
-  color: #FF0000;
-}
-
-.userRole.user {
-  color: #00FF00;
-}
-
-.userRole.guest {
-  color: #888888;
-}
-
-/* ===== 네비게이션 바 (VCKTOR 스타일) ===== */
-.navigationBar {
+/* ===== LoginModal 스타일 ===== */
+.loginModalOverlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  background: #000;
-  border-bottom: 2px solid #FF5500;
-  padding: 15px 20px;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
-  gap: 20px;
-  z-index: 1000;
-  box-sizing: border-box;
-  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
 }
 
-.navBtn {
-  background: transparent;
-  color: #FF5500;
-  border: 1px solid #FF5500;
-  padding: 8px 15px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 8px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s;
-  display: inline-block;
+.loginModalContainer {
+  background: #000;
+  border: 2px solid #ff6600;
+  box-shadow: 
+    0 0 20px rgba(255, 102, 0, 0.3),
+    inset 0 0 20px rgba(255, 102, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  animation: modalGlow 2s ease-in-out infinite alternate;
 }
 
-.navBtn:hover,
-.navBtn.active {
-  background: #FF5500;
+@keyframes modalGlow {
+  0% { box-shadow: 0 0 20px rgba(255, 102, 0, 0.3), inset 0 0 20px rgba(255, 102, 0, 0.1); }
+  100% { box-shadow: 0 0 30px rgba(255, 102, 0, 0.5), inset 0 0 20px rgba(255, 102, 0, 0.2); }
+}
+
+.loginModalHeader {
+  background: #ff6600;
   color: #000;
-  box-shadow: 0 0 10px #FF5500;
+  padding: 15px 20px;
+  text-align: center;
+  border-bottom: 2px solid #ff6600;
 }
 
-/* ===== 메인 컨테이너 ===== */
-.mainContainer {
-  margin-top: 80px;
+.terminalTitle {
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+
+.terminalSubtitle {
+  font-size: 10px;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.loginModalContent {
+  padding: 30px 25px;
+  background: #000;
+}
+
+.accessPrompt {
+  margin-bottom: 25px;
+}
+
+.promptLine {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+
+.promptSymbol {
+  color: #ffff00;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.promptText {
+  color: #00ff00;
+  animation: textGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes textGlow {
+  0% { text-shadow: 0 0 5px #00ff00; }
+  100% { text-shadow: 0 0 10px #00ff00, 0 0 15px #00ff00; }
+}
+
+.inputSection {
+  margin-bottom: 20px;
+}
+
+.inputLabel {
+  color: #ff6600;
+  font-size: 12px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 102, 0, 0.1);
+  border: 1px solid #ff6600;
+  padding: 12px 15px;
+  position: relative;
+}
+
+.inputPrompt {
+  color: #ffff00;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.usernameInput {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  flex: 1;
+  outline: none;
+  letter-spacing: 1px;
+}
+
+.usernameInput::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.usernameInput:disabled {
+  opacity: 0.5;
+}
+
+.cursor {
+  color: #ffff00;
+  animation: blink 1s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.errorMessage {
+  margin-bottom: 20px;
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff0000;
+  border-radius: 3px;
+}
+
+.errorSymbol {
+  color: #ff0000;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.errorText {
+  color: #ffaaaa;
+  font-size: 11px;
+}
+
+.buttonSection {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.loginButton {
+  background: transparent;
+  border: 2px solid #ff6600;
+  color: #ff6600;
+  padding: 12px 30px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.loginButton:hover:not(:disabled) {
+  background: #ff6600;
+  color: #000;
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+}
+
+.loginButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loginButton.loading {
+  animation: buttonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes buttonPulse {
+  0%, 100% { border-color: #ff6600; }
+  50% { border-color: #ffaa00; }
+}
+
+.loadingDots {
+  margin-right: 5px;
+}
+
+.loadingAnimation {
+  animation: loadingDots 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingDots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.loginModalFooter {
+  border-top: 1px solid #ff6600;
+  padding-top: 15px;
+}
+
+.systemInfo {
+  font-size: 9px;
+  color: rgba(255, 102, 0, 0.7);
+  line-height: 1.4;
+}
+
+.systemInfo div {
+  margin-bottom: 3px;
+}
+
+/* 스캔라인 효과 */
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 102, 0, 0.03) 2px,
+    rgba(255, 102, 0, 0.03) 4px
+  );
+  pointer-events: none;
+}
+
+/* ===== ProjectGrid 기본 스타일 ===== */
+.projectListView {
   padding: 20px;
-  min-height: calc(100vh - 100px);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* ===== 프로젝트 헤더 ===== */
 .projectHeader {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.projectHeaderTitle {
+.projectTitle {
   font-size: 24px;
-  color: #FF5500;
-  text-shadow: 0 0 5px #FF5500, 0 0 10px #FF5500, 0 0 20px #FF5500;
+  color: #ff6600;
+  text-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
   margin-bottom: 10px;
-  animation: titlePulse 3s ease-in-out infinite;
-}
-
-@keyframes titlePulse {
-  0%, 100% { 
-    text-shadow: 0 0 5px #FF5500, 0 0 10px #FF5500, 0 0 20px #FF5500;
-  }
-  50% { 
-    text-shadow: 0 0 10px #FF5500, 0 0 20px #FF5500, 0 0 30px #FF5500, 0 0 40px #FF5500;
-  }
-}
-
-.cursor {
-  display: inline-block;
-  animation: blink 1s step-start 0s infinite;
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
+  letter-spacing: 3px;
 }
 
 .projectSubtitle {
-  color: #fff;
-  font-size: 10px;
-  margin-bottom: 20px;
+  font-size: 12px;
+  color: rgba(255, 102, 0, 0.7);
+  letter-spacing: 1px;
 }
 
-/* ===== 프로젝트 생성 섹션 ===== */
-.addProjectSection {
-  border: 2px dashed #FF5500;
-  padding: 30px;
-  text-align: center;
-  margin-bottom: 40px;
-  background: rgba(255, 102, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.addProjectSection:hover {
-  background: rgba(255, 102, 0, 0.1);
-  box-shadow: 0 0 20px rgba(255, 85, 0, 0.2);
-}
-
-.addProjectSectionTitle {
-  color: #FF5500;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-.addBtn {
-  background: #FF5500;
-  color: #000;
-  border: none;
-  padding: 15px 30px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-transform: uppercase;
-  box-shadow: 0 4px 0 #CC4400;
-}
-
-.addBtn:hover {
-  background: #FF8800;
-  box-shadow: 0 0 20px #FF5500, 0 2px 0 #CC4400;
-  transform: translateY(2px);
-}
-
-.addBtn:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 20px #FF5500;
-}
-
-/* ===== 프로젝트 그리드 ===== */
-.projectGrid {
+.roomsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
-.projectCard {
-  border: 2px solid #FF5500;
-  background: #000;
+.roomCard {
+  background: rgba(255, 102, 0, 0.1);
+  border: 1px solid #ff6600;
   padding: 20px;
-  transition: all 0.3s;
+  cursor: pointer;
+  transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
-  cursor: pointer;
 }
 
-.projectCard:hover {
-  background: #111;
-  box-shadow: 0 0 20px rgba(255, 102, 0, 0.3);
-  transform: translateY(-5px);
+.roomCard:hover {
+  background: rgba(255, 102, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
+  transform: translateY(-2px);
 }
 
-.projectCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #FF5500, transparent);
-  animation: scan 3s linear infinite;
-}
-
-@keyframes scan {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-.projectTitle {
-  color: #FF5500;
-  font-size: 12px;
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.projectStatus {
-  font-size: 8px;
-  padding: 4px 8px;
-  border: 1px solid;
-  border-radius: 0;
-}
-
-.statusActive {
-  color: #00FF00;
-  border-color: #00FF00;
-  background: rgba(0, 255, 0, 0.1);
-}
-
-.statusDevelopment {
-  color: #FFFF00;
-  border-color: #FFFF00;
-  background: rgba(255, 255, 0, 0.1);
-}
-
-.statusPlanning {
-  color: #FF0000;
-  border-color: #FF0000;
-  background: rgba(255, 0, 0, 0.1);
-}
-
-.projectInfo {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 8px;
-}
-
-.projectParticipants {
-  color: #FFFF00;
-}
-
-.projectMusicCount {
-  color: #00FF00;
-}
-
-.projectDescription {
+.roomName {
+  font-size: 14px;
   color: #fff;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.roomDescription {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.roomStats {
+  display: flex;
+  justify-content: space-between;
   font-size: 9px;
-  line-height: 14px;
-  margin-bottom: 15px;
+  color: #ff6600;
 }
 
-.projectTech {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 15px;
+.roomGenres {
+  font-size: 9px;
+  color: #ffaa00;
+  margin-top: 8px;
 }
 
-.techTag {
-  background: #333;
-  color: #FF5500;
-  padding: 4px 8px;
-  font-size: 7px;
-  border: 1px solid #FF5500;
-}
-
-.projectLinks {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.projectBtn {
+.createRoomBtn {
   background: transparent;
-  color: #FF5500;
-  border: 1px solid #FF5500;
-  padding: 6px 12px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 7px;
+  border: 2px solid #00ff00;
+  color: #00ff00;
+  padding: 15px 30px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
   cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s;
-  display: inline-block;
+  transition: all 0.3s ease;
+  letter-spacing: 2px;
+  display: block;
+  margin: 0 auto;
 }
 
-.projectBtn:hover {
-  background: #FF5500;
+.createRoomBtn:hover {
+  background: #00ff00;
   color: #000;
-  box-shadow: 0 0 5px #FF5500;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
 }
 
-.projectBtn.join {
-  color: #00FF00;
-  border-color: #00FF00;
+/* ===== 반응형 디자인 ===== */
+@media (max-width: 768px) {
+  .loginModalContainer {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .loginModalContent {
+    padding: 20px 15px;
+  }
+  
+  .roomsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .terminalTitle {
+    font-size: 12px;
+  }
+  
+  .projectTitle {
+    font-size: 18px;
+  }
 }
 
-.projectBtn.join:hover {
-  background: #00FF00;
-  color: #000;
-  box-shadow: 0 0 5px #00FF00;
+/* ===== ProjectGrid 고급 스타일 ===== */
+.userWelcome {
+  font-size: 11px;
+  color: #ffaa00;
+  margin-top: 10px;
+  letter-spacing: 1px;
 }
 
-/* ===== 음악 룸 전체 화면 ===== */
-.musicRoom {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  z-index: 1500;
+.username {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.statsSection {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(255, 102, 0, 0.05);
+  border: 1px solid rgba(255, 102, 0, 0.2);
 }
 
-.musicRoomHeader {
-  background: #000;
-  border-bottom: 2px solid #FF5500;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+.statItem {
+  text-align: center;
 }
 
-.roomTitle {
-  color: #FF5500;
-  font-size: 12px;
-}
-
-.leaveBtn {
-  background: #FF0000;
+.statValue {
+  display: block;
+  font-size: 18px;
   color: #fff;
-  border: none;
-  padding: 8px 15px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.leaveBtn:hover {
-  background: #FF3333;
-  box-shadow: 0 0 10px #FF0000;
-}
-
-.musicContent {
-  flex: 1;
-  display: flex;
-  min-height: calc(100vh - 80px);
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-/* ===== 트랙 헤더 (boombox.io 스타일) ===== */
-.trackHeaderSimple {
-  background: #111;
-  padding: 15px 20px;
-  border-bottom: 1px solid #FF5500;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.trackInfoLeft {
-  display: flex;
-  flex-direction: column;
-}
-
-.trackTitleSimple {
-  color: #FF5500;
-  font-size: 12px;
+  font-weight: bold;
   margin-bottom: 5px;
 }
 
-.trackUploaderSimple {
-  color: #FFFF00;
-  font-size: 8px;
+.statLabel {
+  font-size: 9px;
+  color: #ff6600;
+  letter-spacing: 1px;
 }
 
-.trackActions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.downloadBtn {
-  background: transparent;
-  color: #00FF00;
-  border: 1px solid #00FF00;
-  padding: 6px 12px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 7px;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.downloadBtn:hover:not(:disabled) {
-  background: #00FF00;
-  color: #000;
-  box-shadow: 0 0 5px #00FF00;
-}
-
-.downloadBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  color: #666;
-  border-color: #666;
-}
-
-/* ===== 웨이브폼 메인 영역 ===== */
-.waveformMainArea {
-  background: #111;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 300px;
-  margin-bottom: 20px;
-  z-index: 1;
-}
-
-.waveformContainerMain {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.waveformCanvasMain {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.waveformLoadingMain {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #FF5500;
+.createSection {
   text-align: center;
+  margin-bottom: 40px;
+}
+
+.createRoomForm {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.createFormHeader {
+  color: #00ff00;
+  font-size: 12px;
+  margin-bottom: 15px;
+  letter-spacing: 2px;
+}
+
+.createInputContainer {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #00ff00;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.createRoomInput {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  flex: 1;
+  outline: none;
+  letter-spacing: 1px;
+}
+
+.createRoomInput::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.createButtonGroup {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.confirmBtn, .cancelBtn {
+  background: transparent;
+  border: 1px solid;
+  padding: 8px 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.confirmBtn {
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.confirmBtn:hover:not(:disabled) {
+  background: #00ff00;
+  color: #000;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  border-color: #ff0000;
+  color: #ff0000;
+}
+
+.cancelBtn:hover {
+  background: #ff0000;
+  color: #000;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 102, 0, 0.5);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+
+.emptyMessage {
+  font-size: 14px;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.emptySubtext {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.roomStatusBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff6600;
+  color: #000;
+  padding: 4px 8px;
+  font-size: 8px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.statusActive .roomStatusBadge {
+  background: #00ff00;
+  animation: livePulse 2s ease-in-out infinite alternate;
+}
+
+.statusDevelopment .roomStatusBadge {
+  background: #ffaa00;
+}
+
+.statusPlanning .roomStatusBadge {
+  background: #0088ff;
+}
+
+@keyframes livePulse {
+  0% { box-shadow: 0 0 5px rgba(0, 255, 0, 0.5); }
+  100% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.8); }
+}
+
+.genreTag {
+  display: inline-block;
+  background: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+  padding: 2px 6px;
+  margin-right: 5px;
+  margin-bottom: 3px;
+  font-size: 8px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 170, 0, 0.3);
+}
+
+.genreMore {
+  color: rgba(255, 170, 0, 0.6);
   font-size: 8px;
 }
 
-.playheadMain {
+.statGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statIcon {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.roomInfoBtn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 102, 0, 0.5);
+  color: rgba(255, 102, 0, 0.7);
+  padding: 4px 8px;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.roomInfoBtn:hover {
+  border-color: #ff6600;
+  color: #ff6600;
+  background: rgba(255, 102, 0, 0.1);
+}
+
+.roomCardOverlay {
   position: absolute;
   top: 0;
-  height: 100%;
-  width: 2px;
-  background: #9D4EDD;
-  left: 0%;
-  transition: left 0.1s linear;
-  pointer-events: none;
-  box-shadow: 0 0 8px rgba(157, 78, 221, 0.6);
-  z-index: 10;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 102, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* ===== 시간 표시 ===== */
-.timeDisplay {
-  background: #111;
+.roomCard:hover .roomCardOverlay {
+  opacity: 1;
+}
+
+.joinPrompt {
   color: #fff;
-  font-size: 10px;
-  padding: 10px 20px;
-  border-top: 1px solid #FF5500;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.footerInfo {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 102, 0, 0.2);
+  font-size: 9px;
+  color: rgba(255, 102, 0, 0.5);
 }
 
-.timeCurrent {
-  color: #FF5500;
-}
-
-.timeSeparator {
-  color: #666;
-  margin: 0 5px;
-}
-
-.timeTotal {
-  color: #fff;
-}
-
-/* ===== 오디오 컨트롤 ===== */
-.simpleControls {
+.systemStatus {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
-  padding: 10px;
-  background: #111;
-  border-top: 1px solid #FF5500;
+  gap: 8px;
 }
 
-.playBtnMain {
-  width: 50px;
-  height: 50px;
+.statusIndicator {
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
   border-radius: 50%;
-  background: #FF5500;
-  border: none;
-  color: #000;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
+  animation: statusBlink 2s ease-in-out infinite;
 }
 
-.playBtnMain:hover {
-  background: #FF8800;
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(255, 85, 0, 0.6);
+@keyframes statusBlink {
+  0%, 90% { opacity: 1; }
+  95%, 100% { opacity: 0.3; }
 }
 
-.playBtnMain:active {
-  transform: scale(0.95);
+.lastUpdate {
+  letter-spacing: 1px;
 }
 
-.uploadBtnMain {
-  background: transparent;
-  color: #FF5500;
-  border: 1px solid #FF5500;
-  padding: 10px 20px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.uploadBtnMain:hover {
-  background: #FF5500;
-  color: #000;
-  box-shadow: 0 0 10px #FF5500;
-}
-
-/* ===== 채팅 섹션 ===== */
-.commentsSection {
-  background: #000;
-  border-top: 2px solid #FF5500;
-  padding: 10px;
-  margin-top: 0;
-  z-index: 1;
-}
-
-.commentInputArea {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  background: #000;
-  padding: 10px;
-  border-top: 1px solid #FF5500;
-}
-
-.commentTimeIndicator {
-  color: #fff;
-  font-size: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 5px 10px;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.commentTimeIndicator::before {
-  content: "🕐";
-}
-
-.commentInput {
-  flex: 1;
-  background: transparent;
-  border: 1px solid #FF5500;
-  color: #fff;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 8px;
-  padding: 10px;
-  min-width: 200px;
-}
-
-.commentInput:focus {
-  outline: none;
-  border-color: #FF8800;
-  box-shadow: 0 0 10px rgba(255, 85, 0, 0.5);
-}
-
-.commentBtn {
-  background: transparent;
-  color: #FF5500;
-  border: 1px solid #FF5500;
-  padding: 8px 12px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 7px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.commentBtn:hover {
-  background: #FF5500;
-  color: #000;
-}
-
-.commentBtn.voice {
-  color: #FF00FF;
-  border-color: #FF00FF;
-}
-
-.commentBtn.voice:hover {
-  background: #FF00FF;
-  color: #000;
-}
-
-.commentBtn.send {
-  color: #FFFF00;
-  border-color: #FFFF00;
-}
-
-.commentBtn.send:hover {
-  background: #FFFF00;
-  color: #000;
-}
-
-/* ===== 로딩 상태 ===== */
+/* ===== 로딩 스타일 ===== */
 .loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  color: #FF5500;
+  text-align: center;
+  padding: 40px;
+  color: #ff6600;
   font-size: 12px;
 }
 
@@ -658,94 +674,97 @@
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 2px solid #FF5500;
+  border: 2px solid rgba(255, 102, 0, 0.3);
   border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 1s linear infinite;
+  border-top-color: #ff6600;
+  animation: spin 1s ease-in-out infinite;
   margin-right: 10px;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ===== 에러 상태 ===== */
-.error {
-  color: #FF0000;
-  text-align: center;
+/* ===== 음악룸 플레이스홀더 스타일 ===== */
+.musicRoomPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
   padding: 20px;
-  border: 1px solid #FF0000;
-  background: rgba(255, 0, 0, 0.1);
-  margin: 20px;
 }
 
-/* ===== 반응형 디자인 ===== */
-@media (max-width: 768px) {
-  .navigationBar {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+.placeholderContent {
+  text-align: center;
+  background: rgba(255, 102, 0, 0.1);
+  border: 2px solid #ff6600;
+  padding: 40px;
+  max-width: 500px;
+}
 
-  .navBtn {
-    font-size: 7px;
-    padding: 6px 10px;
-  }
+.placeholderContent h2 {
+  color: #ff6600;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
 
-  .projectHeaderTitle {
-    font-size: 18px;
-  }
+.placeholderContent p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 30px;
+  font-size: 12px;
+}
 
-  .projectGrid {
-    grid-template-columns: 1fr;
-  }
+.backButton {
+  background: transparent;
+  border: 1px solid #ff6600;
+  color: #ff6600;
+  padding: 10px 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
 
-  .commentInputArea {
-    flex-direction: column;
-    gap: 8px;
-  }
+.backButton:hover {
+  background: #ff6600;
+  color: #000;
+}
 
-  .commentInput {
-    min-width: auto;
-    width: 100%;
-  }
+/* ===== 상태 배너 스타일 ===== */
+.errorBanner {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 0, 0, 0.9);
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 11px;
+  z-index: 1500;
+  animation: slideInRight 0.3s ease-out;
+}
 
-  .simpleControls {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+.statusBanner {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 170, 0, 0.9);
+  color: #000;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 11px;
+  z-index: 1500;
+  animation: slideInRight 0.3s ease-out;
+}
 
-  .playBtnMain {
-    width: 40px;
-    height: 40px;
-    font-size: 14px;
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
   }
-
-  .userInfo {
-    position: static;
-    margin: 10px 20px;
-    display: inline-block;
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
-@media (max-width: 480px) {
-  .mainContainer {
-    padding: 10px;
-  }
-
-  .addProjectSection {
-    padding: 20px 10px;
-  }
-
-  .projectCard {
-    padding: 15px;
-  }
-
-  .musicRoomHeader {
-    padding: 10px;
-  }
-
-  .waveformMainArea {
-    height: 200px;
-  }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

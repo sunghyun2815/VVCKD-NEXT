@@ -1,620 +1,288 @@
+// src/app/vlynk/project/page.tsx
 'use client';
 
-import React, { Suspense, useState, useEffect, useCallback } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
+import React, { useState, useCallback, useEffect } from 'react';
+import LoginModal from './components/LoginModal';
+import ProjectGrid from './components/ProjectGrid';
+import type { MusicRoom, ChatMessage, User } from './types/project.types';
+import { useProjectSocket } from './hooks/useProjectSocket';
+import styles from './project.module.css';
 
-// 전문가급 훅들
-import { useVlynkSocket } from './hooks/useVlynkSocket';
-import { useChat } from './hooks/useChat';
-
-// 전문가급 컴포넌트들
-import { ConnectionStatus } from './components/ConnectionStatus';
-
-// 타입들
-import type { VlynkUser, VlynkRoom } from './types/vlynk.types';
-
-// 스타일
-import styles from './vlynk.module.css';
-
-// 관리자 계정 목록
-const ADMIN_USERS = ['ADMIN', 'VVCKD', 'MANAGER'];
-
-// 로딩 컴포넌트 (VCKTOR 스타일)
-function VlynkLoading() {
-  return (
-    <div className={styles.loadingContainer}>
-      <div className={styles.loadingTerminal}>
-        <div className={styles.loadingTitle}>INITIALIZING VLYNK...</div>
-        <div className={styles.loadingBar}>
-          <div className={styles.loadingProgress} />
-        </div>
-        <div className={styles.loadingText}>
-          <div>Loading modules... OK</div>
-          <div>Establishing connections... OK</div>
-          <div>Preparing interface... <span className={styles.blinkCursor}>▌</span></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 에러 폴백 컴포넌트 (VCKTOR 스타일)
-function VlynkErrorBoundary({ error, resetErrorBoundary }: any) {
-  return (
-    <div className={styles.errorContainer}>
-      <div className={styles.errorTerminal}>
-        <div className={styles.errorTitle}>VLYNK SYSTEM ERROR</div>
-        <div className={styles.errorCode}>ERROR CODE: VLYNK_CRASH</div>
-        <pre className={styles.errorDetails}>
-          {error?.message || 'Unknown system error occurred'}
-        </pre>
-        <div className={styles.errorActions}>
-          <button className={styles.retryBtn} onClick={resetErrorBoundary}>
-            RESTART SYSTEM
-          </button>
-          <button 
-            className={styles.reportBtn} 
-            onClick={() => console.error('VLYNK Error:', error)}
-          >
-            REPORT BUG
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 로그인 모달 컴포넌트 (VCKTOR 스타일)
-interface LoginModalProps {
-  onLogin: (user: VlynkUser) => void;
-}
-
-function LoginModal({ onLogin }: LoginModalProps) {
-  const [username, setUsername] = useState('');
-  const [isLogging, setIsLogging] = useState(false);
-  const { emit, isConnected } = useVlynkSocket();
-
-  const handleLogin = useCallback(async () => {
-    const trimmedUsername = username.trim().toUpperCase();
-    if (!trimmedUsername || !isConnected) return;
-
-    setIsLogging(true);
-    
-    try {
-      // 서버에 사용자 등록
-      const success = emit('user join', {
-        username: trimmedUsername,
-        role: ADMIN_USERS.includes(trimmedUsername) ? 'admin' : 'member'
-      });
-
-      if (success) {
-        const user: VlynkUser = {
-          id: `user_${Date.now()}`,
-          username: trimmedUsername,
-          role: ADMIN_USERS.includes(trimmedUsername) ? 'admin' : 'member',
-          status: 'online',
-          joinedAt: new Date(),
-          lastActivity: new Date(),
-        };
-
-        onLogin(user);
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-    } finally {
-      setIsLogging(false);
-    }
-  }, [username, isConnected, emit, onLogin]);
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleLogin();
-    }
-  };
-
-  return (
-    <div className={styles.loginModal}>
-      <div className={styles.loginTerminal}>
-        <div className={styles.loginTitle}>VLYNK ACCESS TERMINAL</div>
-        <div className={styles.loginSubtitle}>ENTER USER CREDENTIALS</div>
-        
-        <div className={styles.connectionIndicator}>
-          <ConnectionStatus />
-        </div>
-
-        <input
-          type="text"
-          className={styles.loginInput}
-          placeholder="USERNAME"
-          maxLength={20}
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          onKeyPress={handleKeyPress}
-          disabled={!isConnected || isLogging}
-          autoFocus
-        />
-        
-        <button 
-          className={styles.loginBtn}
-          onClick={handleLogin}
-          disabled={!isConnected || !username.trim() || isLogging}
-        >
-          {isLogging ? 'CONNECTING...' : 'INITIALIZE CONNECTION'}
-        </button>
-
-        {!isConnected && (
-          <div className={styles.loginWarning}>
-            ⚠️ Waiting for server connection...
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// 사용자 패널 컴포넌트 (VCKTOR의 topCoinBar 스타일)
-interface UserPanelProps {
-  user: VlynkUser;
-  onLogout: () => void;
-  onCreateRoom?: () => void;
-}
-
-function UserPanel({ user, onLogout, onCreateRoom }: UserPanelProps) {
-  const getRoleColor = () => {
-    switch (user.role) {
-      case 'admin': return styles.adminRole;
-      case 'member': return styles.memberRole;
-      case 'guest': return styles.guestRole;
-      default: return styles.memberRole;
-    }
-  };
-
-  const getRoleText = () => {
-    switch (user.role) {
-      case 'admin': return '[ADMIN]';
-      case 'member': return '[MEMBER]';
-      case 'guest': return '[GUEST]';
-      default: return '[USER]';
-    }
-  };
-
-  return (
-    <div className={styles.userPanel}>
-      <div className={styles.userInfo}>
-        <div className={styles.username}>{user.username}</div>
-        <div className={`${styles.userRole} ${getRoleColor()}`}>
-          {getRoleText()}
-        </div>
-        <div className={styles.userStatus} data-status={user.status}>
-          {user.status === 'online' && '🟢 ONLINE'}
-          {user.status === 'away' && '🟡 AWAY'}
-          {user.status === 'offline' && '⚪ OFFLINE'}
-        </div>
-      </div>
-      
-      <div className={styles.userActions}>
-        {user.role === 'admin' && onCreateRoom && (
-          <button className={styles.createRoomBtn} onClick={onCreateRoom}>
-            + CREATE ROOM
-          </button>
-        )}
-        <button className={styles.logoutBtn} onClick={onLogout}>
-          LOGOUT
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// 방 목록 컴포넌트 (기본 구현)
-interface RoomGridProps {
-  rooms: VlynkRoom[];
-  onRoomSelect: (room: VlynkRoom) => void;
-  currentUser: VlynkUser;
-}
-
-function RoomGrid({ rooms, onRoomSelect, currentUser }: RoomGridProps) {
-  const { emit } = useVlynkSocket();
-  const [roomList, setRoomList] = useState<any[]>([]);
-
-  // 방 목록 로드
-  useEffect(() => {
-    emit('get room list', {});
-  }, [emit]);
-
-  // 서버에서 방 목록 수신
-  useEffect(() => {
-    // 실제 구현에서는 useChat 훅에서 처리
-  }, []);
-
-  if (rooms.length === 0) {
-    return (
-      <div className={styles.emptyRooms}>
-        <div className={styles.emptyTitle}>NO ROOMS AVAILABLE</div>
-        <div className={styles.emptySubtitle}>Create the first room to get started!</div>
-      </div>
-    );
+// 더미 데이터 (개발용)
+const DUMMY_ROOMS: MusicRoom[] = [
+  {
+    id: 'room-1',
+    name: 'Lo-Fi Study Session',
+    description: 'Chill beats for coding and studying',
+    genres: ['lo-fi', 'chill', 'study'],
+    maxUsers: 20,
+    participants: 12,
+    musicCount: 45,
+    status: 'active',
+    createdAt: '2024-01-15T10:30:00Z',
+    updatedAt: '2024-01-15T15:20:00Z',
+    createdBy: 'user123'
+  },
+  {
+    id: 'room-2',
+    name: 'Electronic Playground',
+    description: 'Experimental electronic music collaboration',
+    genres: ['electronic', 'experimental', 'techno'],
+    maxUsers: 15,
+    participants: 8,
+    musicCount: 32,
+    status: 'active',
+    createdAt: '2024-01-14T14:20:00Z',
+    updatedAt: '2024-01-15T12:10:00Z',
+    createdBy: 'producer_alex'
+  },
+  {
+    id: 'room-3',
+    name: 'Ambient Soundscapes',
+    description: 'Creating atmospheric music together',
+    genres: ['ambient', 'atmospheric', 'drone'],
+    maxUsers: 10,
+    participants: 3,
+    musicCount: 18,
+    status: 'development',
+    createdAt: '2024-01-13T09:15:00Z',
+    updatedAt: '2024-01-15T11:30:00Z',
+    createdBy: 'ambient_lover'
+  },
+  {
+    id: 'room-4',
+    name: 'Hip-Hop Workshop',
+    description: 'Beat making and rap collaboration',
+    genres: ['hip-hop', 'rap', 'beats'],
+    maxUsers: 25,
+    participants: 0,
+    musicCount: 0,
+    status: 'planning',
+    createdAt: '2024-01-15T16:00:00Z',
+    updatedAt: '2024-01-15T16:00:00Z',
+    createdBy: 'beat_master'
   }
+];
 
-  return (
-    <div className={styles.roomGrid}>
-      <div className={styles.roomColumns}>
-        <div className={styles.roomColumn}>
-          {rooms.filter((_, i) => i % 2 === 0).map((room) => (
-            <div
-              key={room.id}
-              className={styles.roomCard}
-              onClick={() => onRoomSelect(room)}
-            >
-              <div className={styles.roomHeader}>
-                <span className={styles.roomName}>
-                  {room.name}
-                  {room.creator === currentUser.username && ' 👑'}
-                  {room.hasPassword && ' 🔒'}
-                </span>
-                <span className={styles.roomTime}>now</span>
-              </div>
-              <div className={styles.roomPreview}>
-                [System] 방에 {room.participants.length}명이 있습니다.
-                {room.creator === currentUser.username && '\n[Owner] 당신이 만든 방입니다.'}
-                {room.hasPassword && room.creator !== currentUser.username && '\n[Private] 비밀번호로 보호된 방입니다.'}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className={styles.roomColumn}>
-          {rooms.filter((_, i) => i % 2 === 1).map((room) => (
-            <div
-              key={room.id}
-              className={styles.roomCard}
-              onClick={() => onRoomSelect(room)}
-            >
-              <div className={styles.roomHeader}>
-                <span className={styles.roomName}>
-                  {room.name}
-                  {room.creator === currentUser.username && ' 👑'}
-                  {room.hasPassword && ' 🔒'}
-                </span>
-                <span className={styles.roomTime}>now</span>
-              </div>
-              <div className={styles.roomPreview}>
-                [System] 방에 {room.participants.length}명이 있습니다.
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+export default function ProjectPage() {
+  // ===== 상태 관리 =====
+  const [currentUser, setCurrentUser] = useState<string>('');
+  const [showLoginModal, setShowLoginModal] = useState(true);
+  const [rooms, setRooms] = useState<MusicRoom[]>(DUMMY_ROOMS);
+  const [currentRoom, setCurrentRoom] = useState<MusicRoom | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-// 채팅 룸 컴포넌트 (기본 구현)
-interface ChatRoomProps {
-  room: VlynkRoom;
-  currentUser: VlynkUser;
-  onLeaveRoom: () => void;
-}
+  // Socket.IO 훅 사용
+  const {
+    socket,
+    isConnected,
+    connectedUsers,
+    error: socketError
+  } = useProjectSocket(currentUser);
 
-function ChatRoom({ room, currentUser, onLeaveRoom }: ChatRoomProps) {
-  const { 
-    messages, 
-    typingUsers, 
-    roomUserCount, 
-    roomMaxUsers,
-    sendMessage,
-    deleteMessage,
-    startTyping,
-    stopTyping,
-    handleScroll,
-    messagesEndRef
-  } = useChat();
-
-  const [messageInput, setMessageInput] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [downloadDisabled, setDownloadDisabled] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // 메시지 전송
-  const handleSendMessage = useCallback(async () => {
-    if (!messageInput.trim() && !selectedFile) return;
-
-    let fileData = null;
-
-    // 파일 업로드 처리
-    if (selectedFile) {
-      try {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('downloadDisabled', downloadDisabled.toString());
-
-        const response = await fetch('/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (response.ok) {
-          fileData = await response.json();
-        } else {
-          throw new Error('Upload failed');
-        }
-      } catch (error) {
-        console.error('File upload error:', error);
-        alert('파일 업로드에 실패했습니다.');
-        return;
-      }
-    }
-
-    // 메시지 전송
-    const success = await sendMessage(messageInput, { fileData });
-    
-    if (success) {
-      // 입력 초기화
-      setMessageInput('');
-      setSelectedFile(null);
-      setDownloadDisabled(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  }, [messageInput, selectedFile, downloadDisabled, sendMessage]);
-
-  // 타이핑 처리
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessageInput(e.target.value);
-    startTyping();
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
-  };
-
-  return (
-    <div className={styles.chatRoom}>
-      {/* 채팅 헤더 */}
-      <div className={styles.chatHeader}>
-        <div className={styles.roomInfo}>
-          <span className={styles.roomName}>ROOM: {room.name}</span>
-          <span className={styles.userCount}>
-            USERS: {roomUserCount}{roomMaxUsers ? `/${roomMaxUsers}` : ''}
-          </span>
-        </div>
-        <button className={styles.leaveBtn} onClick={onLeaveRoom}>
-          LEAVE ROOM
-        </button>
-      </div>
-
-      {/* 메시지 영역 */}
-      <div className={styles.messagesArea} onScroll={handleScroll}>
-        <div className={styles.messagesList}>
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`${styles.message} ${message.username === currentUser.username ? styles.own : ''}`}
-            >
-              <div className={styles.messageHeader}>
-                <span className={styles.messageUser}>USER: {message.username}</span>
-                <div className={styles.messageActions}>
-                  <span className={styles.messageTime}>
-                    TIME: {new Date(message.timestamp).toLocaleTimeString()}
-                  </span>
-                  {message.username === currentUser.username && (
-                    <button
-                      className={styles.deleteBtn}
-                      onClick={() => deleteMessage(message.id)}
-                    >
-                      DEL
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className={styles.messageContent}>
-                {message.content}
-              </div>
-              {message.fileData && (
-                <div className={styles.messageFile}>
-                  {/* 파일 표시 로직 */}
-                  <div className={styles.fileInfo}>
-                    📎 {message.fileData.originalname}
-                  </div>
-                  {!message.fileData.downloadDisabled && (
-                    <a
-                      href={message.fileData.url}
-                      className={styles.downloadLink}
-                      download={message.fileData.originalname}
-                    >
-                      DOWNLOAD
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* 타이핑 인디케이터 */}
-        {typingUsers.length > 0 && (
-          <div className={styles.typingIndicator}>
-            {typingUsers.join(', ')} is typing...
-          </div>
-        )}
-      </div>
-
-      {/* 입력 영역 */}
-      <div className={styles.inputArea}>
-        <div className={styles.inputLine}>
-          <span className={styles.prompt}>MSG@VLYNK:~$</span>
-          <input
-            type="text"
-            className={styles.messageInput}
-            placeholder="ENTER MESSAGE..."
-            value={messageInput}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-          />
-          <div className={styles.fileSection}>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              accept="image/*,audio/*"
-              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-            />
-            <button
-              className={styles.fileBtn}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              FILE
-            </button>
-            {selectedFile && (
-              <div className={styles.fileOptions}>
-                <div className={styles.filePreview}>
-                  📎 {selectedFile.name}
-                </div>
-                <label className={styles.downloadOption}>
-                  <input
-                    type="checkbox"
-                    checked={downloadDisabled}
-                    onChange={(e) => setDownloadDisabled(e.target.checked)}
-                  />
-                  DISABLE DOWNLOAD
-                </label>
-              </div>
-            )}
-            <button className={styles.sendBtn} onClick={handleSendMessage}>
-              SEND
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 메인 VLYNK 페이지 컴포넌트
-export default function VlynkPage() {
-  const { isConnected, isInitialized } = useVlynkSocket();
-  const { currentRoom, joinRoom, leaveRoom } = useChat();
-  
-  // 상태 관리
-  const [currentUser, setCurrentUser] = useState<VlynkUser | null>(null);
-  const [rooms, setRooms] = useState<VlynkRoom[]>([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // ===== 이벤트 핸들러들 =====
 
   // 로그인 처리
-  const handleLogin = useCallback((user: VlynkUser) => {
-    setCurrentUser(user);
-    setIsAuthenticated(true);
-    console.log('🔐 User logged in:', user);
+  const handleLogin = useCallback((username: string) => {
+    console.log('🔐 User login attempt:', username);
+    setCurrentUser(username);
+    setShowLoginModal(false);
+    
+    // 실제 서버 연결 시뮬레이션
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      console.log('✅ Login successful, user connected to VLYNK');
+    }, 1500);
   }, []);
 
-  // 로그아웃 처리
-  const handleLogout = useCallback(() => {
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    setRooms([]);
-    if (currentRoom) {
-      leaveRoom();
-    }
-    console.log('🔐 User logged out');
-  }, [currentRoom, leaveRoom]);
-
-  // 방 선택 처리
-  const handleRoomSelect = useCallback((room: VlynkRoom) => {
-    const password = room.hasPassword && room.creator !== currentUser?.username 
-      ? prompt(`방 "${room.name}"의 비밀번호를 입력하세요:`)
-      : undefined;
+  // 방 참가 처리
+  const handleJoinRoom = useCallback((roomId: string) => {
+    console.log('🚪 Attempting to join room:', roomId);
     
-    if (room.hasPassword && room.creator !== currentUser?.username && password === null) {
-      return; // 사용자가 취소함
-    }
-    
-    joinRoom(room, password);
-  }, [currentUser, joinRoom]);
-
-  // 방 생성 처리
-  const handleCreateRoom = useCallback(() => {
-    if (!currentUser || currentUser.role !== 'admin') return;
-
-    const roomName = prompt('방 이름을 입력하세요:');
-    if (!roomName?.trim()) return;
-
-    const maxUsers = prompt('최대 인원 수를 입력하세요 (1-100):');
-    const maxUsersNum = parseInt(maxUsers || '20');
-
-    if (maxUsersNum < 1 || maxUsersNum > 100) {
-      alert('올바른 인원 수를 입력하세요 (1-100)');
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) {
+      console.error('❌ Room not found:', roomId);
       return;
     }
 
-    const usePassword = confirm('이 방에 비밀번호를 설정하시겠습니까?');
-    const password = usePassword ? prompt('방 비밀번호를 입력하세요:') : null;
-
-    if (usePassword && !password?.trim()) {
-      alert('비밀번호를 입력해주세요.');
+    if (room.participants >= room.maxUsers) {
+      alert('이 방은 가득 찼습니다.');
       return;
     }
 
-    // TODO: 방 생성 API 호출
-    console.log('🏠 Creating room:', { roomName, maxUsersNum, password });
-  }, [currentUser]);
+    setIsLoading(true);
+    
+    // Socket.IO를 통한 방 참가 (실제 구현)
+    if (socket && isConnected) {
+      socket.emit('join music room', { roomId });
+    }
 
-  // 로그인 필요 시 로그인 모달 표시
-  if (!isAuthenticated || !currentUser) {
-    return <LoginModal onLogin={handleLogin} />;
-  }
+    // 임시 시뮬레이션
+    setTimeout(() => {
+      setCurrentRoom(room);
+      
+      // 참가자 수 업데이트
+      setRooms(prevRooms => 
+        prevRooms.map(r => 
+          r.id === roomId 
+            ? { ...r, participants: r.participants + 1 }
+            : r
+        )
+      );
+      
+      setIsLoading(false);
+      console.log('✅ Successfully joined room:', room.name);
+      
+      // TODO: 여기서 MusicRoomView 컴포넌트로 전환
+      alert(`"${room.name}" 방에 입장했습니다!\n\n(MusicRoomView 컴포넌트를 다음에 구현할 예정)`);
+    }, 1000);
+  }, [rooms, socket, isConnected]);
 
-  // 초기화 중일 때 로딩 표시
-  if (!isInitialized) {
-    return <VlynkLoading />;
-  }
+  // 새 방 생성 처리
+  const handleCreateRoom = useCallback((roomName: string) => {
+    console.log('🆕 Creating new room:', roomName);
+    
+    setIsLoading(true);
+    
+    const newRoom: MusicRoom = {
+      id: `room-${Date.now()}`,
+      name: roomName,
+      description: `Created by ${currentUser}`,
+      genres: [],
+      maxUsers: 20,
+      participants: 1,
+      musicCount: 0,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: currentUser
+    };
+
+    // Socket.IO를 통한 방 생성 (실제 구현)
+    if (socket && isConnected) {
+      socket.emit('create music room', newRoom);
+    }
+
+    // 임시 시뮬레이션
+    setTimeout(() => {
+      setRooms(prevRooms => [newRoom, ...prevRooms]);
+      setCurrentRoom(newRoom);
+      setIsLoading(false);
+      
+      console.log('✅ Room created successfully:', newRoom);
+      alert(`"${roomName}" 방이 생성되었습니다!`);
+    }, 1000);
+  }, [currentUser, socket, isConnected]);
+
+  // 방 정보 보기 처리
+  const handleViewRoomInfo = useCallback((roomId: string) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) return;
+
+    alert(`
+🎵 Room Information
+
+Name: ${room.name}
+Description: ${room.description}
+Genres: ${room.genres.join(', ') || 'None'}
+Participants: ${room.participants}/${room.maxUsers}
+Music Tracks: ${room.musicCount}
+Status: ${room.status.toUpperCase()}
+Created: ${new Date(room.createdAt).toLocaleString()}
+Creator: ${room.createdBy}
+    `);
+  }, [rooms]);
+
+  // ===== 효과 =====
+
+  // Socket.IO 연결 상태 모니터링
+  useEffect(() => {
+    if (socketError) {
+      console.error('❌ Socket error:', socketError);
+    }
+    
+    if (isConnected) {
+      console.log('✅ Socket connected successfully');
+    }
+  }, [isConnected, socketError]);
+
+  // 방 목록 업데이트 (Socket.IO 이벤트)
+  useEffect(() => {
+    if (socket && isConnected) {
+      const handleRoomList = (serverRooms: MusicRoom[]) => {
+        console.log('📝 Received room list from server:', serverRooms);
+        setRooms(serverRooms);
+      };
+
+      const handleRoomCreated = (newRoom: MusicRoom) => {
+        console.log('🆕 New room created:', newRoom);
+        setRooms(prevRooms => [newRoom, ...prevRooms]);
+      };
+
+      socket.on('music room list', handleRoomList);
+      socket.on('music room created', handleRoomCreated);
+
+      return () => {
+        socket.off('music room list', handleRoomList);
+        socket.off('music room created', handleRoomCreated);
+      };
+    }
+  }, [socket, isConnected]);
+
+  // ===== 렌더링 =====
 
   return (
-    <ErrorBoundary FallbackComponent={VlynkErrorBoundary}>
-      <div className={styles.container}>
-        {/* 연결 상태 표시 (우상단 고정) */}
-        <ConnectionStatus showLatency={true} />
+    <div className={styles.container}>
+      {/* 로그인 모달 */}
+      <LoginModal
+        onLogin={handleLogin}
+        isVisible={showLoginModal}
+      />
 
-        {/* 사용자 패널 (좌상단 고정) */}
-        <UserPanel
-          user={currentUser}
-          onLogout={handleLogout}
-          onCreateRoom={currentUser.role === 'admin' ? handleCreateRoom : undefined}
-        />
+      {/* 메인 콘텐츠 */}
+      {!showLoginModal && (
+        <>
+          {currentRoom ? (
+            // TODO: MusicRoomView 컴포넌트 (다음 단계에서 구현)
+            <div className={styles.musicRoomPlaceholder}>
+              <div className={styles.placeholderContent}>
+                <h2>🎵 Music Room: {currentRoom.name}</h2>
+                <p>MusicRoomView 컴포넌트가 여기에 들어갑니다.</p>
+                <button 
+                  onClick={() => setCurrentRoom(null)}
+                  className={styles.backButton}
+                >
+                  ← BACK TO ROOM LIST
+                </button>
+              </div>
+            </div>
+          ) : (
+            // 방 목록 그리드
+            <ProjectGrid
+              rooms={rooms}
+              onJoinRoom={handleJoinRoom}
+              onCreateRoom={handleCreateRoom}
+              onViewRoomInfo={handleViewRoomInfo}
+              currentUser={currentUser}
+              isLoading={isLoading}
+            />
+          )}
 
-        {/* 메인 콘텐츠 */}
-        <div className={styles.mainContent}>
-          <Suspense fallback={<VlynkLoading />}>
-            {currentRoom ? (
-              <ChatRoom
-                room={currentRoom}
-                currentUser={currentUser}
-                onLeaveRoom={leaveRoom}
-              />
-            ) : (
-              <>
-                <div className={styles.welcomeHeader}>
-                  <h1>VLYNK NETWORK <span className={styles.blinkCursor}>▌</span></h1>
-                  <div className={styles.welcomeSubtitle}>
-                    Professional Talent Network & Communication Platform
-                  </div>
-                </div>
-                
-                <RoomGrid
-                  rooms={rooms}
-                  onRoomSelect={handleRoomSelect}
-                  currentUser={currentUser}
-                />
-              </>
-            )}
-          </Suspense>
-        </div>
-
-        {/* CRT 스캔라인 효과 */}
-        <div className={styles.crtScanlines} />
-      </div>
-    </ErrorBoundary>
+          {/* 연결 상태 표시 */}
+          {socketError && (
+            <div className={styles.errorBanner}>
+              ⚠️ Connection Error: {socketError}
+            </div>
+          )}
+          
+          {!isConnected && currentUser && (
+            <div className={styles.statusBanner}>
+              🔄 Connecting to server...
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }

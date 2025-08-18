@@ -1,0 +1,280 @@
+/* src/app/vlynk/project/waveform.module.css */
+
+/* ===== 메인 컨테이너 ===== */
+.waveformContainer {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 102, 0, 0.3);
+  margin: 20px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+/* ===== 헤더 ===== */
+.waveformHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(255, 102, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 102, 0, 0.3);
+}
+
+.waveformTitle {
+  font-size: 11px;
+  color: #ff6600;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+.waveformControls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.commentLegend {
+  display: flex;
+  gap: 15px;
+  font-size: 9px;
+}
+
+.textCommentLegend {
+  color: #00ffff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.voiceCommentLegend {
+  color: #ff00ff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== 캔버스 래퍼 ===== */
+.canvasWrapper {
+  flex: 1;
+  position: relative;
+  background: #000;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.waveformCanvas {
+  width: 100%;
+  height: 150px;
+  border: none;
+  display: block;
+}
+
+/* ===== 댓글 툴팁 ===== */
+.commentTooltip {
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid #ff6600;
+  border-radius: 4px;
+  padding: 8px 10px;
+  max-width: 200px;
+  backdrop-filter: blur(5px);
+  pointer-events: none;
+}
+
+.tooltipHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 9px;
+}
+
+.commentUser {
+  color: #ffaa00;
+  font-weight: bold;
+}
+
+.commentTime {
+  color: #ff6600;
+  font-family: 'Courier New', monospace;
+}
+
+.tooltipMessage {
+  font-size: 10px;
+  color: #fff;
+  line-height: 1.3;
+  word-wrap: break-word;
+}
+
+/* ===== 푸터 ===== */
+.waveformFooter {
+  padding: 8px 15px;
+  background: rgba(255, 102, 0, 0.05);
+  border-top: 1px solid rgba(255, 102, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.waveformStats {
+  display: flex;
+  gap: 15px;
+  font-size: 9px;
+  color: rgba(255, 102, 0, 0.7);
+  font-family: 'Courier New', monospace;
+}
+
+.waveformHint {
+  font-size: 8px;
+  color: rgba(255, 102, 0, 0.5);
+  font-style: italic;
+}
+
+/* ===== 로딩 상태 ===== */
+.loadingWaveform {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  gap: 20px;
+}
+
+.loadingBars {
+  display: flex;
+  gap: 2px;
+  align-items: end;
+  height: 40px;
+}
+
+.loadingBar {
+  width: 3px;
+  background: #ff6600;
+  border-radius: 1px;
+  animation: loadingWave 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingWave {
+  0%, 100% {
+    height: 5px;
+    opacity: 0.3;
+  }
+  50% {
+    height: 35px;
+    opacity: 1;
+  }
+}
+
+.loadingText {
+  font-size: 11px;
+  color: #ff6600;
+  letter-spacing: 2px;
+  animation: loadingTextPulse 2s ease-in-out infinite;
+}
+
+@keyframes loadingTextPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ===== 웨이브폼 없음 상태 ===== */
+.noWaveformMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  color: rgba(255, 102, 0, 0.4);
+}
+
+.waveformIcon {
+  font-size: 36px;
+  margin-bottom: 10px;
+  opacity: 0.3;
+}
+
+.waveformText {
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+/* ===== 반응형 디자인 ===== */
+@media (max-width: 768px) {
+  .waveformHeader {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .waveformFooter {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .waveformStats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .commentLegend {
+    justify-content: center;
+  }
+  
+  .waveformCanvas {
+    height: 120px;
+  }
+  
+  .canvasWrapper {
+    min-height: 120px;
+  }
+  
+  .commentTooltip {
+    max-width: 150px;
+    font-size: 9px;
+  }
+  
+  .tooltipHeader {
+    font-size: 8px;
+  }
+  
+  .tooltipMessage {
+    font-size: 9px;
+  }
+}
+
+/* ===== 스크롤바 스타일 (필요시) ===== */
+.waveformContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.waveformContainer::-webkit-scrollbar-track {
+  background: rgba(255, 102, 0, 0.1);
+}
+
+.waveformContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 102, 0, 0.5);
+  border-radius: 3px;
+}
+
+.waveformContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 102, 0, 0.7);
+}
+
+/* ===== 접근성 향상 ===== */
+.waveformCanvas:focus {
+  outline: 2px solid #ff6600;
+  outline-offset: 2px;
+}
+
+/* ===== 고해상도 디스플레이 지원 ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .waveformCanvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}

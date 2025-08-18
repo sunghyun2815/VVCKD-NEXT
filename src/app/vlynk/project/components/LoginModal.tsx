@@ -1,362 +1,158 @@
-// src/app/vlynk/project/types/project.types.ts
-// ✨ 전문가급 타입 시스템 - 모든 컴포넌트의 기반
+// src/app/vlynk/project/components/LoginModal.tsx
+'use client';
 
-// ===== 기본 사용자 타입 =====
-export interface User {
-  id: string;
-  username: string;
-  role: 'admin' | 'user' | 'guest';
-  joinedAt: string;
-}
+import React, { useState, useEffect, useRef } from 'react';
+import type { LoginModalProps } from '../types/project.types';
+import styles from '../project.module.css';
 
-// ===== 음악 룸 타입 =====
-export interface MusicRoom {
-  id: string;
-  name: string;
-  description: string;
-  genres: string[];
-  maxUsers: number;
-  participants: number;
-  musicCount: number;
-  status: 'active' | 'development' | 'planning';
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: string;
-}
+export default function LoginModal({ onLogin, isVisible }: LoginModalProps) {
+  const [username, setUsername] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
-// ===== 오디오 파일 타입 =====
-export interface AudioFile {
-  id: string;
-  name: string;
-  url: string;
-  blob?: Blob;
-  duration: number;
-  uploader: string;
-  uploadedAt: string;
-  size: number;
-  type: string;
-}
+  // 모달이 열릴 때 입력 필드에 포커스
+  useEffect(() => {
+    if (isVisible && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isVisible]);
 
-// ===== 채팅 메시지 타입 =====
-export interface ChatMessage {
-  id: string;
-  roomId: string;
-  user: string;
-  message: string;
-  timestamp: number; // 오디오 재생 시간
-  time: string; // 실제 시간
-  audioUrl?: string;
-  type: 'text' | 'voice' | 'system';
-}
+  // 로그인 처리
+  const handleLogin = async () => {
+    const trimmedUsername = username.trim();
+    
+    if (!trimmedUsername) {
+      setError('사용자명을 입력해주세요.');
+      return;
+    }
 
-// ===== 웨이브폼 데이터 타입 =====
-export interface WaveformData {
-  data: Float32Array;
-  step: number;
-  amp: number;
-  width: number;
-  height: number;
-  isDummy?: boolean;
-  dummyData?: number[];
-}
+    if (trimmedUsername.length < 2) {
+      setError('사용자명은 2글자 이상이어야 합니다.');
+      return;
+    }
 
-// ===== 오디오 플레이어 상태 타입 =====
-export interface AudioPlayerState {
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  volume: number;
-  isLoading: boolean;
-  error: string | null;
-}
+    if (trimmedUsername.length > 20) {
+      setError('사용자명은 20글자를 초과할 수 없습니다.');
+      return;
+    }
 
-// ===== Socket.IO 이벤트 타입 =====
-export interface ServerToClientEvents {
-  // 룸 관련
-  'music room list': (rooms: MusicRoom[]) => void;
-  'music room created': (room: MusicRoom) => void;
-  'music room updated': (room: MusicRoom) => void;
-  'music room deleted': (roomId: string) => void;
-  'music room join success': (data: { roomId: string; room: MusicRoom; users: User[] }) => void;
-  'music room join error': (data: { message: string }) => void;
-  'music room user joined': (user: User) => void;
-  'music room user left': (userId: string) => void;
-  
-  // 채팅 관련
-  'music chat message': (message: ChatMessage) => void;
-  'music voice message': (message: ChatMessage) => void;
-  
-  // 오디오 관련
-  'audio file uploaded': (file: AudioFile) => void;
-  'audio file deleted': (fileId: string) => void;
-  'audio playback sync': (data: { time: number; isPlaying: boolean }) => void;
-}
+    // 특수문자 검증 (영문, 숫자, 한글, 언더스코어만 허용)
+    const validPattern = /^[a-zA-Z0-9가-힣_]+$/;
+    if (!validPattern.test(trimmedUsername)) {
+      setError('사용자명에는 특수문자를 사용할 수 없습니다.');
+      return;
+    }
 
-export interface ClientToServerEvents {
-  // 룸 관리
-  'get music room list': () => void;
-  'create music room': (data: Omit<MusicRoom, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  'join music room': (data: { roomId: string }) => void;
-  'leave music room': (data: { roomId: string }) => void;
-  
-  // 채팅
-  'music chat message': (message: Omit<ChatMessage, 'id'>) => void;
-  'music voice message': (message: Omit<ChatMessage, 'id'>) => void;
-  
-  // 오디오
-  'upload audio file': (data: { file: ArrayBuffer; fileName: string; roomId: string }) => void;
-  'sync audio playback': (data: { roomId: string; time: number; isPlaying: boolean }) => void;
-}
+    setIsLoading(true);
+    setError('');
 
-// ===== 컴포넌트 Props 타입들 =====
+    try {
+      // 로그인 처리 (부모 컴포넌트로 전달)
+      onLogin(trimmedUsername);
+    } catch (err) {
+      setError('로그인에 실패했습니다. 다시 시도해주세요.');
+      setIsLoading(false);
+    }
+  };
 
-// LoginModal Props
-export interface LoginModalProps {
-  onLogin: (username: string) => void;
-  isVisible: boolean;
-}
+  // Enter 키 처리
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading) {
+      handleLogin();
+    }
+  };
 
-// ProjectGrid Props
-export interface ProjectGridProps {
-  rooms: MusicRoom[];
-  onJoinRoom: (roomId: string) => void;
-  onCreateRoom: (roomName: string) => void;
-  onViewRoomInfo: (roomId: string) => void;
-  currentUser: string;
-  isLoading?: boolean;
-}
+  // 모달이 보이지 않을 때는 렌더링하지 않음
+  if (!isVisible) return null;
 
-// MusicRoom Props
-export interface MusicRoomProps {
-  room: MusicRoom | null;
-  currentUser: string;
-  onLeaveRoom: () => void;
-  onSendMessage: (message: Omit<ChatMessage, 'id' | 'time'>) => void;
-  onSendVoiceMessage: (audioBlob: Blob, timestamp: number) => void;
-  isConnected: boolean;
-}
-
-// AudioControls Props
-export interface AudioControlsProps {
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  onPlay: () => void;
-  onPause: () => void;
-  onSeek: (time: number) => void;
-  onUpload: (file: File) => void;
-  onDownload: () => void;
-  canDownload: boolean;
-  isLoading?: boolean;
-}
-
-// WaveformVisualization Props
-export interface WaveformVisualizationProps {
-  audioFile: AudioFile | null;
-  currentTime: number;
-  duration: number;
-  onSeek: (time: number) => void;
-  width?: number;
-  height?: number;
-  className?: string;
-}
-
-// ChatSection Props
-export interface ChatSectionProps {
-  messages: ChatMessage[];
-  currentUser: string;
-  currentTime: number;
-  onSendMessage: (message: string) => void;
-  onSendVoiceMessage: (audioBlob: Blob) => void;
-  onSeekToTime: (time: number) => void;
-  isConnected: boolean;
-}
-
-// VoiceRecorder Props
-export interface VoiceRecorderProps {
-  onRecordingComplete: (audioBlob: Blob) => void;
-  isDisabled?: boolean;
-  maxDuration?: number; // 초 단위
-}
-
-// ===== 훅 반환 타입들 =====
-
-// useProjectSocket 반환 타입
-export interface UseProjectSocketReturn {
-  socket: any; // Socket 타입은 실제 구현에서 정의
-  isConnected: boolean;
-  rooms: MusicRoom[];
-  currentRoom: MusicRoom | null;
-  connectedUsers: User[];
-  joinRoom: (roomId: string) => void;
-  leaveRoom: () => void;
-  createRoom: (roomData: Omit<MusicRoom, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  sendMessage: (message: Omit<ChatMessage, 'id' | 'time'>) => void;
-  sendVoiceMessage: (audioBlob: Blob, timestamp: number) => void;
-  error: string | null;
-}
-
-// useAudioPlayer 반환 타입
-export interface UseAudioPlayerReturn {
-  // 상태
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  volume: number;
-  isLoading: boolean;
-  error: string | null;
-  currentFile: AudioFile | null;
-  
-  // 메서드
-  play: () => Promise<void>;
-  pause: () => void;
-  stop: () => void;
-  seek: (time: number) => void;
-  setVolume: (volume: number) => void;
-  loadFile: (file: File, uploader: string) => void;
-  downloadFile: () => void;
-  
-  // 유틸리티
-  formatTime: (seconds: number) => string;
-  getProgressPercentage: () => number;
-  
-  // Ref
-  audioRef: React.RefObject<HTMLAudioElement>;
-}
-
-// useWaveform 반환 타입
-export interface UseWaveformReturn {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
-  waveformData: WaveformData | null;
-  isGenerating: boolean;
-  error: string | null;
-  generateWaveform: (file: File) => Promise<void>;
-  updateProgress: (progressPercent: number) => void;
-  handleCanvasClick: (event: React.MouseEvent<HTMLCanvasElement>) => number;
-}
-
-// useVoiceRecorder 반환 타입
-export interface UseVoiceRecorderReturn {
-  isRecording: boolean;
-  isSupported: boolean;
-  error: string | null;
-  duration: number;
-  startRecording: () => Promise<void>;
-  stopRecording: () => void;
-  cancelRecording: () => void;
-}
-
-// ===== 유틸리티 타입들 =====
-
-// API 응답 타입
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-// 파일 업로드 상태
-export interface FileUploadState {
-  isUploading: boolean;
-  progress: number;
-  error: string | null;
-}
-
-// 오디오 컨텍스트 설정
-export interface AudioContextConfig {
-  sampleRate?: number;
-  bufferSize?: number;
-  channels?: number;
-}
-
-// 웨이브폼 색상 설정
-export interface WaveformColors {
-  played: string;
-  unplayed: string;
-  background: string;
-  playhead: string;
-}
-
-// 룸 생성 데이터
-export interface CreateRoomData {
-  name: string;
-  description?: string;
-  genres?: string[];
-  maxUsers?: number;
-  isPrivate?: boolean;
-  password?: string;
-}
-
-// ===== Enum 타입들 =====
-export enum ConnectionStatus {
-  CONNECTING = 'connecting',
-  CONNECTED = 'connected',
-  DISCONNECTED = 'disconnected',
-  ERROR = 'error'
-}
-
-export enum AudioFileStatus {
-  IDLE = 'idle',
-  LOADING = 'loading',
-  READY = 'ready',
-  PLAYING = 'playing',
-  PAUSED = 'paused',
-  ERROR = 'error'
-}
-
-export enum ChatMessageType {
-  TEXT = 'text',
-  VOICE = 'voice',
-  SYSTEM = 'system',
-  FILE = 'file'
-}
-
-// ===== 상수 타입들 =====
-export const AUDIO_FORMATS = [
-  'audio/mp3',
-  'audio/wav',
-  'audio/ogg',
-  'audio/m4a',
-  'audio/aac'
-] as const;
-
-export type AudioFormat = typeof AUDIO_FORMATS[number];
-
-export const USER_ROLES = ['admin', 'user', 'guest'] as const;
-export type UserRole = typeof USER_ROLES[number];
-
-export const ROOM_STATUS = ['active', 'development', 'planning'] as const;
-export type RoomStatus = typeof ROOM_STATUS[number];
-
-// ===== 타입 가드 함수들 =====
-export function isValidAudioFormat(format: string): format is AudioFormat {
-  return AUDIO_FORMATS.includes(format as AudioFormat);
-}
-
-export function isValidUserRole(role: string): role is UserRole {
-  return USER_ROLES.includes(role as UserRole);
-}
-
-export function isChatMessage(obj: any): obj is ChatMessage {
   return (
-    typeof obj === 'object' &&
-    typeof obj.id === 'string' &&
-    typeof obj.roomId === 'string' &&
-    typeof obj.user === 'string' &&
-    typeof obj.message === 'string' &&
-    typeof obj.timestamp === 'number' &&
-    typeof obj.time === 'string'
-  );
-}
+    <div className={styles.loginModalOverlay}>
+      <div className={styles.loginModalContainer}>
+        {/* 헤더 */}
+        <div className={styles.loginModalHeader}>
+          <div className={styles.terminalTitle}>
+            VLYNK MUSIC ACCESS TERMINAL
+          </div>
+          <div className={styles.terminalSubtitle}>
+            ━━━ SECURE CONNECTION REQUIRED ━━━
+          </div>
+        </div>
 
-export function isAudioFile(obj: any): obj is AudioFile {
-  return (
-    typeof obj === 'object' &&
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.url === 'string' &&
-    typeof obj.duration === 'number' &&
-    typeof obj.uploader === 'string'
+        {/* 메인 콘텐츠 */}
+        <div className={styles.loginModalContent}>
+          <div className={styles.accessPrompt}>
+            <div className={styles.promptLine}>
+              <span className={styles.promptSymbol}>$</span>
+              <span className={styles.promptText}>USER IDENTIFICATION REQUIRED</span>
+            </div>
+            <div className={styles.promptLine}>
+              <span className={styles.promptSymbol}>$</span>
+              <span className={styles.promptText}>ENTER CREDENTIALS TO PROCEED</span>
+            </div>
+          </div>
+
+          {/* 입력 영역 */}
+          <div className={styles.inputSection}>
+            <div className={styles.inputLabel}>
+              USERNAME:
+            </div>
+            <div className={styles.inputContainer}>
+              <span className={styles.inputPrompt}>&gt;</span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className={styles.usernameInput}
+                placeholder="Enter your username"
+                maxLength={20}
+                disabled={isLoading}
+              />
+              <span className={styles.cursor}>_</span>
+            </div>
+          </div>
+
+          {/* 에러 메시지 */}
+          {error && (
+            <div className={styles.errorMessage}>
+              <span className={styles.errorSymbol}>ERROR:</span>
+              <span className={styles.errorText}>{error}</span>
+            </div>
+          )}
+
+          {/* 버튼 영역 */}
+          <div className={styles.buttonSection}>
+            <button
+              onClick={handleLogin}
+              disabled={isLoading || !username.trim()}
+              className={`${styles.loginButton} ${isLoading ? styles.loading : ''}`}
+            >
+              {isLoading ? (
+                <>
+                  <span className={styles.loadingDots}>CONNECTING</span>
+                  <span className={styles.loadingAnimation}>...</span>
+                </>
+              ) : (
+                'INITIALIZE CONNECTION'
+              )}
+            </button>
+          </div>
+
+          {/* 하단 정보 */}
+          <div className={styles.loginModalFooter}>
+            <div className={styles.systemInfo}>
+              <div>SYSTEM: VLYNK v2.0.1</div>
+              <div>STATUS: AWAITING AUTHENTICATION</div>
+              <div>PROTOCOL: SOCKET.IO/WSS</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 터미널 스캔라인 효과 */}
+        <div className={styles.scanlines}></div>
+      </div>
+    </div>
   );
 }
