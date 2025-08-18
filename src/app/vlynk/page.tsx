@@ -1,288 +1,220 @@
-// src/app/vlynk/project/page.tsx
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
-import LoginModal from './components/LoginModal';
-import ProjectGrid from './components/ProjectGrid';
-import type { MusicRoom, ChatMessage, User } from './types/project.types';
-import { useProjectSocket } from './hooks/useProjectSocket';
-import styles from './project.module.css';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import styles from './vlynk.module.css';
 
-// 더미 데이터 (개발용)
-const DUMMY_ROOMS: MusicRoom[] = [
-  {
-    id: 'room-1',
-    name: 'Lo-Fi Study Session',
-    description: 'Chill beats for coding and studying',
-    genres: ['lo-fi', 'chill', 'study'],
-    maxUsers: 20,
-    participants: 12,
-    musicCount: 45,
-    status: 'active',
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-15T15:20:00Z',
-    createdBy: 'user123'
-  },
-  {
-    id: 'room-2',
-    name: 'Electronic Playground',
-    description: 'Experimental electronic music collaboration',
-    genres: ['electronic', 'experimental', 'techno'],
-    maxUsers: 15,
-    participants: 8,
-    musicCount: 32,
-    status: 'active',
-    createdAt: '2024-01-14T14:20:00Z',
-    updatedAt: '2024-01-15T12:10:00Z',
-    createdBy: 'producer_alex'
-  },
-  {
-    id: 'room-3',
-    name: 'Ambient Soundscapes',
-    description: 'Creating atmospheric music together',
-    genres: ['ambient', 'atmospheric', 'drone'],
-    maxUsers: 10,
-    participants: 3,
-    musicCount: 18,
-    status: 'development',
-    createdAt: '2024-01-13T09:15:00Z',
-    updatedAt: '2024-01-15T11:30:00Z',
-    createdBy: 'ambient_lover'
-  },
-  {
-    id: 'room-4',
-    name: 'Hip-Hop Workshop',
-    description: 'Beat making and rap collaboration',
-    genres: ['hip-hop', 'rap', 'beats'],
-    maxUsers: 25,
-    participants: 0,
-    musicCount: 0,
-    status: 'planning',
-    createdAt: '2024-01-15T16:00:00Z',
-    updatedAt: '2024-01-15T16:00:00Z',
-    createdBy: 'beat_master'
-  }
-];
+export default function VlynkPage() {
+  const [terminalText, setTerminalText] = useState('');
+  const [currentLineIndex, setCurrentLineIndex] = useState(0);
+  const [showCursor, setShowCursor] = useState(true);
 
-export default function ProjectPage() {
-  // ===== 상태 관리 =====
-  const [currentUser, setCurrentUser] = useState<string>('');
-  const [showLoginModal, setShowLoginModal] = useState(true);
-  const [rooms, setRooms] = useState<MusicRoom[]>(DUMMY_ROOMS);
-  const [currentRoom, setCurrentRoom] = useState<MusicRoom | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // 터미널 텍스트 라인들
+  const terminalLines = [
+    '> VLYNK 시스템 부팅 중...',
+    '> 음악 협업 엔진 로딩...',
+    '> 실시간 동기화 프로토콜 활성화...',
+    '> 사용자 인증 시스템 준비...',
+    '> 오디오 처리 모듈 초기화...',
+    '> 채팅 시스템 온라인...',
+    '> 파일 업로드 서비스 준비 완료...',
+    '',
+    '=== VLYNK 시스템 준비 완료 ===',
+    '',
+    '환영합니다, VLYNK에 오신 것을!',
+    '',
+    '실시간 음악 협업 플랫폼',
+    '- 함께 음악을 만들어보세요',
+    '- 실시간으로 소통하고 공유하세요',
+    '- 여러분의 창작물을 세상에 알리세요',
+    '',
+    '👆 위의 VLYNK 버튼을 클릭하여',
+    '음악실에 입장하세요!'
+  ];
 
-  // Socket.IO 훅 사용
-  const {
-    socket,
-    isConnected,
-    connectedUsers,
-    error: socketError
-  } = useProjectSocket(currentUser);
+  // 터미널 타이핑 애니메이션
+  useEffect(() => {
+    if (currentLineIndex < terminalLines.length) {
+      const timer = setTimeout(() => {
+        setTerminalText(prev => prev + terminalLines[currentLineIndex] + '\n');
+        setCurrentLineIndex(prev => prev + 1);
+      }, currentLineIndex === 0 ? 500 : 600);
 
-  // ===== 이벤트 핸들러들 =====
+      return () => clearTimeout(timer);
+    }
+  }, [currentLineIndex, terminalLines]);
 
-  // 로그인 처리
-  const handleLogin = useCallback((username: string) => {
-    console.log('🔐 User login attempt:', username);
-    setCurrentUser(username);
-    setShowLoginModal(false);
-    
-    // 실제 서버 연결 시뮬레이션
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      console.log('✅ Login successful, user connected to VLYNK');
-    }, 1500);
+  // 커서 깜박임 효과
+  useEffect(() => {
+    const cursorTimer = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 600);
+
+    return () => clearInterval(cursorTimer);
   }, []);
-
-  // 방 참가 처리
-  const handleJoinRoom = useCallback((roomId: string) => {
-    console.log('🚪 Attempting to join room:', roomId);
-    
-    const room = rooms.find(r => r.id === roomId);
-    if (!room) {
-      console.error('❌ Room not found:', roomId);
-      return;
-    }
-
-    if (room.participants >= room.maxUsers) {
-      alert('이 방은 가득 찼습니다.');
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Socket.IO를 통한 방 참가 (실제 구현)
-    if (socket && isConnected) {
-      socket.emit('join music room', { roomId });
-    }
-
-    // 임시 시뮬레이션
-    setTimeout(() => {
-      setCurrentRoom(room);
-      
-      // 참가자 수 업데이트
-      setRooms(prevRooms => 
-        prevRooms.map(r => 
-          r.id === roomId 
-            ? { ...r, participants: r.participants + 1 }
-            : r
-        )
-      );
-      
-      setIsLoading(false);
-      console.log('✅ Successfully joined room:', room.name);
-      
-      // TODO: 여기서 MusicRoomView 컴포넌트로 전환
-      alert(`"${room.name}" 방에 입장했습니다!\n\n(MusicRoomView 컴포넌트를 다음에 구현할 예정)`);
-    }, 1000);
-  }, [rooms, socket, isConnected]);
-
-  // 새 방 생성 처리
-  const handleCreateRoom = useCallback((roomName: string) => {
-    console.log('🆕 Creating new room:', roomName);
-    
-    setIsLoading(true);
-    
-    const newRoom: MusicRoom = {
-      id: `room-${Date.now()}`,
-      name: roomName,
-      description: `Created by ${currentUser}`,
-      genres: [],
-      maxUsers: 20,
-      participants: 1,
-      musicCount: 0,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: currentUser
-    };
-
-    // Socket.IO를 통한 방 생성 (실제 구현)
-    if (socket && isConnected) {
-      socket.emit('create music room', newRoom);
-    }
-
-    // 임시 시뮬레이션
-    setTimeout(() => {
-      setRooms(prevRooms => [newRoom, ...prevRooms]);
-      setCurrentRoom(newRoom);
-      setIsLoading(false);
-      
-      console.log('✅ Room created successfully:', newRoom);
-      alert(`"${roomName}" 방이 생성되었습니다!`);
-    }, 1000);
-  }, [currentUser, socket, isConnected]);
-
-  // 방 정보 보기 처리
-  const handleViewRoomInfo = useCallback((roomId: string) => {
-    const room = rooms.find(r => r.id === roomId);
-    if (!room) return;
-
-    alert(`
-🎵 Room Information
-
-Name: ${room.name}
-Description: ${room.description}
-Genres: ${room.genres.join(', ') || 'None'}
-Participants: ${room.participants}/${room.maxUsers}
-Music Tracks: ${room.musicCount}
-Status: ${room.status.toUpperCase()}
-Created: ${new Date(room.createdAt).toLocaleString()}
-Creator: ${room.createdBy}
-    `);
-  }, [rooms]);
-
-  // ===== 효과 =====
-
-  // Socket.IO 연결 상태 모니터링
-  useEffect(() => {
-    if (socketError) {
-      console.error('❌ Socket error:', socketError);
-    }
-    
-    if (isConnected) {
-      console.log('✅ Socket connected successfully');
-    }
-  }, [isConnected, socketError]);
-
-  // 방 목록 업데이트 (Socket.IO 이벤트)
-  useEffect(() => {
-    if (socket && isConnected) {
-      const handleRoomList = (serverRooms: MusicRoom[]) => {
-        console.log('📝 Received room list from server:', serverRooms);
-        setRooms(serverRooms);
-      };
-
-      const handleRoomCreated = (newRoom: MusicRoom) => {
-        console.log('🆕 New room created:', newRoom);
-        setRooms(prevRooms => [newRoom, ...prevRooms]);
-      };
-
-      socket.on('music room list', handleRoomList);
-      socket.on('music room created', handleRoomCreated);
-
-      return () => {
-        socket.off('music room list', handleRoomList);
-        socket.off('music room created', handleRoomCreated);
-      };
-    }
-  }, [socket, isConnected]);
-
-  // ===== 렌더링 =====
 
   return (
     <div className={styles.container}>
-      {/* 로그인 모달 */}
-      <LoginModal
-        onLogin={handleLogin}
-        isVisible={showLoginModal}
-      />
+      {/* 헤더 */}
+      <header className={styles.header}>
+        <div>
+          <h1 className={styles.headerTitle}>VLYNK</h1>
+          <p className={styles.headerSubtitle}>Real-time Music Collaboration Platform</p>
+        </div>
+        
+        <nav className={styles.navigation}>
+          <Link href="/vcktor" className={styles.navItem}>
+            VCKTOR
+          </Link>
+          <Link href="/vlyssa" className={styles.navItem}>
+            VLYSSA
+            <div className={styles.loadingIndicator}></div>
+          </Link>
+          <Link href="/vlynk/project" className={`${styles.navItem} ${styles.navItemActive}`}>
+            VLYNK
+          </Link>
+        </nav>
+      </header>
 
       {/* 메인 콘텐츠 */}
-      {!showLoginModal && (
-        <>
-          {currentRoom ? (
-            // TODO: MusicRoomView 컴포넌트 (다음 단계에서 구현)
-            <div className={styles.musicRoomPlaceholder}>
-              <div className={styles.placeholderContent}>
-                <h2>🎵 Music Room: {currentRoom.name}</h2>
-                <p>MusicRoomView 컴포넌트가 여기에 들어갑니다.</p>
-                <button 
-                  onClick={() => setCurrentRoom(null)}
-                  className={styles.backButton}
-                >
-                  ← BACK TO ROOM LIST
-                </button>
+      <main className={styles.main}>
+        <div className={styles.contentArea}>
+          <div className={styles.splitLayout}>
+            {/* 왼쪽: 터미널 */}
+            <section className={styles.terminalSection}>
+              <div className={styles.terminal}>
+                <div className={styles.terminalHeader}>
+                  <span className={styles.terminalTitle}>VLYNK Terminal v2.0</span>
+                  <div className={styles.terminalControls}>
+                    <span className={styles.terminalButton}></span>
+                    <span className={styles.terminalButton}></span>
+                    <span className={styles.terminalButton}></span>
+                  </div>
+                </div>
+                
+                <div className={styles.terminalBody}>
+                  <pre className={styles.terminalContent}>
+                    {terminalText}
+                    {currentLineIndex >= terminalLines.length && (
+                      <span className={`${styles.cursor} ${showCursor ? styles.visible : styles.hidden}`}>█</span>
+                    )}
+                  </pre>
+                </div>
               </div>
-            </div>
-          ) : (
-            // 방 목록 그리드
-            <ProjectGrid
-              rooms={rooms}
-              onJoinRoom={handleJoinRoom}
-              onCreateRoom={handleCreateRoom}
-              onViewRoomInfo={handleViewRoomInfo}
-              currentUser={currentUser}
-              isLoading={isLoading}
-            />
-          )}
+            </section>
 
-          {/* 연결 상태 표시 */}
-          {socketError && (
-            <div className={styles.errorBanner}>
-              ⚠️ Connection Error: {socketError}
-            </div>
-          )}
-          
-          {!isConnected && currentUser && (
-            <div className={styles.statusBanner}>
-              🔄 Connecting to server...
-            </div>
-          )}
-        </>
-      )}
+            {/* 오른쪽: 소개 및 기능 */}
+            <section className={styles.introSection}>
+              <div className={styles.introContent}>
+                {/* 메인 타이틀 */}
+                <div className={styles.mainTitle}>
+                  <h2 className={styles.vlynkTitle}>
+                    <span className={styles.glitchText}>VLYNK</span>
+                  </h2>
+                  <p className={styles.tagline}>
+                    음악으로 연결되는 세상
+                  </p>
+                </div>
+
+                {/* 기능 소개 */}
+                <div className={styles.features}>
+                  <div className={styles.feature}>
+                    <div className={styles.featureIcon}>🎵</div>
+                    <div className={styles.featureContent}>
+                      <h3>실시간 협업</h3>
+                      <p>여러 사용자가 동시에 음악을 듣고 토론할 수 있습니다</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.feature}>
+                    <div className={styles.featureIcon}>💬</div>
+                    <div className={styles.featureContent}>
+                      <h3>시간별 댓글</h3>
+                      <p>음악의 특정 시점에 댓글을 달아 세밀한 피드백 제공</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.feature}>
+                    <div className={styles.featureIcon}>🎤</div>
+                    <div className={styles.featureContent}>
+                      <h3>음성 메시지</h3>
+                      <p>텍스트로 표현하기 어려운 감정을 음성으로 전달</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.feature}>
+                    <div className={styles.featureIcon}>📊</div>
+                    <div className={styles.featureContent}>
+                      <h3>파형 시각화</h3>
+                      <p>음악의 웨이브폼을 시각적으로 보며 정확한 소통</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.feature}>
+                    <div className={styles.featureIcon}>🏆</div>
+                    <div className={styles.featureContent}>
+                      <h3>사용자 시스템</h3>
+                      <p>프로필, 뱃지, 통계로 나만의 음악 이력 관리</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.feature}>
+                    <div className={styles.featureIcon}>🔐</div>
+                    <div className={styles.featureContent}>
+                      <h3>권한 관리</h3>
+                      <p>룸별 역할과 권한으로 체계적인 프로젝트 관리</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 입장 버튼 */}
+                <div className={styles.actionSection}>
+                  <Link href="/vlynk/project" className={styles.enterButton}>
+                    🎵 음악실 입장하기
+                  </Link>
+                  
+                  <div className={styles.quickStats}>
+                    <div className={styles.stat}>
+                      <span className={styles.statNumber}>12</span>
+                      <span className={styles.statLabel}>활성 룸</span>
+                    </div>
+                    <div className={styles.stat}>
+                      <span className={styles.statNumber}>47</span>
+                      <span className={styles.statLabel}>온라인 사용자</span>
+                    </div>
+                    <div className={styles.stat}>
+                      <span className={styles.statNumber}>234</span>
+                      <span className={styles.statLabel}>공유 트랙</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 데모 링크 */}
+                <div className={styles.demoSection}>
+                  <h4>시스템 체험하기</h4>
+                  <div className={styles.demoLinks}>
+                    <Link href="/vlynk/demo/socket" className={styles.demoLink}>
+                      🔌 Socket.IO 연결 테스트
+                    </Link>
+                    <Link href="/vlynk/demo/user" className={styles.demoLink}>
+                      👤 사용자 시스템 데모
+                    </Link>
+                    <Link href="/vlynk/demo/audio" className={styles.demoLink}>
+                      🎵 오디오 플레이어 데모
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      {/* 배경 효과 */}
+      <div className={styles.backgroundEffects}>
+        <div className={styles.scanline}></div>
+        <div className={styles.noise}></div>
+      </div>
     </div>
   );
 }

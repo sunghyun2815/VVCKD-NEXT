@@ -1,313 +1,356 @@
 export interface VlynkUser {
   id: string;
   username: string;
-  role: 'admin' | 'member' | 'guest';
-  avatar?: string;
-  status: 'online' | 'away' | 'offline';
-  joinedAt: Date;
-  lastActivity: Date;
-  metadata?: Record<string, unknown>;
+  email?: string;
+  displayName: string;
+  avatar: UserAvatar;
+  status: UserStatus;
+  role: UserRole;
+  profile: UserProfile;
+  stats: UserStats;
+  preferences: UserPreferences;
+  createdAt: string;
+  lastActiveAt: string;
+  isOnline: boolean;
 }
 
-export interface VlynkRoom {
-  id: string;
-  name: string;
-  description?: string;
-  creator: string; // username
-  participants: string[]; // usernames
-  maxUsers: number;
-  hasPassword: boolean;
-  isPrivate: boolean;
-  createdAt: Date;
-  lastActivity: Date;
-  messageCount: number;
-  tags: string[];
-  type: 'text' | 'music' | 'project';
-  metadata?: Record<string, unknown>;
+// ===== 사용자 아바타 =====
+export interface UserAvatar {
+  type: 'image' | 'generated' | 'emoji';
+  url?: string; // 이미지 URL
+  emoji?: string; // 이모지 아바타 (🎵, 🎸, 🎤 등)
+  color: string; // 배경색 (#FF5500 등)
+  style: 'retro' | 'pixel' | 'modern'; // 아바타 스타일
 }
 
-export interface VlynkMessage {
-  id: string;
-  roomId: string;
-  username: string; // sender username
-  content: string;
-  type: 'text' | 'file' | 'voice' | 'system';
-  timestamp: string; // ISO string
-  editedAt?: string;
-  isDeleted: boolean;
-  isPrevious?: boolean; // 기존 메시지인지 (서버에서 전송)
-  fileData?: VlynkFileAttachment;
-  voiceData?: VlynkVoiceAttachment;
-  mentions: string[];
-  reactions: VlynkReaction[];
-  metadata?: Record<string, unknown>;
+// ===== 사용자 상태 =====
+export interface UserStatus {
+  type: 'online' | 'away' | 'busy' | 'invisible' | 'offline';
+  message?: string; // 상태 메시지 ("작업 중...", "비트 만드는 중 🎵")
+  activity?: UserActivity; // 현재 활동
 }
 
-export interface VlynkFileAttachment {
-  id: string;
-  filename: string; // 서버에 저장된 파일명
-  originalname: string; // 원본 파일명
-  mimeType: string;
-  size: number;
-  url: string; // 접근 URL
-  thumbnailUrl?: string;
-  downloadDisabled: boolean;
-  uploadedBy: string; // username
-  uploadedAt: string; // ISO string
-  metadata?: Record<string, unknown>;
+export interface UserActivity {
+  type: 'listening' | 'creating' | 'chatting' | 'uploading' | 'idle';
+  details?: string; // "Chill Beats Vol.1 듣는 중"
+  roomId?: string; // 현재 참여 중인 룸
+  startedAt: string;
 }
 
-export interface VlynkVoiceAttachment {
-  id: string;
-  duration: number; // 초 단위
-  waveform?: number[]; // 웨이브폼 데이터
-  url: string;
-  transcription?: string; // 음성 → 텍스트 변환
-  uploadedBy: string; // username
-  uploadedAt: string; // ISO string
-  metadata?: Record<string, unknown>;
+// ===== 사용자 역할 =====
+export type UserRole = 'admin' | 'moderator' | 'premium' | 'user' | 'guest';
+
+export interface RolePermissions {
+  canCreateRooms: boolean;
+  canDeleteOthersFiles: boolean;
+  canKickUsers: boolean;
+  canManageRoomSettings: boolean;
+  canModerateChat: boolean;
+  maxUploadSize: number; // bytes
+  maxRoomsCreated: number;
+  canUseVoiceMessages: boolean;
+  canSeeUserStats: boolean;
 }
 
-export interface VlynkReaction {
+// ===== 사용자 프로필 =====
+export interface UserProfile {
+  bio?: string; // "로파이 비트 프로듀서 🎵"
+  location?: string;
+  website?: string;
+  socialLinks: SocialLinks;
+  musicStyle: string[]; // ["lo-fi", "electronic", "ambient"]
+  instruments: string[]; // ["piano", "guitar", "vocals"]
+  experience: UserExperience;
+  badges: UserBadge[];
+}
+
+export interface SocialLinks {
+  spotify?: string;
+  soundcloud?: string;
+  bandcamp?: string;
+  instagram?: string;
+  twitter?: string;
+  youtube?: string;
+}
+
+export type UserExperience = 'beginner' | 'intermediate' | 'advanced' | 'professional';
+
+export interface UserBadge {
   id: string;
-  emoji: string;
-  users: string[]; // usernames
+  name: string; // "첫 업로드", "채팅 마스터", "협업 전문가"
+  description: string;
+  icon: string; // 이모지 또는 아이콘
+  color: string;
+  earnedAt: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+}
+
+// ===== 사용자 통계 =====
+export interface UserStats {
+  totalUploads: number;
+  totalDownloads: number;
+  totalListeningTime: number; // 분 단위
+  totalChatMessages: number;
+  totalVoiceMessages: number;
+  roomsCreated: number;
+  roomsJoined: number;
+  collaborations: number; // 다른 사용자와의 협업 횟수
+  favoriteGenres: GenreStats[];
+  weeklyActivity: WeeklyActivity[];
+  achievements: Achievement[];
+}
+
+export interface GenreStats {
+  genre: string;
   count: number;
-  createdAt: string; // ISO string
+  percentage: number;
 }
 
-// 음악 프로젝트 관련 타입들
-export interface VlynkMusicProject {
+export interface WeeklyActivity {
+  date: string; // YYYY-MM-DD
+  uploads: number;
+  listeningTime: number;
+  messages: number;
+}
+
+export interface Achievement {
   id: string;
   name: string;
   description: string;
-  creator: string; // username
-  collaborators: string[]; // usernames
-  tracks: VlynkMusicTrack[];
-  status: 'active' | 'completed' | 'archived';
-  genres: string[];
-  isPublic: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  metadata?: Record<string, unknown>;
+  icon: string;
+  unlockedAt: string;
+  progress?: {
+    current: number;
+    target: number;
+  };
 }
 
-export interface VlynkMusicTrack {
+// ===== 사용자 설정 =====
+export interface UserPreferences {
+  theme: 'dark' | 'retro' | 'neon';
+  language: 'ko' | 'en' | 'ja';
+  notifications: NotificationSettings;
+  audio: AudioSettings;
+  privacy: PrivacySettings;
+  display: DisplaySettings;
+}
+
+export interface NotificationSettings {
+  newMessages: boolean;
+  roomInvites: boolean;
+  fileUploads: boolean;
+  userJoinLeave: boolean;
+  achievements: boolean;
+  soundEnabled: boolean;
+  desktopNotifications: boolean;
+}
+
+export interface AudioSettings {
+  defaultVolume: number; // 0-100
+  autoPlay: boolean;
+  crossfade: boolean;
+  highQuality: boolean; // 고음질 재생 여부
+  enableEffects: boolean;
+}
+
+export interface PrivacySettings {
+  showOnlineStatus: boolean;
+  showActivity: boolean;
+  showStats: boolean;
+  allowDirectMessages: boolean;
+  profileVisibility: 'public' | 'friends' | 'private';
+}
+
+export interface DisplaySettings {
+  compactMode: boolean;
+  showAvatars: boolean;
+  showTimestamps: boolean;
+  fontSize: 'small' | 'medium' | 'large';
+  animationsEnabled: boolean;
+}
+
+// ===== 친구 시스템 =====
+export interface UserFriend {
   id: string;
-  projectId: string;
-  title: string;
-  artist: string;
-  filename: string;
-  originalname: string;
-  url: string;
-  duration: number; // 초 단위
-  waveform?: number[];
-  uploader: string; // username
-  uploadedAt: string; // ISO string
-  comments: VlynkTrackComment[];
-  likes: string[]; // usernames who liked
-  tags: string[];
-  metadata?: Record<string, unknown>;
+  user: VlynkUser;
+  status: 'pending' | 'accepted' | 'blocked';
+  addedAt: string;
+  lastInteraction?: string;
 }
 
-export interface VlynkTrackComment {
+export interface FriendRequest {
+  id: string;
+  from: VlynkUser;
+  to: VlynkUser;
+  message?: string;
+  createdAt: string;
+  status: 'pending' | 'accepted' | 'declined';
+}
+
+// ===== 사용자 세션 =====
+export interface UserSession {
+  id: string;
+  userId: string;
+  socketId: string;
+  ip: string;
+  userAgent: string;
+  joinedAt: string;
+  lastActiveAt: string;
+  currentRoom?: string;
+  currentActivity?: UserActivity;
+}
+
+// ===== 룸 권한 시스템 =====
+export interface RoomPermission {
+  userId: string;
+  roomId: string;
+  role: RoomRole;
+  permissions: RoomPermissions;
+  grantedBy: string;
+  grantedAt: string;
+  expiresAt?: string;
+}
+
+export type RoomRole = 'owner' | 'admin' | 'moderator' | 'member' | 'guest';
+
+export interface RoomPermissions {
+  canPlayMusic: boolean;
+  canUploadFiles: boolean;
+  canDeleteFiles: boolean;
+  canInviteUsers: boolean;
+  canKickUsers: boolean;
+  canManageSettings: boolean;
+  canModerateChat: boolean;
+  canSeeUserList: boolean;
+}
+
+// ===== 개인 플레이리스트 =====
+export interface UserPlaylist {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  tracks: PlaylistTrack[];
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+  coverImage?: string;
+  tags: string[];
+}
+
+export interface PlaylistTrack {
   id: string;
   trackId: string;
-  username: string;
-  content: string;
-  timestamp: number; // 트랙 내 위치 (초)
-  createdAt: string; // ISO string
-  isVoice: boolean;
-  voiceUrl?: string;
-  replies: VlynkTrackComment[];
+  addedAt: string;
+  addedBy: string;
+  position: number;
+  note?: string; // 개인 메모
 }
 
-// 연결 상태 관련
-export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error';
-
-export interface VlynkConnectionState {
-  status: ConnectionStatus;
-  reconnectAttempts: number;
-  lastError?: string;
-  connectedAt?: Date;
-  latency?: number;
+// ===== 사용자 히스토리 =====
+export interface UserHistory {
+  recentlyPlayed: HistoryTrack[];
+  recentlyVisitedRooms: HistoryRoom[];
+  searchHistory: string[];
+  downloadHistory: HistoryDownload[];
 }
 
-// API 응답 타입들
-export interface VlynkApiResponse<T = any> {
+export interface HistoryTrack {
+  trackId: string;
+  trackName: string;
+  roomId: string;
+  roomName: string;
+  playedAt: string;
+  duration: number; // 들은 시간 (초)
+}
+
+export interface HistoryRoom {
+  roomId: string;
+  roomName: string;
+  visitedAt: string;
+  stayDuration: number; // 체류 시간 (분)
+}
+
+export interface HistoryDownload {
+  trackId: string;
+  trackName: string;
+  downloadedAt: string;
+  fileSize: number;
+}
+
+// ===== API 응답 타입들 =====
+export interface UserResponse {
   success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: any;
+  data?: VlynkUser;
+  error?: string;
+}
+
+export interface UserListResponse {
+  success: boolean;
+  data?: {
+    users: VlynkUser[];
+    total: number;
+    page: number;
+    limit: number;
   };
-  timestamp: string;
+  error?: string;
 }
 
-export interface VlynkRoomListResponse {
-  rooms: Array<{
-    name: string;
-    userCount: number;
-    maxUsers?: number;
-    lastMessage?: string;
-    lastMessageTime?: string;
-    hasPassword: boolean;
-    creator: string;
-  }>;
+export interface UserStatsResponse {
+  success: boolean;
+  data?: UserStats;
+  error?: string;
 }
 
-// 소켓 이벤트 타입 매핑
-export interface VlynkServerToClientEvents {
-  // 연결 관련
-  'connect': () => void;
-  'disconnect': (reason: string) => void;
-  'reconnect': () => void;
-  'connect_error': (error: Error) => void;
+// ===== 소켓 이벤트 타입 확장 =====
+export interface UserSocketEvents {
+  // 사용자 상태
+  'user_status_changed': (data: { userId: string; status: UserStatus }) => void;
+  'user_activity_changed': (data: { userId: string; activity: UserActivity }) => void;
+  'user_profile_updated': (data: { userId: string; changes: Partial<UserProfile> }) => void;
   
-  // 방 관련
-  'room list': (data: VlynkRoomListResponse['rooms']) => void;
-  'room created': (data: { roomName: string; maxUsers?: number; hasPassword: boolean }) => void;
-  'room join success': (data: { roomName: string; userCount: number; maxUsers?: number }) => void;
-  'room join error': (data: { message: string }) => void;
-  'room user count': (data: { count: number; maxUsers?: number }) => void;
-  'user joined room': (data: { username: string; userCount: number }) => void;
-  'user left room': (data: { username: string; userCount: number }) => void;
+  // 친구 시스템
+  'friend_request_received': (request: FriendRequest) => void;
+  'friend_request_accepted': (data: { userId: string; friend: VlynkUser }) => void;
+  'friend_online': (friend: VlynkUser) => void;
+  'friend_offline': (friendId: string) => void;
   
-  // 메시지 관련
-  'chat message': (message: VlynkMessage) => void;
-  'message deleted': (data: { messageId: string }) => void;
-  'delete success': (data: { messageId: string }) => void;
-  'delete error': (data: { message: string }) => void;
-  
-  // 음악 프로젝트 관련
-  'music room list': (rooms: VlynkMusicProject[]) => void;
-  'music room created': (room: VlynkMusicProject) => void;
-  'music room join success': (data: { roomId: string; roomName: string; userCount: number }) => void;
-  'music room join error': (data: { message: string }) => void;
-  'music chat message': (message: VlynkMessage) => void;
-  
-  // 타이핑 인디케이터
-  'user typing': (data: { username: string; roomName: string }) => void;
-  'user stopped typing': (data: { username: string; roomName: string }) => void;
-  
-  // 시스템
-  'test message': (message: string) => void;
-  'error': (data: { message: string; code?: string }) => void;
+  // 알림
+  'notification_received': (notification: UserNotification) => void;
+  'achievement_unlocked': (achievement: Achievement) => void;
+  'badge_earned': (badge: UserBadge) => void;
 }
 
-export interface VlynkClientToServerEvents {
-  // 인증
-  'user join': (data: { username: string; role?: string }) => void;
-  
-  // 방 관리
-  'get room list': () => void;
-  'create room': (data: { roomName: string; maxUsers?: number; password?: string }) => void;
-  'join room': (data: { roomName: string; password?: string }) => void;
-  'leave room': (data: { roomName: string }) => void;
-  
-  // 메시지
-  'chat message': (data: { roomName: string; message: string; fileData?: any }) => void;
-  'delete message': (data: { roomName: string; messageId: string }) => void;
-  
-  // 음악 프로젝트
-  'get music room list': () => void;
-  'create music room': (data: { roomName: string; description?: string; maxUsers?: number; genres?: string[] }) => void;
-  'join music room': (data: { roomId: string }) => void;
-  'leave music room': (data: { roomId: string }) => void;
-  'music chat message': (data: { roomId: string; message: string; user?: string; timestamp?: number }) => void;
-  'music voice message': (data: { roomId: string; user?: string; timestamp?: number; audioUrl: string }) => void;
-  
-  // 타이핑
-  'typing start': (data: { roomName: string; username: string }) => void;
-  'typing stop': (data: { roomName: string; username: string }) => void;
+export interface UserNotification {
+  id: string;
+  userId: string;
+  type: 'friend_request' | 'room_invite' | 'mention' | 'achievement' | 'system';
+  title: string;
+  message: string;
+  data?: any; // 추가 데이터
+  isRead: boolean;
+  createdAt: string;
+  expiresAt?: string;
 }
 
-// 유틸리티 타입들
-export type VlynkEventName = keyof VlynkServerToClientEvents;
-export type VlynkEmitEventName = keyof VlynkClientToServerEvents;
+// ===== 유틸리티 타입들 =====
+export type UserUpdate = Partial<Pick<VlynkUser, 'displayName' | 'avatar' | 'status' | 'profile' | 'preferences'>>;
 
-// 상수들
-export const VLYNK_CONSTANTS = {
-  MAX_MESSAGE_LENGTH: 2000,
-  MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
-  MAX_VOICE_DURATION: 300, // 5분
-  TYPING_TIMEOUT: 3000, // 3초
-  RECONNECT_ATTEMPTS: 5,
-  SOCKET_TIMEOUT: 20000,
-  
-  // 지원 파일 형식
-  SUPPORTED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  SUPPORTED_AUDIO_TYPES: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/webm'],
-  
-  // 방 설정
-  DEFAULT_MAX_USERS: 20,
-  MAX_ROOM_NAME_LENGTH: 50,
-  MAX_ROOM_DESCRIPTION_LENGTH: 200,
-  
-  // UI 설정
-  MESSAGES_PER_PAGE: 50,
-  SCROLL_THRESHOLD: 100,
-} as const;
+export type CreateUserRequest = Pick<VlynkUser, 'username' | 'email' | 'displayName'> & {
+  password: string;
+};
 
-// 에러 코드 열거형
-export enum VlynkErrorCode {
-  // 연결 오류
-  CONNECTION_FAILED = 'CONNECTION_FAILED',
-  CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  
-  // 방 오류
-  ROOM_NOT_FOUND = 'ROOM_NOT_FOUND',
-  ROOM_FULL = 'ROOM_FULL',
-  INVALID_PASSWORD = 'INVALID_PASSWORD',
-  PERMISSION_DENIED = 'PERMISSION_DENIED',
-  
-  // 메시지 오류
-  MESSAGE_TOO_LONG = 'MESSAGE_TOO_LONG',
-  MESSAGE_NOT_FOUND = 'MESSAGE_NOT_FOUND',
-  CANNOT_DELETE_MESSAGE = 'CANNOT_DELETE_MESSAGE',
-  
-  // 파일 오류
-  FILE_TOO_LARGE = 'FILE_TOO_LARGE',
-  UNSUPPORTED_FILE_TYPE = 'UNSUPPORTED_FILE_TYPE',
-  UPLOAD_FAILED = 'UPLOAD_FAILED',
-  
-  // 일반 오류
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  RATE_LIMITED = 'RATE_LIMITED',
-}
+export type LoginRequest = {
+  username: string;
+  password: string;
+};
 
-// React 컴포넌트 Props 타입들
-export interface VlynkBaseProps {
-  className?: string;
-  'data-testid'?: string;
-}
-
-export interface VlynkRoomGridProps extends VlynkBaseProps {
-  rooms: VlynkRoom[];
-  onRoomSelect: (room: VlynkRoom) => void;
-  onRoomCreate?: () => void;
-  loading?: boolean;
-}
-
-export interface VlynkChatRoomProps extends VlynkBaseProps {
-  room: VlynkRoom;
-  messages: VlynkMessage[];
-  currentUser: VlynkUser;
-  onSendMessage: (content: string, type?: VlynkMessage['type']) => void;
-  onDeleteMessage: (messageId: string) => void;
-  onLeaveRoom: () => void;
-  typingUsers: string[];
-}
-
-export interface VlynkFileUploaderProps extends VlynkBaseProps {
-  accept?: string;
-  maxSize?: number;
-  disabled?: boolean;
-  onFileSelect: (file: File) => void;
-  onUploadProgress?: (progress: number) => void;
-  onUploadComplete?: (result: VlynkFileAttachment) => void;
-  onUploadError?: (error: Error) => void;
-}
+export type LoginResponse = {
+  success: boolean;
+  data?: {
+    user: VlynkUser;
+    token: string;
+    expiresAt: string;
+  };
+  error?: string;
+};

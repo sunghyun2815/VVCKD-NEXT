@@ -1,32 +1,453 @@
+/* LoginModal.module.css */
+
+/* ===== 오버레이 ===== */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease-out;
 }
 
+/* ===== 메인 모달 ===== */
 .modal {
   background: #000;
   border: 2px solid #FF5500;
-  padding: 40px;
-  text-align: center;
-  max-width: 90vw;
+  width: 90%;
+  max-width: 500px;
   max-height: 90vh;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideIn 0.4s ease-out;
   box-shadow: 
-    0 0 20px rgba(255, 85, 0, 0.3),
-    inset 0 0 20px rgba(255, 85, 0, 0.1);
-  animation: modalAppear 0.3s ease-out;
+    0 0 30px rgba(255, 85, 0, 0.5),
+    inset 0 0 30px rgba(255, 85, 0, 0.1);
 }
 
-@keyframes modalAppear {
+/* ===== 헤더 ===== */
+.header {
+  background: linear-gradient(135deg, #FF5500, #FF8800);
+  color: #000;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #FF5500;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  font-size: 32px;
+  animation: bounce 2s infinite;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-size: 18px;
+  font-family: 'Press Start 2P', monospace;
+  margin: 0;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle {
+  font-size: 7px;
+  font-family: 'Press Start 2P', monospace;
+  margin: 0;
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+.version {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  font-size: 6px;
+  font-family: 'Press Start 2P', monospace;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+/* ===== 메인 콘텐츠 ===== */
+.content {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  flex: 1;
+  overflow-y: auto;
+  background: #000;
+  color: #FF5500;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ===== 로그인 폼 ===== */
+.loginForm {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formTitle {
+  font-size: 14px;
+  color: #FF5500;
+  margin: 0;
+  text-shadow: 0 0 10px #FF5500;
+  letter-spacing: 2px;
+}
+
+.formDescription {
+  font-size: 8px;
+  color: #FFAA00;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.inputSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  font-size: 14px;
+  color: #FF5500;
+  z-index: 1;
+}
+
+.usernameInput {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  background: rgba(255, 85, 0, 0.1);
+  border: 2px solid #FF5500;
+  color: #FFF;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.usernameInput:focus {
+  outline: none;
+  background: rgba(255, 85, 0, 0.2);
+  box-shadow: 
+    0 0 20px rgba(255, 85, 0, 0.5),
+    inset 0 0 10px rgba(255, 85, 0, 0.2);
+  border-color: #FFAA00;
+}
+
+.usernameInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.usernameInput::placeholder {
+  color: #666;
+  font-size: 8px;
+}
+
+.errorMessage {
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #FF0000;
+  color: #FF0000;
+  padding: 8px 12px;
+  font-size: 7px;
+  text-align: left;
+  animation: shake 0.5s ease-in-out;
+}
+
+.loginButton {
+  background: #FF5500;
+  color: #000;
+  border: none;
+  padding: 15px 20px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 1px;
+}
+
+.loginButton:hover:not(:disabled) {
+  background: #FFAA00;
+  box-shadow: 0 0 20px rgba(255, 85, 0, 0.7);
+  transform: translateY(-2px);
+}
+
+.loginButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.loginButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loginButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: buttonShine 3s infinite;
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top: 2px solid #000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ===== 기능 소개 ===== */
+.features {
+  background: rgba(255, 85, 0, 0.05);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  padding: 15px;
+}
+
+.featuresTitle {
+  font-size: 9px;
+  color: #FF5500;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.featureList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 6px;
+  color: #FFAA00;
+}
+
+.featureIcon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.featureText {
+  line-height: 1.3;
+}
+
+/* ===== 예시 사용자명 ===== */
+.examples {
+  text-align: center;
+}
+
+.examplesTitle {
+  font-size: 8px;
+  color: #FF5500;
+  margin: 0 0 10px 0;
+}
+
+.exampleList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.exampleButton {
+  background: transparent;
+  border: 1px solid #666;
+  color: #666;
+  padding: 4px 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.exampleButton:hover:not(:disabled) {
+  border-color: #FF5500;
+  color: #FF5500;
+  background: rgba(255, 85, 0, 0.1);
+}
+
+.exampleButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ===== 웰컴 화면 ===== */
+.welcomeScreen {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.welcomeIcon {
+  font-size: 48px;
+  animation: pulse 1.5s infinite;
+}
+
+.welcomeTitle {
+  font-size: 16px;
+  color: #00FF00;
+  margin: 0;
+  text-shadow: 0 0 15px #00FF00;
+}
+
+.welcomeMessage {
+  font-size: 9px;
+  color: #FFAA00;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.welcomeMessage strong {
+  color: #FFF;
+}
+
+.welcomeSpinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 85, 0, 0.3);
+  border-top: 3px solid #FF5500;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ===== 푸터 ===== */
+.footer {
+  background: rgba(255, 85, 0, 0.1);
+  border-top: 1px solid rgba(255, 85, 0, 0.3);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.footerText {
+  font-size: 6px;
+  color: #666;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 8px;
+}
+
+.footerLink {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  text-decoration: underline;
+}
+
+.footerLink:hover {
+  color: #FF5500;
+}
+
+/* ===== 배경 효과 ===== */
+.backgroundEffects {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.musicNote1,
+.musicNote2,
+.musicNote3,
+.musicNote4 {
+  position: absolute;
+  font-size: 20px;
+  color: rgba(255, 85, 0, 0.1);
+  animation: float 6s ease-in-out infinite;
+}
+
+.musicNote1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.musicNote2 {
+  top: 60%;
+  right: 15%;
+  animation-delay: 1.5s;
+  animation-duration: 8s;
+}
+
+.musicNote3 {
+  bottom: 30%;
+  left: 20%;
+  animation-delay: 3s;
+  animation-duration: 7s;
+}
+
+.musicNote4 {
+  top: 40%;
+  right: 30%;
+  animation-delay: 4.5s;
+  animation-duration: 9s;
+}
+
+/* ===== 애니메이션 ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
   from {
     opacity: 0;
     transform: scale(0.9) translateY(-20px);
@@ -37,164 +458,22 @@
   }
 }
 
-/* ===== 헤더 ===== */
-.header {
-  margin-bottom: 30px;
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
 }
 
-.title {
-  color: #FF5500;
-  font-size: 16px;
-  font-family: 'Press Start 2P', monospace;
-  margin-bottom: 10px;
-  text-shadow: 
-    0 0 5px #FF5500,
-    0 0 10px #FF5500,
-    0 0 20px #FF5500;
-  animation: titleGlow 2s ease-in-out infinite alternate;
-}
-
-@keyframes titleGlow {
-  from { text-shadow: 0 0 5px #FF5500, 0 0 10px #FF5500, 0 0 15px #FF5500; }
-  to { text-shadow: 0 0 10px #FF5500, 0 0 20px #FF5500, 0 0 30px #FF5500; }
-}
-
-.subtitle {
-  color: #fff;
-  font-size: 10px;
-  font-family: 'Press Start 2P', monospace;
-  margin-bottom: 5px;
-}
-
-/* ===== 메인 컨텐츠 ===== */
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: center;
-}
-
-/* ===== 입력 섹션 ===== */
-.inputSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 300px;
-}
-
-.inputLabel {
-  color: #FF5500;
-  font-size: 12px;
-  font-family: 'Press Start 2P', monospace;
-  text-align: left;
-}
-
-.input {
-  background: transparent;
-  border: 1px solid #FF5500;
-  color: #fff;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
-  padding: 10px;
-  width: 100%;
-  text-align: center;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-}
-
-.input:focus {
-  outline: none;
-  border-color: #FF8800;
-  box-shadow: 
-    0 0 10px rgba(255, 85, 0, 0.5),
-    inset 0 0 10px rgba(255, 85, 0, 0.1);
-  text-shadow: 0 0 5px #FF5500;
-}
-
-.input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.inputError {
-  border-color: #FF0000 !important;
-  animation: inputShake 0.5s ease-in-out;
-}
-
-@keyframes inputShake {
+@keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-.charCounter {
-  color: #666;
-  font-size: 8px;
-  font-family: 'Press Start 2P', monospace;
-  text-align: right;
-  margin-top: 5px;
-}
-
-/* ===== 에러 메시지 ===== */
-.errorMessage {
-  color: #FF0000;
-  font-size: 10px;
-  font-family: 'Press Start 2P', monospace;
-  padding: 10px;
-  border: 1px solid #FF0000;
-  background: rgba(255, 0, 0, 0.1);
-  animation: errorBlink 1s ease-in-out infinite alternate;
-  max-width: 300px;
-  text-align: center;
-}
-
-@keyframes errorBlink {
-  from { opacity: 0.7; }
-  to { opacity: 1; }
-}
-
-/* ===== 로그인 버튼 ===== */
-.loginButton {
-  background: #FF5500;
-  color: #000;
-  border: none;
-  padding: 15px 30px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  min-width: 250px;
-  position: relative;
-  overflow: hidden;
-}
-
-.loginButton:hover:not(:disabled) {
-  background: #FF8800;
-  box-shadow: 0 0 20px rgba(255, 85, 0, 0.6);
-  transform: translateY(-2px);
-}
-
-.loginButton:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.loginButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.loginButton.loading {
-  background: #333;
-  color: #FF5500;
-}
-
-.loadingSpinner {
-  display: inline-block;
-  animation: spin 1s linear infinite;
-  margin-right: 10px;
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
 }
 
 @keyframes spin {
@@ -202,111 +481,54 @@
   to { transform: rotate(360deg); }
 }
 
-/* ===== 빠른 로그인 ===== */
-.quickLoginSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-  border-top: 1px solid #333;
-  padding-top: 20px;
-  margin-top: 10px;
+@keyframes pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.1); 
+    opacity: 0.8; 
+  }
 }
 
-.quickLoginLabel {
-  color: #666;
-  font-size: 8px;
-  font-family: 'Press Start 2P', monospace;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translateY(-10px) rotate(5deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) rotate(-5deg);
+    opacity: 0.2;
+  }
+  75% {
+    transform: translateY(-15px) rotate(3deg);
+    opacity: 0.4;
+  }
 }
 
-.quickLoginButtons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.quickLoginButton {
-  background: transparent;
-  color: #FF5500;
-  border: 1px solid #FF5500;
-  padding: 8px 12px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.quickLoginButton:hover:not(:disabled) {
-  background: #FF5500;
-  color: #000;
-  box-shadow: 0 0 10px rgba(255, 85, 0, 0.5);
-}
-
-.quickLoginButton:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-/* ===== 시스템 정보 ===== */
-.systemInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #333;
-}
-
-.systemLine {
-  color: #666;
-  font-size: 7px;
-  font-family: 'Press Start 2P', monospace;
-  letter-spacing: 1px;
-}
-
-/* ===== 커서 ===== */
-.cursor {
-  position: absolute;
-  bottom: 10px;
-  right: 15px;
-  color: #FF5500;
-  font-size: 16px;
-  animation: blink 1s step-start 0s infinite;
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-/* ===== 스캔라인 효과 ===== */
-.scanlines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(255, 85, 0, 0.03) 2px,
-    rgba(255, 85, 0, 0.03) 4px
-  );
-  animation: scanlineMove 10s linear infinite;
-}
-
-@keyframes scanlineMove {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+@keyframes buttonShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
 /* ===== 반응형 ===== */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .modal {
-    padding: 20px;
-    margin: 20px;
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .header {
+    padding: 15px;
+  }
+
+  .logoIcon {
+    font-size: 24px;
   }
 
   .title {
@@ -314,26 +536,133 @@
   }
 
   .subtitle {
-    font-size: 9px;
+    font-size: 6px;
   }
 
-  .input {
-    font-size: 10px;
-    padding: 8px;
+  .content {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .formTitle {
+    font-size: 12px;
+  }
+
+  .formDescription {
+    font-size: 7px;
+  }
+
+  .usernameInput {
+    font-size: 9px;
+    padding: 10px 10px 10px 35px;
   }
 
   .loginButton {
-    padding: 12px 20px;
+    padding: 12px 16px;
     font-size: 9px;
-    min-width: 200px;
   }
 
-  .quickLoginButtons {
+  .featureList {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .feature {
+    font-size: 7px;
+  }
+
+  .exampleList {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .exampleButton {
+    padding: 6px 12px;
+    font-size: 7px;
+  }
+
+  .welcomeIcon {
+    font-size: 36px;
+  }
+
+  .welcomeTitle {
+    font-size: 12px;
+  }
+
+  .welcomeMessage {
+    font-size: 8px;
+  }
+
+  .footer {
+    padding: 10px 15px;
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
+  .content {
+    padding: 15px;
+  }
+
+  .formTitle {
+    font-size: 10px;
+  }
+
+  .usernameInput {
+    font-size: 8px;
+  }
+
+  .loginButton {
+    font-size: 8px;
+  }
+
+  .featureList {
     gap: 8px;
   }
 
-  .quickLoginButton {
-    padding: 6px 10px;
-    font-size: 7px;
+  .musicNote1,
+  .musicNote2,
+  .musicNote3,
+  .musicNote4 {
+    font-size: 16px;
   }
+}
+
+/* ===== 접근성 ===== */
+.usernameInput:focus,
+.loginButton:focus,
+.exampleButton:focus,
+.footerLink:focus {
+  outline: 2px solid #FF5500;
+  outline-offset: 2px;
+}
+
+/* ===== 스크롤바 ===== */
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: rgba(255, 85, 0, 0.1);
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(255, 85, 0, 0.4);
+  border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 85, 0, 0.6);
 }

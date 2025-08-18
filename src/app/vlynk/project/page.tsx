@@ -1,14 +1,21 @@
-// src/app/vlynk/project/page.tsx
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
 import LoginModal from './components/LoginModal';
 import ProjectGrid from './components/ProjectGrid';
 import MusicRoomView from './components/MusicRoomView';
-import type { MusicRoom, ChatMessage, User } from './types/project.types';
-import { useProjectSocket } from './hooks/useProjectSocket';
+import UserProfile from './components/UserProfile';
+import UserSystemDemo from './components/UserSystemDemo';
+import { useVlynkSocket } from '../hooks/useVlynkSocket';
+import type { 
+  MusicRoom, 
+  ChatMessage, 
+  User,
+  VlynkUser 
+} from './types/project.types';
 import styles from './project.module.css';
 
+// ===== 더미 룸 데이터 =====
 const DUMMY_ROOMS: MusicRoom[] = [
   {
     id: 'room-1',
@@ -64,7 +71,7 @@ const DUMMY_ROOMS: MusicRoom[] = [
   }
 ];
 
-// 더미 연결된 사용자들
+// ===== 더미 사용자 생성 함수 =====
 const generateConnectedUsers = (currentUser: string): User[] => [
   {
     id: 'user-1',
@@ -83,9 +90,16 @@ const generateConnectedUsers = (currentUser: string): User[] => [
     username: 'beat_master',
     role: 'user',
     joinedAt: new Date(Date.now() - 600000).toISOString()
+  },
+  {
+    id: 'user-4',
+    username: 'lo_fi_girl',
+    role: 'user',
+    joinedAt: new Date(Date.now() - 900000).toISOString()
   }
 ];
 
+// ===== 메인 컴포넌트 =====
 export default function ProjectPage() {
   // ===== 상태 관리 =====
   const [currentUser, setCurrentUser] = useState<string>('');
@@ -94,13 +108,27 @@ export default function ProjectPage() {
   const [currentRoom, setCurrentRoom] = useState<MusicRoom | null>(null);
   const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentView, setCurrentView] = useState<'lobby' | 'room' | 'profile' | 'demo'>('lobby');
+  const [selectedProfile, setSelectedProfile] = useState<VlynkUser | null>(null);
 
-  // Socket.IO 훅 사용
+  // ===== Socket.IO 훅 사용 =====
   const {
     socket,
     isConnected,
-    error: socketError
-  } = useProjectSocket(currentUser);
+    isConnecting,
+    hasError,
+    error,
+    connectionState,
+    rooms: socketRooms,
+    currentRoom: socketCurrentRoom,
+    connectedUsers: socketUsers,
+    messages,
+    joinRoom: socketJoinRoom,
+    leaveRoom: socketLeaveRoom,
+    createRoom: socketCreateRoom,
+    sendMessage,
+    measureLatency,
+  } = useVlynkSocket(currentUser);
 
   // ===== 이벤트 핸들러들 =====
 
@@ -117,6 +145,7 @@ export default function ProjectPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      setCurrentView('lobby');
       console.log('✅ Login successful, user connected to VLYNK');
     }, 1500);
   }, []);
@@ -138,12 +167,12 @@ export default function ProjectPage() {
 
     setIsLoading(true);
     
-    // Socket.IO를 통한 방 참가 (실제 구현)
+    // Socket.IO를 통한 방 참가
     if (socket && isConnected) {
-      socket.emit('join music room', { roomId });
+      socketJoinRoom(roomId);
     }
 
-    // 임시 시뮬레이션
+    // 시뮬레이션
     setTimeout(() => {
       setCurrentRoom(room);
       
@@ -156,10 +185,11 @@ export default function ProjectPage() {
         )
       );
       
+      setCurrentView('room');
       setIsLoading(false);
       console.log('✅ Successfully joined room:', room.name);
     }, 1000);
-  }, [rooms, socket, isConnected]);
+  }, [rooms, socket, isConnected, socketJoinRoom]);
 
   // 방 나가기 처리
   const handleLeaveRoom = useCallback(() => {
@@ -169,7 +199,7 @@ export default function ProjectPage() {
     
     // Socket.IO를 통한 방 나가기
     if (socket && isConnected) {
-      socket.emit('leave music room', { roomId: currentRoom.id });
+      socketLeaveRoom();
     }
     
     // 참가자 수 업데이트
@@ -182,7 +212,9 @@ export default function ProjectPage() {
     );
     
     setCurrentRoom(null);
-  }, [currentRoom, socket, isConnected]);
+    setCurrentView('lobby');
+    console.log('✅ Successfully left room');
+  }, [currentRoom, socket, isConnected, socketLeaveRoom]);
 
   // 새 방 생성 처리
   const handleCreateRoom = useCallback((roomName: string) => {
@@ -204,100 +236,178 @@ export default function ProjectPage() {
       createdBy: currentUser
     };
 
-    // Socket.IO를 통한 방 생성 (실제 구현)
+    // Socket.IO를 통한 방 생성
     if (socket && isConnected) {
-      socket.emit('create music room', newRoom);
+      socketCreateRoom({
+        name: roomName,
+        description: newRoom.description,
+        maxUsers: 20,
+        participants: 0,
+        musicCount: 0,
+        status: 'active',
+        createdBy: currentUser
+      });
     }
 
-    // 임시 시뮬레이션
+    // 시뮬레이션
     setTimeout(() => {
-      setRooms(prevRooms => [newRoom, ...prevRooms]);
+      setRooms(prevRooms => [...prevRooms, newRoom]);
       setCurrentRoom(newRoom);
+      setCurrentView('room');
       setIsLoading(false);
-      
-      console.log('✅ Room created successfully:', newRoom);
+      console.log('✅ Successfully created room:', roomName);
     }, 1000);
-  }, [currentUser, socket, isConnected]);
+  }, [currentUser, socket, isConnected, socketCreateRoom]);
 
-  // 방 정보 보기 처리
+  // 방 정보 보기
   const handleViewRoomInfo = useCallback((roomId: string) => {
     const room = rooms.find(r => r.id === roomId);
-    if (!room) return;
-
-    alert(`
-🎵 Room Information
-
-Name: ${room.name}
-Description: ${room.description}
-Genres: ${room.genres.join(', ') || 'None'}
-Participants: ${room.participants}/${room.maxUsers}
-Music Tracks: ${room.musicCount}
-Status: ${room.status.toUpperCase()}
-Created: ${new Date(room.createdAt).toLocaleString()}
-Creator: ${room.createdBy}
-    `);
+    if (room) {
+      alert(`방 정보:\n이름: ${room.name}\n설명: ${room.description}\n참가자: ${room.participants}/${room.maxUsers}\n생성자: ${room.createdBy}`);
+    }
   }, [rooms]);
 
-  // ===== 효과 =====
+  // 프로필 보기
+  const handleShowProfile = useCallback(() => {
+    setCurrentView('profile');
+  }, []);
 
-  // Socket.IO 연결 상태 모니터링
+  // 데모 보기
+  const handleShowDemo = useCallback(() => {
+    setCurrentView('demo');
+  }, []);
+
+  // 로비로 돌아가기
+  const handleBackToLobby = useCallback(() => {
+    if (currentRoom) {
+      handleLeaveRoom();
+    } else {
+      setCurrentView('lobby');
+      setSelectedProfile(null);
+    }
+  }, [currentRoom, handleLeaveRoom]);
+
+  // ===== 효과들 =====
+  
+  // Socket 상태 변화 감지
   useEffect(() => {
-    if (socketError) {
-      console.error('❌ Socket error:', socketError);
+    if (socketRooms.length > 0) {
+      setRooms(socketRooms);
     }
-    
-    if (isConnected) {
-      console.log('✅ Socket connected successfully');
-    }
-  }, [isConnected, socketError]);
+  }, [socketRooms]);
 
-  // 방 목록 업데이트 (Socket.IO 이벤트)
   useEffect(() => {
-    if (socket && isConnected) {
-      const handleRoomList = (serverRooms: MusicRoom[]) => {
-        console.log('📝 Received room list from server:', serverRooms);
-        setRooms(serverRooms);
-      };
-
-      const handleRoomCreated = (newRoom: MusicRoom) => {
-        console.log('🆕 New room created:', newRoom);
-        setRooms(prevRooms => [newRoom, ...prevRooms]);
-      };
-
-      socket.on('music room list', handleRoomList);
-      socket.on('music room created', handleRoomCreated);
-
-      return () => {
-        socket.off('music room list', handleRoomList);
-        socket.off('music room created', handleRoomCreated);
-      };
+    if (socketCurrentRoom) {
+      setCurrentRoom(socketCurrentRoom);
+      setCurrentView('room');
     }
-  }, [socket, isConnected]);
+  }, [socketCurrentRoom]);
+
+  useEffect(() => {
+    if (socketUsers.length > 0) {
+      setConnectedUsers(socketUsers);
+    }
+  }, [socketUsers]);
 
   // ===== 렌더링 =====
 
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <div className={styles.loadingText}>
+          {currentView === 'lobby' ? 'VLYNK에 연결 중...' : 
+           currentView === 'room' ? '음악실 입장 중...' : 
+           '처리 중...'}
+        </div>
+      </div>
+    );
+  }
+
+  // 로그인 모달
+  if (showLoginModal) {
+    return (
+      <div className={styles.pageContainer}>
+        <LoginModal 
+          onLogin={handleLogin}
+          isVisible={showLoginModal}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.container}>
-      {/* 로그인 모달 */}
-      <LoginModal
-        onLogin={handleLogin}
-        isVisible={showLoginModal}
-      />
+    <div className={styles.pageContainer}>
+      {/* 헤더 */}
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.headerTitle}>🎵 VLYNK Music Room</h1>
+          <div className={styles.connectionStatus}>
+            <span 
+              className={`${styles.statusDot} ${
+                isConnected ? styles.connected : 
+                isConnecting ? styles.connecting : 
+                hasError ? styles.error : styles.disconnected
+              }`}
+            />
+            <span className={styles.statusText}>
+              {isConnected ? 'CONNECTED' : 
+               isConnecting ? 'CONNECTING...' : 
+               hasError ? 'ERROR' : 'DISCONNECTED'}
+            </span>
+            {connectionState.latency && (
+              <span className={styles.latency}>
+                ({connectionState.latency.toFixed(0)}ms)
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.headerRight}>
+          <div className={styles.userInfo}>
+            <span className={styles.username}>👤 {currentUser}</span>
+            {currentRoom && (
+              <span className={styles.currentRoom}>
+                📍 {currentRoom.name}
+              </span>
+            )}
+          </div>
+
+          <div className={styles.headerActions}>
+            {currentView !== 'lobby' && (
+              <button onClick={handleBackToLobby} className={styles.backBtn}>
+                ← 로비
+              </button>
+            )}
+            
+            <button onClick={handleShowProfile} className={styles.profileBtn}>
+              👤 프로필
+            </button>
+            
+            <button onClick={handleShowDemo} className={styles.demoBtn}>
+              🧪 데모
+            </button>
+          </div>
+        </div>
+      </header>
 
       {/* 메인 콘텐츠 */}
-      {!showLoginModal && (
-        <>
-          {currentRoom ? (
-            // 음악 룸 뷰
-            <MusicRoomView
-              room={currentRoom}
-              currentUser={currentUser}
-              connectedUsers={connectedUsers}
-              onLeaveRoom={handleLeaveRoom}
-              socket={socket}
-            />
-          ) : (
-            // 방 목록 그리드
+      <main className={styles.mainContent}>
+        {/* 로비 뷰 */}
+        {currentView === 'lobby' && (
+          <div className={styles.lobbyView}>
+            <div className={styles.welcomeSection}>
+              <h2>안녕하세요, {currentUser}님! 🎵</h2>
+              <p>참여하고 싶은 음악실을 선택하거나 새로운 룸을 만들어보세요.</p>
+              
+              {hasError && (
+                <div className={styles.errorMessage}>
+                  ⚠️ {error}
+                </div>
+              )}
+            </div>
+
             <ProjectGrid
               rooms={rooms}
               onJoinRoom={handleJoinRoom}
@@ -306,21 +416,85 @@ Creator: ${room.createdBy}
               currentUser={currentUser}
               isLoading={isLoading}
             />
-          )}
 
-          {/* 연결 상태 표시 */}
-          {socketError && (
-            <div className={styles.errorBanner}>
-              ⚠️ Connection Error: {socketError}
+            {/* 연결 상태 정보 */}
+            <div className={styles.connectionInfo}>
+              <div className={styles.infoCard}>
+                <h3>연결 상태</h3>
+                <p>서버: {isConnected ? '✅ 연결됨' : '❌ 연결 안됨'}</p>
+                <p>재연결 시도: {connectionState.reconnectAttempts}회</p>
+                {connectionState.connectedAt && (
+                  <p>연결 시간: {connectionState.connectedAt.toLocaleTimeString()}</p>
+                )}
+              </div>
+
+              <div className={styles.infoCard}>
+                <h3>현재 상태</h3>
+                <p>사용 가능한 룸: {rooms.length}개</p>
+                <p>연결된 사용자: {connectedUsers.length}명</p>
+                <p>현재 룸: {currentRoom ? currentRoom.name : '없음'}</p>
+              </div>
             </div>
-          )}
-          
-          {!isConnected && currentUser && !currentRoom && (
-            <div className={styles.statusBanner}>
-              🔄 Connecting to server...
+          </div>
+        )}
+
+        {/* 음악실 뷰 */}
+        {currentView === 'room' && currentRoom && (
+          <MusicRoomView
+            room={currentRoom}
+            currentUser={currentUser}
+            connectedUsers={connectedUsers}
+            onLeaveRoom={handleLeaveRoom}
+            socket={socket}
+          />
+        )}
+
+        {/* 프로필 뷰 */}
+        {currentView === 'profile' && (
+          <div className={styles.profileView}>
+            <div className={styles.profilePlaceholder}>
+              <h2>👤 사용자 프로필</h2>
+              <p>여기에 사용자 프로필 컴포넌트가 표시됩니다.</p>
+              <p>현재 사용자: <strong>{currentUser}</strong></p>
+              <p>연결 상태: <strong>{isConnected ? '온라인' : '오프라인'}</strong></p>
+              
+              <div className={styles.profileStats}>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>참여한 룸</span>
+                  <span className={styles.statValue}>3개</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>메시지 수</span>
+                  <span className={styles.statValue}>127개</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>접속 시간</span>
+                  <span className={styles.statValue}>2시간 15분</span>
+                </div>
+              </div>
             </div>
-          )}
-        </>
+          </div>
+        )}
+
+        {/* 데모 뷰 */}
+        {currentView === 'demo' && (
+          <div className={styles.demoView}>
+            <UserSystemDemo />
+          </div>
+        )}
+      </main>
+
+      {/* Socket.IO 에러 표시 */}
+      {hasError && (
+        <div className={styles.errorToast}>
+          <span>⚠️ {error}</span>
+          <button 
+            onClick={() => window.location.reload()} 
+            className={styles.retryBtn}
+          >
+            🔄 재시도
+          </button>
+        </div>
       )}
     </div>
   );

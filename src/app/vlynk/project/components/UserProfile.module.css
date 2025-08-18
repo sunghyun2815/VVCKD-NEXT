@@ -1,0 +1,1174 @@
+/* UserProfile.module.css */
+
+/* ===== 기본 컨테이너 ===== */
+.profileContainer {
+  width: 100%;
+  max-width: 800px;
+  background: #000;
+  color: #FF5500;
+  font-family: 'Press Start 2P', monospace;
+  border: 2px solid #FF5500;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+/* ===== 헤더 ===== */
+.profileHeader {
+  background: rgba(255, 85, 0, 0.1);
+  border-bottom: 2px solid #FF5500;
+  padding: 20px;
+  flex-shrink: 0;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profileTitle {
+  font-size: 16px;
+  color: #FF5500;
+  margin: 0;
+  text-shadow: 0 0 10px #FF5500;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #FF5500;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+  transition: all 0.3s ease;
+}
+
+.closeBtn:hover {
+  color: #FF0000;
+  transform: scale(1.1);
+}
+
+/* ===== 기본 정보 ===== */
+.basicInfo {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.onlineStatus {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  color: #FFAA00;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.statusDot.online { background: #00FF00; }
+.statusDot.away { background: #FFAA00; }
+.statusDot.busy { background: #FF0000; }
+.statusDot.invisible { background: #666; }
+.statusDot.offline { background: #333; }
+
+.userInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nameSection {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.displayName {
+  font-size: 18px;
+  color: #FFF;
+  margin: 0;
+}
+
+.nameInput {
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid #FF5500;
+  color: #FFF;
+  font-family: inherit;
+  font-size: 18px;
+  padding: 5px 8px;
+}
+
+.nameInput:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.5);
+}
+
+.username {
+  font-size: 10px;
+  color: #666;
+}
+
+.userRole {
+  font-size: 8px;
+  font-weight: bold;
+  text-shadow: 0 0 5px currentColor;
+}
+
+.profileActions {
+  display: flex;
+  gap: 10px;
+}
+
+.editBtn,
+.saveBtn,
+.cancelBtn {
+  padding: 8px 15px;
+  background: transparent;
+  border: 1px solid #FF5500;
+  color: #FF5500;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.editBtn:hover,
+.saveBtn:hover {
+  background: #FF5500;
+  color: #000;
+  box-shadow: 0 0 10px #FF5500;
+}
+
+.cancelBtn {
+  border-color: #666;
+  color: #666;
+}
+
+.cancelBtn:hover {
+  background: #666;
+  color: #FFF;
+}
+
+/* ===== 아바타 ===== */
+.avatarContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar {
+  border: 2px solid #FF5500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.avatar:hover {
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.5);
+}
+
+.avatarSmall {
+  width: 32px;
+  height: 32px;
+}
+
+.avatarMedium {
+  width: 48px;
+  height: 48px;
+}
+
+.avatarLarge {
+  width: 80px;
+  height: 80px;
+}
+
+.avatarEmoji {
+  font-size: 60%;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.generatedAvatar {
+  font-size: 60%;
+  color: #FFF;
+}
+
+.avatarEditOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 12px;
+}
+
+.avatar:hover .avatarEditOverlay {
+  opacity: 1;
+}
+
+/* ===== 상태 표시 ===== */
+.statusSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statusEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statusSelect {
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid #FF5500;
+  color: #FFF;
+  font-family: inherit;
+  font-size: 8px;
+  padding: 5px;
+}
+
+.statusMessageInput {
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid #FF5500;
+  color: #FFF;
+  font-family: inherit;
+  font-size: 8px;
+  padding: 5px;
+}
+
+.statusDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.statusText {
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.statusText.online { color: #00FF00; }
+.statusText.away { color: #FFAA00; }
+.statusText.busy { color: #FF0000; }
+.statusText.invisible { color: #666; }
+.statusText.offline { color: #333; }
+
+.statusMessage {
+  font-size: 8px;
+  color: #FFAA00;
+  margin: 0;
+  font-style: italic;
+}
+
+.currentActivity {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  color: #666;
+}
+
+/* ===== 탭 네비게이션 ===== */
+.tabNavigation {
+  display: flex;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 15px 10px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-right: 1px solid #333;
+}
+
+.tabBtn:last-child {
+  border-right: none;
+}
+
+.tabBtn:hover {
+  color: #FFAA00;
+  background: rgba(255, 170, 0, 0.05);
+}
+
+.tabBtn.active {
+  color: #FF5500;
+  background: rgba(255, 85, 0, 0.1);
+  border-bottom: 2px solid #FF5500;
+}
+
+/* ===== 탭 콘텐츠 ===== */
+.tabContent {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.tabContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tabContent::-webkit-scrollbar-track {
+  background: rgba(255, 85, 0, 0.1);
+}
+
+.tabContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 85, 0, 0.4);
+  border-radius: 3px;
+}
+
+/* ===== 프로필 탭 ===== */
+.profileTab {
+  padding: 20px;
+}
+
+.profileSection {
+  margin-bottom: 25px;
+}
+
+.profileSection h4 {
+  font-size: 10px;
+  color: #FF5500;
+  margin: 0 0 10px 0;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+}
+
+.bioTextarea {
+  width: 100%;
+  background: rgba(255, 85, 0, 0.05);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  color: #FFF;
+  font-family: inherit;
+  font-size: 8px;
+  padding: 10px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.bioTextarea:focus {
+  outline: none;
+  border-color: #FF5500;
+  box-shadow: 0 0 5px rgba(255, 85, 0, 0.5);
+}
+
+.bioText {
+  font-size: 8px;
+  color: #FFF;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  color: #FFAA00;
+  padding: 4px 8px;
+  font-size: 7px;
+  border-radius: 2px;
+}
+
+.emptyText {
+  font-size: 8px;
+  color: #666;
+  font-style: italic;
+}
+
+.experienceLevel {
+  display: flex;
+  align-items: center;
+}
+
+.experienceTag {
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.experienceTag.beginner {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00FF00;
+  color: #00FF00;
+}
+
+.experienceTag.intermediate {
+  background: rgba(255, 170, 0, 0.1);
+  border: 1px solid #FFAA00;
+  color: #FFAA00;
+}
+
+.experienceTag.advanced {
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid #FF5500;
+  color: #FF5500;
+}
+
+.experienceTag.professional {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid #FFD700;
+  color: #FFD700;
+}
+
+.socialLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: rgba(255, 85, 0, 0.05);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  color: #FFAA00;
+  text-decoration: none;
+  font-size: 7px;
+  transition: all 0.3s ease;
+}
+
+.socialLink:hover {
+  background: rgba(255, 85, 0, 0.1);
+  color: #FF5500;
+  transform: translateY(-1px);
+}
+
+/* ===== 통계 탭 ===== */
+.statsTab {
+  padding: 20px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.statCard {
+  background: rgba(255, 85, 0, 0.05);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  padding: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  background: rgba(255, 85, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 85, 0, 0.2);
+}
+
+.statIcon {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.statValue {
+  font-size: 12px;
+  color: #FFF;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.statLabel {
+  font-size: 7px;
+  color: #666;
+}
+
+.statsSection {
+  margin-bottom: 30px;
+}
+
+.statsSection h4 {
+  font-size: 10px;
+  color: #FF5500;
+  margin: 0 0 15px 0;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+}
+
+/* ===== 장르 통계 ===== */
+.genreStats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.genreItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.genreInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.genreName {
+  font-size: 8px;
+  color: #FFF;
+}
+
+.genrePercentage {
+  font-size: 8px;
+  color: #FFAA00;
+}
+
+.genreBar {
+  height: 6px;
+  background: rgba(255, 85, 0, 0.1);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.genreProgress {
+  height: 100%;
+  background: linear-gradient(90deg, #FF5500, #FFAA00);
+  transition: width 0.5s ease;
+}
+
+/* ===== 주간 차트 ===== */
+.weeklyChart {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 100px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
+  margin-bottom: 10px;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+
+.dayBars {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  height: 80px;
+  justify-content: flex-end;
+}
+
+.uploadBar,
+.listeningBar,
+.messageBar {
+  width: 8px;
+  min-height: 2px;
+  transition: height 0.3s ease;
+}
+
+.uploadBar {
+  background: #FF5500;
+}
+
+.listeningBar {
+  background: #00FF00;
+}
+
+.messageBar {
+  background: #0099FF;
+}
+
+.dayLabel {
+  font-size: 6px;
+  color: #666;
+  text-align: center;
+}
+
+.chartLegend {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 7px;
+  color: #666;
+}
+
+.legendColor {
+  width: 8px;
+  height: 8px;
+}
+
+.uploadColor { background: #FF5500; }
+.listeningColor { background: #00FF00; }
+.messageColor { background: #0099FF; }
+
+/* ===== 뱃지 탭 ===== */
+.badgesTab {
+  padding: 20px;
+}
+
+.badgesSection,
+.achievementsSection {
+  margin-bottom: 30px;
+}
+
+.badgesSection h4,
+.achievementsSection h4 {
+  font-size: 10px;
+  color: #FF5500;
+  margin: 0 0 15px 0;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+}
+
+.badgeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.badgeCard {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid;
+  padding: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.badgeCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 20px rgba(255, 85, 0, 0.3);
+}
+
+.badgeCard.common { border-color: #00FF00; }
+.badgeCard.rare { border-color: #0099FF; }
+.badgeCard.epic { border-color: #9932CC; }
+.badgeCard.legendary { border-color: #FFD700; }
+
+.badgeIcon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.badgeName {
+  font-size: 8px;
+  color: #FFF;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.badgeDescription {
+  font-size: 7px;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.badgeDate {
+  font-size: 6px;
+  color: #FFAA00;
+}
+
+.emptyBadges {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.3;
+}
+
+.emptyBadges p {
+  font-size: 8px;
+  margin: 5px 0;
+}
+
+/* ===== 업적 리스트 ===== */
+.achievementList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.achievementCard {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(255, 85, 0, 0.05);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.achievementCard:hover {
+  background: rgba(255, 85, 0, 0.1);
+}
+
+.achievementCard.completed {
+  border-color: #00FF00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.achievementIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.achievementInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.achievementName {
+  font-size: 9px;
+  color: #FFF;
+  font-weight: bold;
+}
+
+.achievementDescription {
+  font-size: 7px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.progressContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 85, 0, 0.2);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #FF5500, #FFAA00);
+  transition: width 0.5s ease;
+}
+
+.progressText {
+  font-size: 7px;
+  color: #FFAA00;
+  white-space: nowrap;
+}
+
+.unlockedDate {
+  font-size: 6px;
+  color: #00FF00;
+}
+
+/* ===== 설정 탭 ===== */
+.settingsTab {
+  padding: 20px;
+}
+
+.settingSection {
+  margin-bottom: 25px;
+}
+
+.settingSection h4 {
+  font-size: 10px;
+  color: #FF5500;
+  margin: 0 0 15px 0;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+}
+
+.settingList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settingItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.settingLabel {
+  font-size: 8px;
+  color: #FFF;
+  flex: 1;
+}
+
+.volumeSlider {
+  width: 100px;
+  height: 4px;
+  background: #333;
+  outline: none;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  background: #FF5500;
+  cursor: pointer;
+  border-radius: 50%;
+  -webkit-appearance: none;
+}
+
+.volumeValue {
+  font-size: 8px;
+  color: #FFAA00;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* ===== 토글 스위치 ===== */
+.toggle {
+  width: 40px;
+  height: 20px;
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggleOn {
+  background: #FF5500;
+  border-color: #FF5500;
+}
+
+.toggleOff {
+  background: #333;
+  border-color: #555;
+}
+
+.toggleSlider {
+  width: 16px;
+  height: 16px;
+  background: #FFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggleOn .toggleSlider {
+  transform: translateX(20px);
+}
+
+/* ===== 아바타 에디터 ===== */
+.avatarEditorOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.avatarEditor {
+  background: #000;
+  border: 2px solid #FF5500;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.avatarEditor h3 {
+  font-size: 12px;
+  color: #FF5500;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.editorSection {
+  margin-bottom: 20px;
+}
+
+.editorSection label {
+  display: block;
+  font-size: 8px;
+  color: #FFAA00;
+  margin-bottom: 8px;
+}
+
+.typeOptions {
+  display: flex;
+  gap: 10px;
+}
+
+.typeBtn {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid #666;
+  color: #666;
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.typeBtn:hover {
+  border-color: #FF5500;
+  color: #FF5500;
+}
+
+.typeBtn.active {
+  background: #FF5500;
+  color: #000;
+  border-color: #FF5500;
+}
+
+.emojiGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.emojiBtn {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid #666;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emojiBtn:hover {
+  border-color: #FF5500;
+  background: rgba(255, 85, 0, 0.1);
+}
+
+.emojiBtn.active {
+  border-color: #FF5500;
+  background: #FF5500;
+  transform: scale(1.1);
+}
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+}
+
+.colorBtn {
+  width: 30px;
+  height: 30px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.colorBtn:hover {
+  transform: scale(1.1);
+  border-color: #FFF;
+}
+
+.colorBtn.active {
+  border-color: #FFF;
+  transform: scale(1.2);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.avatarPreview {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.editorActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+  .profileContainer {
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  
+  .basicInfo {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .badgeGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .weeklyChart {
+    height: 80px;
+  }
+  
+  .achievementCard {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .avatarEditor {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .emojiGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .colorGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .profileHeader {
+    padding: 15px;
+  }
+  
+  .profileTitle {
+    font-size: 12px;
+  }
+  
+  .tabBtn {
+    padding: 10px 5px;
+    font-size: 7px;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .statCard {
+    padding: 10px;
+  }
+  
+  .weeklyChart {
+    height: 60px;
+  }
+  
+  .dayBars {
+    height: 40px;
+  }
+}
+
+/* ===== 애니메이션 ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profileContainer {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.statCard:hover {
+  animation: pulse 2s infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px currentColor; }
+  50% { box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+}
+
+.badgeCard.legendary {
+  animation: glow 3s ease-in-out infinite;
+}
