@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/app/components/Header';
-import { io, Socket } from 'socket.io-client'; // ✅ 정상 import
+import { io, Socket } from 'socket.io-client'; 
 import styles from './chatroom.module.css';
 
 interface Room {
