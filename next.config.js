@@ -3,10 +3,15 @@ const nextConfig = {
   // 프록시 설정: Next.js → Socket.IO 서버로 요청 전달
   async rewrites() {
     return [
+      // Socket.IO 연결 (추가 필요)
+      {
+        source: '/socket.io/:path*',
+        destination: 'http://localhost:3001/socket.io/:path*',
+      },
       // 파일 업로드 요청
       {
-        source: '/upload/:path*',           // 브라우저가 요청하는 주소
-        destination: 'http://localhost:3001/upload/:path*', // 실제로 전달될 주소
+        source: '/upload/:path*',
+        destination: 'http://localhost:3001/upload/:path*',
       },
       // 업로드된 파일 접근
       {
@@ -33,9 +38,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-
-/* 🔍 동작 원리:
-   브라우저: localhost:3000/upload/file
-   ↓ (Next.js가 자동으로 변환)
-   서버: localhost:3001/upload/file
-*/

@@ -653,6 +653,37 @@
   height: 24px;
 }
 
+/* Debug Info */
+.debugInfo {
+  background: #191919;
+  border: 1px solid #333;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  font-size: 8px;
+  color: #FFFFFF;
+  text-align: center;
+}
+
+.debugInfo p {
+  margin: 5px 0;
+}
+
+.refreshBtn {
+  background: #FF5500;
+  color: #000;
+  border: none;
+  padding: 5px 10px;
+  font-size: 7px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.refreshBtn:hover {
+  background: #FF8800;
+}
+
 /* Empty State */
 .emptyState {
   text-align: center;

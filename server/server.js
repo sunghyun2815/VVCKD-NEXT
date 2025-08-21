@@ -380,6 +380,7 @@ io.on('connection', (socket) => {
     
     // 모든 클라이언트에게 새 룸 알림
     io.emit('music_room_created', newRoom);
+    io.emit('music_room_list', getRoomList()); 
   });
 
   socket.on('join_music_room', (data) => {
