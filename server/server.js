@@ -87,18 +87,26 @@ const upload = multer({
 app.use('/uploads', express.static(uploadsDir));
 
 // ===== 데이터 저장소 (메모리) =====
+// 음악룸 관련
 const musicRooms = new Map();
-const connectedUsers = new Map();
 const roomMessages = new Map();
 const roomAudioFiles = new Map();
+
+// 채팅룸 관련 (새로 추가)
+const chatRooms = new Map();
+const chatRoomMessages = new Map();
+
+// 사용자 관련
+const connectedUsers = new Map();
 
 // ===== 기본 라우트 =====
 app.get('/', (req, res) => {
   res.json({
-    message: '🎵 VLYNK Music Room Server',
+    message: '🎵 VLYNK Server (Music + Chat)',
     status: 'running',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
+    features: ['Music Rooms', 'Chat Rooms', 'File Upload', 'Real-time Communication'],
     endpoints: {
       upload: '/upload',
       stream: '/stream/:filename',
@@ -278,7 +286,49 @@ function createDefaultRooms() {
     roomAudioFiles.set(room.id, []);
   });
 
-  console.log('🏠 Default rooms created:', defaultRooms.length);
+  console.log('🏠 Default music rooms created:', defaultRooms.length);
+}
+
+function createDefaultChatRooms() {
+  const defaultChatRooms = [
+    {
+      name: 'General Chat',
+      users: new Set(),
+      messages: [],
+      maxUsers: null,
+      password: null,
+      creator: 'system',
+      createdAt: Date.now(),
+      lastMessageTime: Date.now()
+    },
+    {
+      name: 'Music Discussion',
+      users: new Set(),
+      messages: [],
+      maxUsers: null,
+      password: null,
+      creator: 'system',
+      createdAt: Date.now(),
+      lastMessageTime: Date.now()
+    },
+    {
+      name: 'Project Feedback',
+      users: new Set(),
+      messages: [],
+      maxUsers: null,
+      password: null,
+      creator: 'system',
+      createdAt: Date.now(),
+      lastMessageTime: Date.now()
+    }
+  ];
+
+  defaultChatRooms.forEach(room => {
+    chatRooms.set(room.name, room);
+    chatRoomMessages.set(room.name, []);
+  });
+
+  console.log('💬 Default chat rooms created:', defaultChatRooms.length);
 }
 
 function getRoomList() {
@@ -337,7 +387,7 @@ io.on('connection', (socket) => {
 
     console.log(`👤 User joined: ${username} (${socket.id})`);
     
-    // 룸 목록 전송
+    // 음악룸 목록 전송
     socket.emit('music_room_list', getRoomList());
   });
 
@@ -350,7 +400,7 @@ io.on('connection', (socket) => {
     console.log(`👤 User left: ${userData?.username} (${socket.id})`);
   });
 
-  // ===== 룸 관리 =====
+  // ===== 음악룸 관리 =====
   socket.on('get_music_room_list', () => {
     socket.emit('music_room_list', getRoomList());
   });
@@ -376,11 +426,11 @@ io.on('connection', (socket) => {
     roomMessages.set(newRoom.id, []);
     roomAudioFiles.set(newRoom.id, []);
 
-    console.log(`🆕 Room created: ${newRoom.name} by ${userData.username}`);
+    console.log(`🆕 Music room created: ${newRoom.name} by ${userData.username}`);
     
     // 모든 클라이언트에게 새 룸 알림
     io.emit('music_room_created', newRoom);
-    io.emit('music_room_list', getRoomList()); 
+    io.emit('music_room_list', getRoomList()); // 업데이트된 목록 전송
   });
 
   socket.on('join_music_room', (data) => {
@@ -417,7 +467,154 @@ io.on('connection', (socket) => {
     handleLeaveRoom(socket, roomId);
   });
 
-  // ===== 채팅 =====
+  // ===== 채팅룸 관리 (새로 추가) =====
+  socket.on('get_chat_room_list', () => {
+    const roomList = Array.from(chatRooms.values()).map(room => ({
+      name: room.name,
+      userCount: room.users.size,
+      maxUsers: room.maxUsers,
+      hasPassword: !!room.password,
+      creator: room.creator,
+      lastMessage: room.messages.length > 0 ? 
+        room.messages[room.messages.length - 1].message : null,
+      lastMessageTime: room.lastMessageTime
+    }));
+    
+    socket.emit('chat_room_list', roomList);
+  });
+
+  socket.on('create_chat_room', (data) => {
+    const { roomName, maxUsers, password } = data;
+    const userData = connectedUsers.get(socket.id);
+    
+    if (!userData || !userData.username) {
+      socket.emit('chat_room_join_error', { message: '로그인이 필요합니다.' });
+      return;
+    }
+    
+    if (!chatRooms.has(roomName)) {
+      chatRooms.set(roomName, {
+        name: roomName,
+        users: new Set(),
+        messages: [],
+        maxUsers: maxUsers || null,
+        password: password || null,
+        creator: userData.username,
+        createdAt: Date.now(),
+        lastMessageTime: Date.now()
+      });
+      
+      chatRoomMessages.set(roomName, []);
+      
+      console.log(`💬 Chat room created: ${roomName} by ${userData.username}`);
+      
+      // 모든 클라이언트에게 새 룸 알림
+      io.emit('chat_room_created', { 
+        roomName, 
+        maxUsers,
+        hasPassword: !!password
+      });
+      
+      // 업데이트된 채팅룸 목록 전송
+      const updatedRoomList = Array.from(chatRooms.values()).map(room => ({
+        name: room.name,
+        userCount: room.users.size,
+        maxUsers: room.maxUsers,
+        hasPassword: !!room.password,
+        creator: room.creator,
+        lastMessage: room.messages.length > 0 ? 
+          room.messages[room.messages.length - 1].message : null,
+        lastMessageTime: room.lastMessageTime
+      }));
+      io.emit('chat_room_list', updatedRoomList);
+    } else {
+      socket.emit('chat_room_join_error', { message: '이미 존재하는 방 이름입니다.' });
+    }
+  });
+
+  socket.on('join_chat_room', (data) => {
+    const { roomName, password } = data;
+    const userData = connectedUsers.get(socket.id);
+    const room = chatRooms.get(roomName);
+    
+    if (!userData || !userData.username) {
+      socket.emit('chat_room_join_error', { message: '로그인이 필요합니다.' });
+      return;
+    }
+    
+    if (!room) {
+      socket.emit('chat_room_join_error', { message: '존재하지 않는 방입니다.' });
+      return;
+    }
+
+    if (room.password && room.creator !== userData.username) {
+      if (!password || password !== room.password) {
+        socket.emit('chat_room_join_error', { message: '비밀번호가 틀렸습니다.' });
+        return;
+      }
+    }
+
+    if (room.maxUsers && room.users.size >= room.maxUsers) {
+      socket.emit('chat_room_join_error', { message: '방이 가득 찼습니다.' });
+      return;
+    }
+
+    // 기존 채팅방에서 나가기
+    chatRooms.forEach((existingRoom, existingRoomName) => {
+      if (existingRoom.users.has(userData.username)) {
+        existingRoom.users.delete(userData.username);
+        socket.leave(existingRoomName);
+        socket.to(existingRoomName).emit('user_left_room', {
+          username: userData.username,
+          userCount: existingRoom.users.size
+        });
+      }
+    });
+
+    // 새 방 입장
+    room.users.add(userData.username);
+    socket.join(roomName);
+    
+    socket.emit('chat_room_join_success', {
+      roomName: roomName,
+      userCount: room.users.size,
+      maxUsers: room.maxUsers
+    });
+
+    // 기존 메시지들 전송
+    const messages = chatRoomMessages.get(roomName) || [];
+    messages.forEach(message => {
+      socket.emit('chat_message', message);
+    });
+
+    // 다른 사용자들에게 입장 알림
+    socket.to(roomName).emit('user_joined_room', {
+      username: userData.username,
+      userCount: room.users.size
+    });
+
+    console.log(`💬 ${userData.username} joined chat room: ${roomName}`);
+  });
+
+  socket.on('leave_chat_room', (data) => {
+    const { roomName } = data;
+    const userData = connectedUsers.get(socket.id);
+    const room = chatRooms.get(roomName);
+    
+    if (userData && room && room.users.has(userData.username)) {
+      room.users.delete(userData.username);
+      socket.leave(roomName);
+      
+      socket.to(roomName).emit('user_left_room', {
+        username: userData.username,
+        userCount: room.users.size
+      });
+      
+      console.log(`💬 ${userData.username} left chat room: ${roomName}`);
+    }
+  });
+
+  // ===== 음악룸 채팅 =====
   socket.on('music_chat_message', (messageData) => {
     const userData = connectedUsers.get(socket.id);
     if (!userData || !userData.currentRoom) {
@@ -435,7 +632,7 @@ io.on('connection', (socket) => {
     messages.push(message);
     roomMessages.set(userData.currentRoom, messages);
 
-    console.log(`💬 Chat message in ${userData.currentRoom}: ${message.message}`);
+    console.log(`💬 Music chat in ${userData.currentRoom}: ${message.message}`);
     
     // 룸의 모든 사용자에게 전송
     broadcastToRoom(userData.currentRoom, 'music_chat_message', message);
@@ -462,6 +659,39 @@ io.on('connection', (socket) => {
     
     // 룸의 모든 사용자에게 전송
     broadcastToRoom(userData.currentRoom, 'music_voice_message', message);
+  });
+
+  // ===== 채팅룸 메시지 =====
+  socket.on('chat_message', (messageData) => {
+    const userData = connectedUsers.get(socket.id);
+    const { roomName } = messageData;
+    const room = chatRooms.get(roomName);
+    
+    if (!userData || !room || !room.users.has(userData.username)) {
+      return;
+    }
+
+    const message = {
+      id: generateId(),
+      user: userData.username,
+      message: messageData.message,
+      timestamp: Date.now(),
+      fileData: messageData.fileData || null
+    };
+
+    // 메시지 저장
+    const messages = chatRoomMessages.get(roomName) || [];
+    messages.push(message);
+    chatRoomMessages.set(roomName, messages);
+    
+    // 방의 마지막 메시지 시간 업데이트
+    room.lastMessageTime = Date.now();
+    room.messages = messages; // 마지막 메시지 참조용
+
+    console.log(`💬 Chat message in ${roomName}: ${message.message}`);
+    
+    // 방의 모든 사용자에게 전송
+    io.to(roomName).emit('chat_message', message);
   });
 
   // ===== 오디오 파일 관리 =====
@@ -541,6 +771,20 @@ io.on('connection', (socket) => {
   socket.on('disconnect', (reason) => {
     const userData = connectedUsers.get(socket.id);
     
+    // 채팅룸에서 제거
+    if (userData && userData.username) {
+      chatRooms.forEach((room, roomName) => {
+        if (room.users.has(userData.username)) {
+          room.users.delete(userData.username);
+          socket.to(roomName).emit('user_left_room', {
+            username: userData.username,
+            userCount: room.users.size
+          });
+        }
+      });
+    }
+    
+    // 음악룸에서 제거
     if (userData && userData.currentRoom) {
       handleLeaveRoom(socket, userData.currentRoom);
     }
@@ -549,7 +793,7 @@ io.on('connection', (socket) => {
     console.log(`❌ User disconnected: ${userData?.username || socket.id} (${reason})`);
   });
 
-  // ===== 헬퍼 함수들 =====
+  // ===== 음악룸 헬퍼 함수들 =====
   function handleJoinRoom(socket, roomId) {
     const userData = connectedUsers.get(socket.id);
     const room = musicRooms.get(roomId);
@@ -590,7 +834,7 @@ io.on('connection', (socket) => {
       socket.emit('audio_file_uploaded', file);
     });
 
-    console.log(`✅ ${userData.username} joined room: ${room.name}`);
+    console.log(`✅ ${userData.username} joined music room: ${room.name}`);
     
     // 룸의 다른 사용자들에게 새 사용자 입장 알림
     socket.to(roomId).emit('music_room_user_joined', {
@@ -622,7 +866,7 @@ io.on('connection', (socket) => {
     room.updatedAt = new Date().toISOString();
     musicRooms.set(roomId, room);
 
-    console.log(`🚪 ${userData.username} left room: ${room.name}`);
+    console.log(`🚪 ${userData.username} left music room: ${room.name}`);
     
     // 룸의 다른 사용자들에게 사용자 퇴장 알림
     socket.to(roomId).emit('music_room_user_left', userData.id);
@@ -637,12 +881,14 @@ const PORT = process.env.PORT || 3001;
 
 // 기본 룸 생성
 createDefaultRooms();
+createDefaultChatRooms();
 
 server.listen(PORT, () => {
   console.log('🚀 VLYNK Socket.IO Server Started');
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`🔗 Next.js integration: http://localhost:3000`);
   console.log(`🎵 Music Room features enabled`);
+  console.log(`💬 Chat Room features enabled`);
   console.log(`📁 Upload directory: ${uploadsDir}`);
   console.log('=====================================');
 });

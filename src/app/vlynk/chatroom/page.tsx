@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import Header from '../../components/Header';
+import { useState, useEffect } from 'react';
+import Header from '@/app/components/Header';
+import { io, Socket } from 'socket.io-client'; // ✅ 정상 import
 import styles from './chatroom.module.css';
-import { io, Socket } from 'socket.io-client';
 
 interface Room {
   name: string;
@@ -16,187 +15,119 @@ interface Room {
   lastMessageTime: number;
 }
 
-interface Message {
-  id: string;
-  user: string;
-  message: string;
-  timestamp: number;
-  fileData?: {
-    name: string;
-    url: string;
-    type: string;
-  };
-}
-
 export default function ChatroomPage() {
-  const router = useRouter();
+  const [connectionStatus, setConnectionStatus] = useState('Connecting...');
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [currentUser, setCurrentUser] = useState('');
-  const [currentRoom, setCurrentRoom] = useState('');
+  const [logs, setLogs] = useState<string[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [messageInput, setMessageInput] = useState('');
-  const [isInRoom, setIsInRoom] = useState(false);
+  const [currentUser, setCurrentUser] = useState('');
   const [showLogin, setShowLogin] = useState(true);
   const [username, setUsername] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const addLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs(prev => [`[${timestamp}] ${message}`, ...prev.slice(0, 19)]);
+    console.log(message);
+  };
 
-  // Socket 초기화
   useEffect(() => {
-    const newSocket = io();
+    addLog('🔌 Socket.IO 연결 시작');
+    
+    // Next.js 프록시를 통한 연결
+    const newSocket = io({
+      autoConnect: true,
+      timeout: 10000,
+      transports: ['polling', 'websocket'], // polling을 먼저 시도
+      forceNew: true
+    });
+    
     setSocket(newSocket);
 
-    // Socket 이벤트 리스너들
-    newSocket.on('room list', (roomList: Room[]) => {
+    newSocket.on('connect', () => {
+      addLog(`✅ 연결 성공! ID: ${newSocket.id}`);
+      setConnectionStatus('Connected');
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      addLog(`❌ 연결 끊어짐: ${reason}`);
+      setConnectionStatus('Disconnected');
+    });
+
+    newSocket.on('connect_error', (error) => {
+      addLog(`❌ 연결 에러: ${error.message}`);
+      setConnectionStatus('Connection Error');
+    });
+
+    // 채팅룸 목록 받기
+    newSocket.on('chat_room_list', (roomList: Room[]) => {
+      addLog(`📋 채팅룸 목록 받음: ${roomList.length}개`);
       setRooms(roomList.sort((a, b) => a.name.localeCompare(b.name)));
     });
 
-    newSocket.on('room join success', (data: any) => {
-      setCurrentRoom(data.roomName);
-      setIsInRoom(true);
-      setMessages([]);
-    });
-
-    newSocket.on('room join error', (data: any) => {
-      alert(data.message);
-    });
-
-    newSocket.on('chat message', (message: Message) => {
-      setMessages(prev => [...prev, message]);
-    });
-
-    newSocket.on('user joined room', (data: any) => {
-      addSystemMessage(`${data.username} JOINED THE ROOM`);
-    });
-
-    newSocket.on('user left room', (data: any) => {
-      addSystemMessage(`${data.username} LEFT THE ROOM`);
-    });
-
-    newSocket.on('room created', (data: any) => {
-      addSystemMessage(`ROOM "${data.roomName}" CREATED`);
+    newSocket.on('chat_room_created', (data: any) => {
+      addLog(`🆕 새 채팅룸 생성됨: ${data.roomName || JSON.stringify(data)}`);
       loadRoomList();
     });
 
+    // 모든 이벤트 로깅
+    newSocket.onAny((eventName, ...args) => {
+      addLog(`📡 이벤트 [${eventName}]: ${JSON.stringify(args).substring(0, 100)}`);
+    });
+
     return () => {
+      addLog('🔌 Socket 연결 해제');
       newSocket.close();
     };
   }, []);
 
-  // 메시지 자동 스크롤
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const addSystemMessage = (message: string) => {
-    const systemMessage: Message = {
-      id: `system-${Date.now()}`,
-      user: 'SYSTEM',
-      message,
-      timestamp: Date.now()
-    };
-    setMessages(prev => [...prev, systemMessage]);
-  };
-
   const handleLogin = () => {
-    if (username.trim() && socket) {
+    if (username.trim() && socket && socket.connected) {
+      addLog(`🔐 로그인: ${username.trim()}`);
       setCurrentUser(username.trim());
       setShowLogin(false);
-      socket.emit('user join', { username: username.trim() });
-      loadRoomList();
+      
+      socket.emit('user_join', { username: username.trim() });
+      
+      setTimeout(() => {
+        loadRoomList();
+      }, 1000);
+    } else {
+      addLog('❌ Socket이 연결되지 않았거나 사용자명이 없음');
     }
   };
 
   const loadRoomList = () => {
+    if (socket && socket.connected) {
+      addLog('📋 채팅룸 목록 요청');
+      socket.emit('get_chat_room_list');
+    } else {
+      addLog('❌ Socket이 연결되지 않음 - 룸 목록 요청 불가');
+    }
+  };
+
+  const testCreateRoom = () => {
+    if (socket && socket.connected) {
+      const roomName = prompt('방 이름을 입력하세요:');
+      if (roomName && roomName.trim()) {
+        addLog(`🆕 방 생성: ${roomName.trim()}`);
+        socket.emit('create_chat_room', {
+          roomName: roomName.trim(),
+          maxUsers: null,
+          password: null
+        });
+      }
+    } else {
+      addLog('❌ Socket이 연결되지 않음');
+      alert('서버에 연결되지 않았습니다.');
+    }
+  };
+
+  const retryConnection = () => {
+    addLog('🔄 연결 재시도');
     if (socket) {
-      socket.emit('get room list');
+      socket.disconnect();
+      socket.connect();
     }
-  };
-
-  const joinRoom = (roomName: string) => {
-    if (socket && currentUser) {
-      socket.emit('join room', { roomName });
-    }
-  };
-
-  const createRoom = () => {
-    const roomName = prompt('Enter room name:');
-    const maxUsers = prompt('Maximum users (leave empty for unlimited):');
-    const password = prompt('Password (leave empty for public room):');
-
-    if (roomName && socket) {
-      socket.emit('create room', {
-        roomName: roomName.trim(),
-        maxUsers: maxUsers ? parseInt(maxUsers) : null,
-        password: password || null
-      });
-    }
-  };
-
-  const sendMessage = () => {
-    if (!messageInput.trim() && !selectedFile) return;
-
-    if (socket && currentUser && currentRoom) {
-      const messageData: any = {
-        roomName: currentRoom,
-        message: messageInput.trim(),
-        user: currentUser
-      };
-
-      if (selectedFile) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          messageData.fileData = {
-            name: selectedFile.name,
-            data: e.target?.result,
-            type: selectedFile.type
-          };
-          socket.emit('chat message', messageData);
-        };
-        reader.readAsDataURL(selectedFile);
-      } else {
-        socket.emit('chat message', messageData);
-      }
-
-      setMessageInput('');
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const leaveRoom = () => {
-    if (socket && currentRoom) {
-      socket.emit('leave room', { roomName: currentRoom });
-      setIsInRoom(false);
-      setCurrentRoom('');
-      setMessages([]);
-      loadRoomList();
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
-
-  const getTimeAgo = (timestamp: number) => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / (1000 * 60));
-    
-    if (minutes < 1) return 'now';
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `${days}d`;
   };
 
   if (showLogin) {
@@ -207,6 +138,16 @@ export default function ChatroomPage() {
           <div className={styles.loginTerminal}>
             <div className={styles.loginTitle}>VLYNK CHAT ACCESS</div>
             <div className={styles.loginSubtitle}>ENTER USERNAME</div>
+            
+            {/* 연결 상태 표시 */}
+            <div style={{ 
+              fontSize: '8px', 
+              color: connectionStatus === 'Connected' ? '#00FF00' : '#FF0000',
+              marginBottom: '10px'
+            }}>
+              Status: {connectionStatus}
+            </div>
+            
             <input
               type="text"
               className={styles.loginInput}
@@ -217,86 +158,30 @@ export default function ChatroomPage() {
               maxLength={20}
               autoFocus
             />
-            <button className={styles.loginBtn} onClick={handleLogin}>
+            <button 
+              className={styles.loginBtn} 
+              onClick={handleLogin}
+              disabled={connectionStatus !== 'Connected'}
+            >
               ENTER CHAT
             </button>
-          </div>
-        </div>
-      </>
-    );
-  }
 
-  if (isInRoom) {
-    return (
-      <>
-        <Header />
-        <div className={styles.chatView}>
-          <div className={styles.chatHeaderBar}>
-            <div className={styles.roomInfo}>
-              ROOM: {currentRoom} | USER: {currentUser}
-            </div>
-            <button className={styles.backBtn} onClick={leaveRoom}>
-              LEAVE ROOM
-            </button>
-          </div>
-
-          <div className={styles.chatArea}>
-            <div className={styles.messagesContainer}>
-              {messages.map((msg) => (
-                <div key={msg.id} className={styles.message}>
-                  {msg.user === 'SYSTEM' ? (
-                    <div className={styles.systemMessage}>
-                      {">>>"} {msg.message}
-                    </div>
-                  ) : (
-                    <div className={styles.userMessage}>
-                      <span className={styles.username}>{msg.user}:</span>{' '}
-                      <span className={styles.messageText}>{msg.message}</span>
-                      {msg.fileData && (
-                        <div className={styles.fileAttachment}>
-                          📎 {msg.fileData.name}
-                        </div>
-                      )}
-                    </div>
-                  )}
+            {/* 디버그 로그 */}
+            <div style={{
+              marginTop: '15px',
+              background: '#111',
+              padding: '10px',
+              height: '150px',
+              overflowY: 'auto',
+              fontSize: '8px',
+              border: '1px solid #333',
+              borderRadius: '4px'
+            }}>
+              {logs.map((log, index) => (
+                <div key={index} style={{ marginBottom: '2px' }}>
+                  {log}
                 </div>
               ))}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <div className={styles.inputArea}>
-              <div className={styles.fileUploadSection}>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
-                />
-                <button
-                  className={styles.fileBtn}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  📁
-                </button>
-                {selectedFile && (
-                  <span className={styles.filePreview}>
-                    {selectedFile.name}
-                  </span>
-                )}
-              </div>
-              
-              <input
-                type="text"
-                className={styles.messageInput}
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                placeholder="Type your message..."
-              />
-              
-              <button className={styles.sendButton} onClick={sendMessage}>
-                SEND
-              </button>
             </div>
           </div>
         </div>
@@ -310,10 +195,19 @@ export default function ChatroomPage() {
       <div className={styles.chatroomContainer}>
         <div className={styles.userInfo}>
           USER: <span>{currentUser}</span>
+          <div style={{ fontSize: '8px', marginTop: '5px' }}>
+            Status: <span style={{ color: connectionStatus === 'Connected' ? '#00FF00' : '#FF0000' }}>
+              {connectionStatus}
+            </span>
+          </div>
         </div>
 
         <div className={styles.createSection}>
-          <button className={styles.createRoomBtn} onClick={createRoom}>
+          <button 
+            className={styles.createRoomBtn} 
+            onClick={testCreateRoom}
+            disabled={connectionStatus !== 'Connected'}
+          >
             + CREATE ROOM
           </button>
         </div>
@@ -323,6 +217,53 @@ export default function ChatroomPage() {
             <h1>VLYNK CHAT ROOMS <span className={styles.cursor}>▌</span></h1>
           </div>
 
+          {/* 디버그 정보 */}
+          <div style={{
+            background: '#191919',
+            border: '1px solid #333',
+            padding: '10px',
+            margin: '20px 0',
+            borderRadius: '8px',
+            fontSize: '8px',
+            textAlign: 'center'
+          }}>
+            <div>연결 상태: {connectionStatus}</div>
+            <div>사용자: {currentUser}</div>
+            <div>방 개수: {rooms.length}</div>
+            <button 
+              onClick={loadRoomList}
+              style={{
+                background: '#FF5500',
+                color: '#000',
+                border: 'none',
+                padding: '5px 10px',
+                fontSize: '7px',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                marginTop: '5px',
+                marginRight: '5px'
+              }}
+            >
+              🔄 새로고침
+            </button>
+            <button 
+              onClick={retryConnection}
+              style={{
+                background: '#FFAA00',
+                color: '#000',
+                border: 'none',
+                padding: '5px 10px',
+                fontSize: '7px',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                marginTop: '5px'
+              }}
+            >
+              🔄 재연결
+            </button>
+          </div>
+
+          {/* 채팅룸 목록 */}
           <div className={styles.chatHub}>
             <div className={styles.chatColumn}>
               {rooms
@@ -331,22 +272,15 @@ export default function ChatroomPage() {
                   <div
                     key={room.name}
                     className={styles.chatRoom}
-                    onClick={() => joinRoom(room.name)}
+                    onClick={() => alert(`방 입장: ${room.name}`)}
                   >
                     <span className={styles.chatTitle}>
                       {room.name}
                       {room.hasPassword && ' 🔒'}
                     </span>
                     <span className={styles.chatTime}>
-                      {getTimeAgo(room.lastMessageTime)}
+                      {room.userCount} users
                     </span>
-                    <div className={styles.preview}>
-                      Users: {room.userCount}
-                      {room.maxUsers && `/${room.maxUsers}`}
-                      {room.lastMessage && (
-                        <div>Last: {room.lastMessage}</div>
-                      )}
-                    </div>
                   </div>
                 ))}
             </div>
@@ -358,25 +292,51 @@ export default function ChatroomPage() {
                   <div
                     key={room.name}
                     className={styles.chatRoom}
-                    onClick={() => joinRoom(room.name)}
+                    onClick={() => alert(`방 입장: ${room.name}`)}
                   >
                     <span className={styles.chatTitle}>
                       {room.name}
                       {room.hasPassword && ' 🔒'}
                     </span>
                     <span className={styles.chatTime}>
-                      {getTimeAgo(room.lastMessageTime)}
+                      {room.userCount} users
                     </span>
-                    <div className={styles.preview}>
-                      Users: {room.userCount}
-                      {room.maxUsers && `/${room.maxUsers}`}
-                      {room.lastMessage && (
-                        <div>Last: {room.lastMessage}</div>
-                      )}
-                    </div>
                   </div>
                 ))}
             </div>
+          </div>
+
+          {rooms.length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              color: '#FFFFFF',
+              opacity: 0.6,
+              padding: '20px',
+              fontSize: '8px'
+            }}>
+              {connectionStatus === 'Connected' ? 
+                '채팅룸이 없습니다. 새 룸을 만들어보세요!' : 
+                '서버에 연결 중...'}
+            </div>
+          )}
+
+          {/* 로그 */}
+          <div style={{
+            background: '#111',
+            padding: '15px',
+            height: '200px',
+            overflowY: 'auto',
+            fontSize: '8px',
+            border: '1px solid #333',
+            borderRadius: '4px',
+            marginTop: '20px'
+          }}>
+            <strong>연결 로그:</strong>
+            {logs.map((log, index) => (
+              <div key={index} style={{ marginBottom: '2px' }}>
+                {log}
+              </div>
+            ))}
           </div>
         </div>
       </div>
