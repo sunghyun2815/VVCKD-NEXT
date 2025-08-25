@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/app/components/Header';
-import { io, Socket } from 'socket.io-client'; 
-import styles from './chatroom.module.css';
+import { io, Socket } from 'socket.io-client';
 
 interface Room {
   name: string;
@@ -27,319 +26,259 @@ export default function ChatroomPage() {
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs(prev => [`[${timestamp}] ${message}`, ...prev.slice(0, 19)]);
-    console.log(message);
+    console.log(`[VLYNK] ${message}`);
   };
 
   useEffect(() => {
-    addLog('🔌 Socket.IO 연결 시작');
+    addLog('🔌 Socket.IO 연결 시작...');
     
-    // Next.js 프록시를 통한 연결
-    const newSocket = io({
+    // Socket.IO 연결 설정
+    const newSocket = io('/', {
       autoConnect: true,
-      timeout: 10000,
-      transports: ['polling', 'websocket'], // polling을 먼저 시도
-      forceNew: true
+      timeout: 20000,
+      transports: ['polling', 'websocket'], 
+      forceNew: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5
     });
     
     setSocket(newSocket);
 
+    // 연결 성공
     newSocket.on('connect', () => {
-      addLog(`✅ 연결 성공! ID: ${newSocket.id}`);
+      addLog(`✅ Socket.IO 연결 성공! ID: ${newSocket.id}`);
       setConnectionStatus('Connected');
+      
+      // 사용자 등록
+      newSocket.emit('user:register', {
+        username: username || 'Anonymous',
+        joinedAt: new Date().toISOString()
+      });
     });
 
+    // 연결 실패
+    newSocket.on('connect_error', (error) => {
+      addLog(`❌ 연결 실패: ${error.message}`);
+      setConnectionStatus('Connection Failed');
+      console.error('Socket.IO Connection Error:', error);
+    });
+
+    // 재연결 시도
+    newSocket.on('reconnect_attempt', (attempt) => {
+      addLog(`🔄 재연결 시도 ${attempt}...`);
+      setConnectionStatus(`Reconnecting... (${attempt})`);
+    });
+
+    // 재연결 성공
+    newSocket.on('reconnect', () => {
+      addLog('🔄 재연결 성공!');
+      setConnectionStatus('Reconnected');
+    });
+
+    // 연결 해제
     newSocket.on('disconnect', (reason) => {
-      addLog(`❌ 연결 끊어짐: ${reason}`);
+      addLog(`🔌 연결 해제: ${reason}`);
       setConnectionStatus('Disconnected');
     });
 
-    newSocket.on('connect_error', (error) => {
-      addLog(`❌ 연결 에러: ${error.message}`);
-      setConnectionStatus('Connection Error');
+    // 사용자 등록 완료
+    newSocket.on('user:registered', (userData) => {
+      addLog(`👤 사용자 등록 완료: ${userData.username || userData.id}`);
+      setCurrentUser(userData.id);
     });
 
-    // 채팅룸 목록 받기
-    newSocket.on('chat_room_list', (roomList: Room[]) => {
-      addLog(`📋 채팅룸 목록 받음: ${roomList.length}개`);
-      setRooms(roomList.sort((a, b) => a.name.localeCompare(b.name)));
+    // 사용자 목록 업데이트
+    newSocket.on('users:updated', (users) => {
+      addLog(`👥 접속자 수: ${users.length}명`);
     });
 
-    newSocket.on('chat_room_created', (data: any) => {
-      addLog(`🆕 새 채팅룸 생성됨: ${data.roomName || JSON.stringify(data)}`);
-      loadRoomList();
+    // 채팅 메시지 수신
+    newSocket.on('chat:new_message', (messageData) => {
+      addLog(`💬 새 메시지: ${messageData.message}`);
     });
 
-    // 모든 이벤트 로깅
-    newSocket.onAny((eventName, ...args) => {
-      addLog(`📡 이벤트 [${eventName}]: ${JSON.stringify(args).substring(0, 100)}`);
+    // 에러 핸들링
+    newSocket.on('error', (error) => {
+      addLog(`❌ Socket 에러: ${error}`);
+      console.error('Socket Error:', error);
     });
 
+    // 컴포넌트 언마운트 시 정리
     return () => {
-      addLog('🔌 Socket 연결 해제');
-      newSocket.close();
+      if (newSocket) {
+        addLog('🔌 Socket.IO 연결 종료');
+        newSocket.disconnect();
+      }
     };
-  }, []);
+  }, [username]);
 
   const handleLogin = () => {
-    if (username.trim() && socket && socket.connected) {
-      addLog(`🔐 로그인: ${username.trim()}`);
-      setCurrentUser(username.trim());
+    if (username.trim()) {
+      setCurrentUser(username);
       setShowLogin(false);
-      
-      socket.emit('user_join', { username: username.trim() });
-      
-      setTimeout(() => {
-        loadRoomList();
-      }, 1000);
-    } else {
-      addLog('❌ Socket이 연결되지 않았거나 사용자명이 없음');
+      addLog(`👤 ${username}으로 로그인`);
     }
   };
 
-  const loadRoomList = () => {
-    if (socket && socket.connected) {
-      addLog('📋 채팅룸 목록 요청');
-      socket.emit('get_chat_room_list');
-    } else {
-      addLog('❌ Socket이 연결되지 않음 - 룸 목록 요청 불가');
+  const testConnection = async () => {
+    addLog('🔍 서버 연결 테스트 중...');
+    
+    try {
+      const response = await fetch('/health');
+      const data = await response.json();
+      addLog(`✅ 서버 응답: ${data.status}`);
+    } catch (error) {
+      addLog(`❌ 서버 연결 실패: ${error}`);
     }
   };
 
-  const testCreateRoom = () => {
-    if (socket && socket.connected) {
-      const roomName = prompt('방 이름을 입력하세요:');
-      if (roomName && roomName.trim()) {
-        addLog(`🆕 방 생성: ${roomName.trim()}`);
-        socket.emit('create_chat_room', {
-          roomName: roomName.trim(),
-          maxUsers: null,
-          password: null
-        });
-      }
-    } else {
-      addLog('❌ Socket이 연결되지 않음');
-      alert('서버에 연결되지 않았습니다.');
-    }
-  };
-
-  const retryConnection = () => {
-    addLog('🔄 연결 재시도');
+  const testSocketConnection = () => {
     if (socket) {
-      socket.disconnect();
-      socket.connect();
+      addLog('🔍 Socket 연결 테스트 중...');
+      socket.emit('user:register', {
+        username: username || 'TestUser',
+        action: 'connection_test'
+      });
+    } else {
+      addLog('❌ Socket이 초기화되지 않음');
     }
   };
-
-  if (showLogin) {
-    return (
-      <>
-        <Header />
-        <div className={styles.loginModal}>
-          <div className={styles.loginTerminal}>
-            <div className={styles.loginTitle}>VLYNK CHAT ACCESS</div>
-            <div className={styles.loginSubtitle}>ENTER USERNAME</div>
-            
-            {/* 연결 상태 표시 */}
-            <div style={{ 
-              fontSize: '8px', 
-              color: connectionStatus === 'Connected' ? '#00FF00' : '#FF0000',
-              marginBottom: '10px'
-            }}>
-              Status: {connectionStatus}
-            </div>
-            
-            <input
-              type="text"
-              className={styles.loginInput}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-              placeholder="USERNAME"
-              maxLength={20}
-              autoFocus
-            />
-            <button 
-              className={styles.loginBtn} 
-              onClick={handleLogin}
-              disabled={connectionStatus !== 'Connected'}
-            >
-              ENTER CHAT
-            </button>
-
-            {/* 디버그 로그 */}
-            <div style={{
-              marginTop: '15px',
-              background: '#111',
-              padding: '10px',
-              height: '150px',
-              overflowY: 'auto',
-              fontSize: '8px',
-              border: '1px solid #333',
-              borderRadius: '4px'
-            }}>
-              {logs.map((log, index) => (
-                <div key={index} style={{ marginBottom: '2px' }}>
-                  {log}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
 
   return (
-    <>
+    <div style={{ minHeight: '100vh', backgroundColor: '#000', color: '#fff' }}>
       <Header />
-      <div className={styles.chatroomContainer}>
-        <div className={styles.userInfo}>
-          USER: <span>{currentUser}</span>
-          <div style={{ fontSize: '8px', marginTop: '5px' }}>
-            Status: <span style={{ color: connectionStatus === 'Connected' ? '#00FF00' : '#FF0000' }}>
-              {connectionStatus}
-            </span>
+      
+      <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>
+          VLYNK Chat Room - Socket.IO 연결 테스트
+        </h1>
+
+        {/* 연결 상태 */}
+        <div style={{
+          padding: '15px',
+          marginBottom: '20px',
+          backgroundColor: '#111',
+          borderRadius: '8px',
+          border: '1px solid #333'
+        }}>
+          <h3>연결 상태</h3>
+          <p>상태: <span style={{
+            color: connectionStatus.includes('Connected') ? '#00ff00' : 
+                  connectionStatus.includes('Failed') ? '#ff0000' : '#ffff00'
+          }}>{connectionStatus}</span></p>
+          <p>Socket ID: {socket?.id || 'Not connected'}</p>
+          <p>현재 사용자: {currentUser || 'Not logged in'}</p>
+          
+          <div style={{ marginTop: '10px', gap: '10px', display: 'flex' }}>
+            <button 
+              onClick={testConnection}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              서버 연결 테스트
+            </button>
+            <button 
+              onClick={testSocketConnection}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Socket 연결 테스트
+            </button>
           </div>
         </div>
 
-        <div className={styles.createSection}>
-          <button 
-            className={styles.createRoomBtn} 
-            onClick={testCreateRoom}
-            disabled={connectionStatus !== 'Connected'}
-          >
-            + CREATE ROOM
-          </button>
-        </div>
-
-        <div className={styles.mainContainer}>
-          <div className={styles.chatHeader}>
-            <h1>VLYNK CHAT ROOMS <span className={styles.cursor}>▌</span></h1>
-          </div>
-
-          {/* 디버그 정보 */}
+        {/* 로그인 */}
+        {showLogin && (
           <div style={{
-            background: '#191919',
-            border: '1px solid #333',
-            padding: '10px',
-            margin: '20px 0',
+            padding: '20px',
+            marginBottom: '20px',
+            backgroundColor: '#111',
             borderRadius: '8px',
-            fontSize: '8px',
-            textAlign: 'center'
+            border: '1px solid #333'
           }}>
-            <div>연결 상태: {connectionStatus}</div>
-            <div>사용자: {currentUser}</div>
-            <div>방 개수: {rooms.length}</div>
-            <button 
-              onClick={loadRoomList}
-              style={{
-                background: '#FF5500',
-                color: '#000',
-                border: 'none',
-                padding: '5px 10px',
-                fontSize: '7px',
-                cursor: 'pointer',
-                borderRadius: '4px',
-                marginTop: '5px',
-                marginRight: '5px'
-              }}
-            >
-              🔄 새로고침
-            </button>
-            <button 
-              onClick={retryConnection}
-              style={{
-                background: '#FFAA00',
-                color: '#000',
-                border: 'none',
-                padding: '5px 10px',
-                fontSize: '7px',
-                cursor: 'pointer',
-                borderRadius: '4px',
-                marginTop: '5px'
-              }}
-            >
-              🔄 재연결
-            </button>
-          </div>
-
-          {/* 채팅룸 목록 */}
-          <div className={styles.chatHub}>
-            <div className={styles.chatColumn}>
-              {rooms
-                .filter((_, index) => index % 2 === 0)
-                .map((room) => (
-                  <div
-                    key={room.name}
-                    className={styles.chatRoom}
-                    onClick={() => alert(`방 입장: ${room.name}`)}
-                  >
-                    <span className={styles.chatTitle}>
-                      {room.name}
-                      {room.hasPassword && ' 🔒'}
-                    </span>
-                    <span className={styles.chatTime}>
-                      {room.userCount} users
-                    </span>
-                  </div>
-                ))}
-            </div>
-            
-            <div className={styles.chatColumn}>
-              {rooms
-                .filter((_, index) => index % 2 === 1)
-                .map((room) => (
-                  <div
-                    key={room.name}
-                    className={styles.chatRoom}
-                    onClick={() => alert(`방 입장: ${room.name}`)}
-                  >
-                    <span className={styles.chatTitle}>
-                      {room.name}
-                      {room.hasPassword && ' 🔒'}
-                    </span>
-                    <span className={styles.chatTime}>
-                      {room.userCount} users
-                    </span>
-                  </div>
-                ))}
+            <h3>사용자명 입력</h3>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="사용자명을 입력하세요"
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#222',
+                  color: '#fff',
+                  border: '1px solid #555',
+                  borderRadius: '4px',
+                  flex: 1
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleLogin();
+                  }
+                }}
+              />
+              <button
+                onClick={handleLogin}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                입장
+              </button>
             </div>
           </div>
+        )}
 
-          {rooms.length === 0 && (
-            <div style={{
-              textAlign: 'center',
-              color: '#FFFFFF',
-              opacity: 0.6,
-              padding: '20px',
-              fontSize: '8px'
-            }}>
-              {connectionStatus === 'Connected' ? 
-                '채팅룸이 없습니다. 새 룸을 만들어보세요!' : 
-                '서버에 연결 중...'}
-            </div>
-          )}
-
-          {/* 로그 */}
-          <div style={{
-            background: '#111',
-            padding: '15px',
-            height: '200px',
-            overflowY: 'auto',
-            fontSize: '8px',
-            border: '1px solid #333',
-            borderRadius: '4px',
-            marginTop: '20px'
+        {/* 연결 로그 */}
+        <div style={{
+          padding: '15px',
+          backgroundColor: '#111',
+          borderRadius: '8px',
+          border: '1px solid #333',
+          maxHeight: '400px',
+          overflowY: 'auto'
+        }}>
+          <h3>연결 로그</h3>
+          <div style={{ 
+            fontFamily: 'monospace', 
+            fontSize: '14px',
+            lineHeight: '1.4'
           }}>
-            <strong>연결 로그:</strong>
-            {logs.map((log, index) => (
-              <div key={index} style={{ marginBottom: '2px' }}>
-                {log}
-              </div>
-            ))}
+            {logs.length === 0 ? (
+              <p style={{ color: '#666' }}>로그가 없습니다...</p>
+            ) : (
+              logs.map((log, index) => (
+                <div key={index} style={{ 
+                  marginBottom: '4px',
+                  color: log.includes('❌') ? '#ff6b6b' :
+                        log.includes('✅') ? '#51cf66' :
+                        log.includes('🔄') ? '#ffd43b' : '#fff'
+                }}>
+                  {log}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
