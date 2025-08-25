@@ -1,94 +1,126 @@
-/* VLYNK Chatroom Styles */
-.chatroomContainer {
-  min-height: 100vh;
-  background-color: #000;
-  color: var(--vlynk-text-primary, #FF5500);
-  font-family: 'PressStart2P', 'DungGeunMo', monospace;
-  font-size: 10px;
-  padding-top: 80px;
+/* ===== 기본 컨테이너 ===== */
+.container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  background: var(--vlynk-bg-tertiary, #000);
+  color: var(--vlynk-text-secondary, #fff);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-md, 10px);
+  position: relative;
 }
 
-/* Login Modal */
-.loginModal {
+/* ===== 로그인 화면 ===== */
+.loginOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: #000;
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
 }
 
-.loginTerminal {
-  background: var(--vlynk-bg-card, #191919);
-  border: 2px solid var(--vlynk-border-primary, #FF5500);
-  border-radius: 12px;
+.loginBox {
+  background: transparent;
+  border: 2px solid var(--vlynk-border-primary, #ff6600);
   padding: var(--vlynk-spacing-xl, 30px);
   text-align: center;
-  box-shadow: var(--vlynk-shadow-secondary, 0 8px 26px rgba(255, 85, 0, 0.24));
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 5px var(--vlynk-primary, #ff6600); }
+  to { box-shadow: 0 0 20px var(--vlynk-primary, #ff6600), 0 0 30px var(--vlynk-primary, #ff6600); }
 }
 
 .loginTitle {
-  color: var(--vlynk-text-primary, #FF5500);
-  font-size: var(--vlynk-font-2xl, 16px);
+  color: var(--vlynk-primary, #ff6600);
+  font-size: var(--vlynk-font-xl, 14px);
   margin-bottom: var(--vlynk-spacing-md, 15px);
-  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
 }
 
-.loginSubtitle {
-  color: var(--vlynk-text-secondary, #FFFFFF);
+.loginSubtext {
+  color: var(--vlynk-text-secondary, #fff);
   font-size: var(--vlynk-font-sm, 8px);
   margin-bottom: var(--vlynk-spacing-lg, 20px);
 }
 
 .loginInput {
-  background: #111;
-  border: 2px solid var(--vlynk-border-primary, #FF5500);
-  color: var(--vlynk-text-secondary, #FFFFFF);
-  padding: var(--vlynk-spacing-md, 12px);
-  font-family: inherit;
-  font-size: var(--vlynk-font-md, 10px);
-  border-radius: 4px;
-  margin-bottom: var(--vlynk-spacing-lg, 20px);
+  background: transparent;
+  border: 1px solid var(--vlynk-border-primary, #ff6600);
+  color: var(--vlynk-text-secondary, #fff);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-lg, 12px);
+  padding: var(--vlynk-spacing-md, 10px);
+  margin-bottom: var(--vlynk-spacing-xl, 30px);
   width: 250px;
   text-align: center;
 }
 
 .loginInput:focus {
   outline: none;
-  box-shadow: var(--vlynk-shadow-primary, 0 0 10px #FF5500);
+  box-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
 }
 
 .loginBtn {
-  background: var(--vlynk-primary, #FF5500);
+  background: var(--vlynk-primary, #ff6600);
   color: var(--vlynk-text-inverse, #000);
   border: none;
-  padding: var(--vlynk-spacing-md, 12px) var(--vlynk-spacing-lg, 20px);
-  font-family: inherit;
-  font-size: var(--vlynk-font-sm, 8px);
+  padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-lg, 20px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-md, 10px);
   cursor: pointer;
-  border-radius: 4px;
   transition: var(--vlynk-transition-normal, 0.3s ease);
 }
 
 .loginBtn:hover {
-  background: var(--vlynk-primary-hover, #FF8800);
-  box-shadow: var(--vlynk-shadow-primary, 0 0 10px #FF5500);
+  background: var(--vlynk-text-secondary, #fff);
+  box-shadow: 0 0 20px var(--vlynk-primary, #ff6600);
 }
 
-/* User Info */
+.loginBtn:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.connectionStatus {
+  margin-top: var(--vlynk-spacing-lg, 20px);
+  font-size: var(--vlynk-font-sm, 8px);
+  color: var(--vlynk-text-muted, #666);
+}
+
+.connected {
+  color: var(--vlynk-success, #00ff00);
+}
+
+.disconnected {
+  color: var(--vlynk-danger, #ff0000);
+}
+
+/* ===== 사용자 정보 ===== */
 .userInfo {
   position: fixed;
   top: 80px;
   left: 20px;
   font-size: var(--vlynk-font-md, 10px);
-  color: var(--vlynk-text-primary, #FF5500);
+  color: var(--vlynk-text-primary, #ff6600);
   z-index: 1001;
 }
 
+.userRole {
+  color: var(--vlynk-secondary, #ffff00);
+  margin-left: var(--vlynk-spacing-md, 10px);
+}
+
+/* ===== CREATE ROOM 섹션 ===== */
 .createSection {
   position: fixed;
   top: 80px;
@@ -97,23 +129,22 @@
 }
 
 .createRoomBtn {
-  background: var(--vlynk-primary, #FF5500);
+  background: var(--vlynk-primary, #ff6600);
   color: var(--vlynk-text-inverse, #000);
   border: none;
   padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-md, 15px);
-  font-family: inherit;
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
   font-size: var(--vlynk-font-sm, 8px);
   cursor: pointer;
-  border-radius: 4px;
   transition: var(--vlynk-transition-normal, 0.3s ease);
 }
 
 .createRoomBtn:hover {
-  background: var(--vlynk-primary-hover, #FF8800);
-  box-shadow: var(--vlynk-shadow-primary, 0 0 10px #FF5500);
+  background: var(--vlynk-text-secondary, #fff);
+  box-shadow: 0 0 20px var(--vlynk-primary, #ff6600);
 }
 
-/* Main Container */
+/* ===== 메인 컨테이너 ===== */
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -130,8 +161,15 @@
 
 .chatHeader h1 {
   font-size: var(--vlynk-font-3xl, 24px);
-  color: var(--vlynk-text-primary, #FF5500);
-  text-shadow: 0 0 5px #FF5500, 0 0 10px #FF5500, 0 0 20px #FF5500;
+  color: var(--vlynk-text-primary, #ff6600);
+  text-shadow: 0 0 5px #ff6600, 0 0 10px #ff6600, 0 0 20px #ff6600;
+  margin-bottom: var(--vlynk-spacing-md, 10px);
+}
+
+.statusText {
+  font-size: var(--vlynk-font-sm, 8px);
+  color: var(--vlynk-text-muted, #666);
+  margin-top: var(--vlynk-spacing-md, 10px);
 }
 
 .cursor {
@@ -143,7 +181,7 @@
   50% { opacity: 0; }
 }
 
-/* Chat Hub */
+/* ===== 채팅 허브 ===== */
 .chatHub {
   display: flex;
   gap: var(--vlynk-spacing-md, 16px);
@@ -163,7 +201,7 @@
 
 .chatRoom {
   position: relative;
-  border: 1px solid var(--vlynk-border-primary, #FF5500);
+  border: 1px solid var(--vlynk-border-primary, #ff6600);
   padding: var(--vlynk-spacing-md, 10px);
   cursor: pointer;
   width: 100%;
@@ -171,15 +209,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #000;
+  background-color: var(--vlynk-bg-tertiary, #000);
   transition: var(--vlynk-transition-normal, 0.3s ease);
-  border-radius: 4px;
 }
 
 .chatRoom:hover {
-  background-color: var(--vlynk-primary, #FF5500);
+  background-color: var(--vlynk-primary, #ff6600);
   color: var(--vlynk-text-inverse, #000);
-  box-shadow: var(--vlynk-shadow-primary, 0 0 10px #FF5500);
+  box-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
 }
 
 .chatTitle {
@@ -189,17 +226,17 @@
 }
 
 .chatTime {
-  background-color: var(--vlynk-primary, #FF5500);
+  background-color: var(--vlynk-primary, #ff6600);
   color: var(--vlynk-text-inverse, #000);
   font-size: var(--vlynk-font-sm, 8px);
   padding: 2px 4px;
   white-space: nowrap;
-  border-radius: 2px;
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
 }
 
 .chatRoom:hover .chatTime {
   background-color: var(--vlynk-text-inverse, #000);
-  color: var(--vlynk-primary, #FF5500);
+  color: var(--vlynk-primary, #ff6600);
 }
 
 .preview {
@@ -208,37 +245,55 @@
   top: 100%;
   left: 0;
   background-color: #111;
-  color: var(--vlynk-primary, #FF5500);
+  color: var(--vlynk-primary, #ff6600);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
   padding: var(--vlynk-spacing-sm, 8px);
-  border: 1px solid var(--vlynk-border-primary, #FF5500);
+  border: 1px solid var(--vlynk-border-primary, #ff6600);
   z-index: 100;
   white-space: pre-line;
-  width: 100%;
+  width: 400px;
   font-size: var(--vlynk-font-sm, 8px);
-  border-radius: 4px;
-  box-shadow: var(--vlynk-shadow-card, 0 4px 12px rgba(0, 0, 0, 0.5));
 }
 
 .chatRoom:hover .preview {
   display: block;
 }
 
-/* Chat View */
+/* ===== NO ROOMS 메시지 ===== */
+.noRooms {
+  text-align: center;
+  color: var(--vlynk-text-muted, #666);
+  padding: var(--vlynk-spacing-2xl, 50px);
+  font-size: var(--vlynk-font-md, 10px);
+  width: 100%;
+  grid-column: 1 / -1; /* 전체 너비 사용 */
+}
+
+.noRooms p {
+  margin-bottom: var(--vlynk-spacing-md, 10px);
+}
+
+.noRooms p:first-child {
+  color: var(--vlynk-primary, #ff6600);
+  text-shadow: 0 0 5px var(--vlynk-primary, #ff6600);
+}
+
+/* ===== 채팅 뷰 ===== */
 .chatView {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: #000;
+  background: var(--vlynk-bg-tertiary, #000);
   z-index: 1500;
   display: flex;
   flex-direction: column;
 }
 
 .chatHeaderBar {
-  background: #000;
-  border-bottom: 2px solid var(--vlynk-border-primary, #FF5500);
+  background: var(--vlynk-bg-tertiary, #000);
+  border-bottom: 2px solid var(--vlynk-border-primary, #ff6600);
   padding: var(--vlynk-spacing-md, 15px) var(--vlynk-spacing-lg, 20px);
   display: flex;
   justify-content: space-between;
@@ -247,25 +302,25 @@
 }
 
 .roomInfo {
-  color: var(--vlynk-primary, #FF5500);
+  color: var(--vlynk-primary, #ff6600);
   font-size: var(--vlynk-font-lg, 12px);
 }
 
 .backBtn {
-  background: #FF0000;
-  color: var(--vlynk-text-secondary, #FFFFFF);
+  background: var(--vlynk-danger, #ff0000);
+  color: var(--vlynk-text-secondary, #fff);
   border: none;
   padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-md, 15px);
-  font-family: inherit;
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
   font-size: var(--vlynk-font-sm, 8px);
   cursor: pointer;
-  border-radius: 4px;
   transition: var(--vlynk-transition-normal, 0.3s ease);
 }
 
 .backBtn:hover {
-  background: #CC0000;
-  box-shadow: 0 0 10px #FF0000;
+  background: var(--vlynk-text-secondary, #fff);
+  color: var(--vlynk-danger, #ff0000);
+  box-shadow: 0 0 10px var(--vlynk-danger, #ff0000);
 }
 
 .chatArea {
@@ -279,9 +334,9 @@
   flex: 1;
   padding: var(--vlynk-spacing-lg, 20px);
   overflow-y: auto;
-  background: #000;
+  background: var(--vlynk-bg-tertiary, #000);
   scrollbar-width: thin;
-  scrollbar-color: var(--vlynk-primary, #FF5500) #000;
+  scrollbar-color: var(--vlynk-primary, #ff6600) var(--vlynk-bg-tertiary, #000);
 }
 
 .messagesContainer::-webkit-scrollbar {
@@ -289,17 +344,29 @@
 }
 
 .messagesContainer::-webkit-scrollbar-track {
-  background: #000;
+  background: var(--vlynk-bg-tertiary, #000);
 }
 
 .messagesContainer::-webkit-scrollbar-thumb {
-  background: var(--vlynk-primary, #FF5500);
+  background: var(--vlynk-primary, #ff6600);
   border-radius: 4px;
+}
+
+.noMessages {
+  text-align: center;
+  color: var(--vlynk-text-muted, #666);
+  padding: var(--vlynk-spacing-2xl, 50px);
+  font-size: var(--vlynk-font-md, 10px);
+}
+
+.noMessages p {
+  margin-bottom: var(--vlynk-spacing-md, 10px);
 }
 
 .message {
   margin-bottom: var(--vlynk-spacing-md, 15px);
   animation: slideIn 0.3s ease-in;
+  position: relative;
 }
 
 @keyframes slideIn {
@@ -313,132 +380,448 @@
   }
 }
 
-.systemMessage {
-  color: var(--vlynk-secondary, #FFFF00);
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--vlynk-spacing-xs, 4px);
   font-size: var(--vlynk-font-sm, 8px);
-  font-style: italic;
 }
 
-.userMessage {
-  color: var(--vlynk-text-secondary, #FFFFFF);
-  font-size: var(--vlynk-font-md, 10px);
-  line-height: 1.4;
-}
-
-.username {
-  color: var(--vlynk-primary, #FF5500);
+.messageUser {
+  color: var(--vlynk-primary, #ff6600);
   font-weight: bold;
 }
 
-.messageText {
-  color: var(--vlynk-text-secondary, #FFFFFF);
+.messageTime {
+  color: var(--vlynk-text-muted, #666);
+  font-size: var(--vlynk-font-xs, 7px);
 }
 
-.fileAttachment {
-  color: var(--vlynk-info, #0099FF);
-  font-size: var(--vlynk-font-sm, 8px);
-  margin-top: var(--vlynk-spacing-xs, 4px);
-}
-
-/* Input Area */
-.inputArea {
+.messageContent {
   background: var(--vlynk-bg-secondary, #111);
-  border-top: 2px solid var(--vlynk-border-primary, #FF5500);
+  border: 1px solid var(--vlynk-border-secondary, #333);
+  padding: var(--vlynk-spacing-sm, 8px);
+  font-size: var(--vlynk-font-md, 10px);
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.myMessage .messageContent {
+  background: rgba(255, 102, 0, 0.1);
+  border-color: var(--vlynk-primary, #ff6600);
+}
+
+.systemMessage .messageContent {
+  background: rgba(255, 255, 0, 0.1);
+  border-color: var(--vlynk-secondary, #ffff00);
+  color: var(--vlynk-secondary, #ffff00);
+  font-style: italic;
+  text-align: center;
+}
+
+.inputArea {
+  border-top: 2px solid var(--vlynk-border-primary, #ff6600);
+  background: var(--vlynk-bg-secondary, #111);
   padding: var(--vlynk-spacing-md, 15px);
   display: flex;
-  gap: var(--vlynk-spacing-md, 10px);
+  flex-direction: column;
+  gap: var(--vlynk-spacing-sm, 8px);
+}
+
+.inputContainer {
+  display: flex;
+  gap: var(--vlynk-spacing-sm, 8px);
   align-items: center;
 }
 
+.messageInput {
+  flex: 1;
+  background: var(--vlynk-bg-tertiary, #000);
+  border: 1px solid var(--vlynk-border-primary, #ff6600);
+  color: var(--vlynk-text-secondary, #fff);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-md, 10px);
+  padding: var(--vlynk-spacing-md, 10px);
+  resize: none;
+}
+
+.messageInput:focus {
+  outline: none;
+  box-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
+}
+
+.messageInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 파일 업로드 관련 ===== */
 .fileUploadSection {
+  position: relative;
+}
+
+.fileBtn {
+  background: var(--vlynk-warning, #ffaa00);
+  color: var(--vlynk-text-inverse, #000);
+  border: none;
+  padding: var(--vlynk-spacing-md, 10px);
+  font-size: var(--vlynk-font-lg, 12px);
+  cursor: pointer;
+  transition: var(--vlynk-transition-normal, 0.3s ease);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileBtn:hover {
+  background: var(--vlynk-text-secondary, #fff);
+  box-shadow: 0 0 10px var(--vlynk-warning, #ffaa00);
+}
+
+.fileBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fileMenu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--vlynk-bg-tertiary, #000);
+  border: 2px solid var(--vlynk-border-primary, #ff6600);
+  padding: var(--vlynk-spacing-sm, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vlynk-spacing-xs, 4px);
+  z-index: 1000;
+  box-shadow: 0 0 20px var(--vlynk-primary, #ff6600);
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fileMenuBtn {
+  background: var(--vlynk-bg-secondary, #111);
+  color: var(--vlynk-text-secondary, #fff);
+  border: 1px solid var(--vlynk-border-secondary, #333);
+  padding: var(--vlynk-spacing-sm, 8px) var(--vlynk-spacing-md, 12px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-xs, 7px);
+  cursor: pointer;
+  transition: var(--vlynk-transition-normal, 0.3s ease);
+  white-space: nowrap;
+}
+
+.fileMenuBtn:hover {
+  background: var(--vlynk-primary, #ff6600);
+  color: var(--vlynk-text-inverse, #000);
+}
+
+.sendBtn {
+  background: var(--vlynk-primary, #ff6600);
+  color: var(--vlynk-text-inverse, #000);
+  border: none;
+  padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-lg, 20px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-sm, 8px);
+  cursor: pointer;
+  transition: var(--vlynk-transition-normal, 0.3s ease);
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.sendBtn:hover {
+  background: var(--vlynk-text-secondary, #fff);
+  box-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
+}
+
+.sendBtn:disabled {
+  background: var(--vlynk-text-muted, #666);
+  color: var(--vlynk-bg-secondary, #333);
+  cursor: not-allowed;
+}
+
+/* ===== 업로드 상태 ===== */
+.uploadStatus {
+  background: var(--vlynk-bg-tertiary, #000);
+  border: 1px solid var(--vlynk-warning, #ffaa00);
+  padding: var(--vlynk-spacing-sm, 8px);
+  font-size: var(--vlynk-font-sm, 8px);
+  color: var(--vlynk-warning, #ffaa00);
+}
+
+.uploadProgress {
   display: flex;
   align-items: center;
   gap: var(--vlynk-spacing-sm, 8px);
 }
 
-.fileBtn {
-  background: var(--vlynk-bg-card, #191919);
-  border: 2px solid var(--vlynk-border-primary, #FF5500);
-  color: var(--vlynk-text-primary, #FF5500);
-  padding: var(--vlynk-spacing-sm, 8px);
+.loadingDots {
+  display: flex;
+  gap: 2px;
+}
+
+.loadingDots span {
+  animation: bounce 1.4s ease-in-out infinite both;
+}
+
+.loadingDots span:nth-child(1) { animation-delay: -0.32s; }
+.loadingDots span:nth-child(2) { animation-delay: -0.16s; }
+.loadingDots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  } 40% {
+    transform: scale(1);
+  }
+}
+
+/* ===== 파일 메시지 스타일 ===== */
+.fileMessage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vlynk-spacing-sm, 8px);
+  max-width: 100%;
+}
+
+.fileName {
+  font-size: var(--vlynk-font-sm, 8px);
+  color: var(--vlynk-warning, #ffaa00);
+  font-weight: bold;
+}
+
+.fileSize {
+  font-size: var(--vlynk-font-xs, 7px);
+  color: var(--vlynk-text-muted, #666);
+}
+
+.chatImage {
+  max-width: 300px;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  border: 1px solid var(--vlynk-border-secondary, #333);
   cursor: pointer;
-  border-radius: 4px;
-  font-size: var(--vlynk-font-md, 10px);
   transition: var(--vlynk-transition-normal, 0.3s ease);
 }
 
-.fileBtn:hover {
-  background: var(--vlynk-primary, #FF5500);
-  color: var(--vlynk-text-inverse, #000);
+.chatImage:hover {
+  border-color: var(--vlynk-primary, #ff6600);
+  box-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
 }
 
-.filePreview {
-  color: var(--vlynk-info, #0099FF);
+.chatAudio {
+  width: 100%;
+  max-width: 300px;
+  height: 40px;
+  background: var(--vlynk-bg-tertiary, #000);
+  border: 1px solid var(--vlynk-border-secondary, #333);
+}
+
+.chatAudio::-webkit-media-controls-panel {
+  background-color: var(--vlynk-bg-secondary, #111);
+}
+
+.chatVideo {
+  width: 100%;
+  max-width: 400px;
+  max-height: 300px;
+  border: 1px solid var(--vlynk-border-secondary, #333);
+  background: var(--vlynk-bg-tertiary, #000);
+}
+
+.fileDownload {
+  color: var(--vlynk-info, #0099ff);
+  text-decoration: none;
+  font-size: var(--vlynk-font-sm, 8px);
+  padding: var(--vlynk-spacing-xs, 4px) var(--vlynk-spacing-sm, 8px);
+  border: 1px solid var(--vlynk-info, #0099ff);
+  display: inline-block;
+  transition: var(--vlynk-transition-normal, 0.3s ease);
+}
+
+.fileDownload:hover {
+  background: var(--vlynk-info, #0099ff);
+  color: var(--vlynk-text-inverse, #000);
+  box-shadow: 0 0 5px var(--vlynk-info, #0099ff);
+}
+
+/* ===== CREATE ROOM 모달 ===== */
+.createRoomModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.createRoomContent {
+  background: var(--vlynk-bg-tertiary, #000);
+  border: 2px solid var(--vlynk-border-primary, #ff6600);
+  padding: var(--vlynk-spacing-xl, 30px);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 0 30px var(--vlynk-primary, #ff6600);
+}
+
+.createRoomContent h2 {
+  color: var(--vlynk-primary, #ff6600);
+  text-align: center;
+  margin-bottom: var(--vlynk-spacing-lg, 20px);
+  font-size: var(--vlynk-font-lg, 12px);
+}
+
+.formGroup {
+  margin-bottom: var(--vlynk-spacing-md, 15px);
+}
+
+.formGroup label {
+  display: block;
+  color: var(--vlynk-text-secondary, #fff);
+  margin-bottom: var(--vlynk-spacing-xs, 5px);
   font-size: var(--vlynk-font-sm, 8px);
 }
 
-.messageInput {
-  flex: 1;
-  background: var(--vlynk-bg-card, #191919);
-  border: 2px solid var(--vlynk-border-primary, #FF5500);
-  color: var(--vlynk-text-secondary, #FFFFFF);
-  padding: var(--vlynk-spacing-md, 12px);
-  font-family: inherit;
-  font-size: var(--vlynk-font-md, 10px);
-  border-radius: 4px;
+.formInput {
+  width: 100%;
+  background: var(--vlynk-bg-secondary, #111);
+  border: 1px solid var(--vlynk-border-secondary, #333);
+  color: var(--vlynk-text-secondary, #fff);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-sm, 8px);
+  padding: var(--vlynk-spacing-sm, 8px);
+  box-sizing: border-box;
 }
 
-.messageInput:focus {
+.formInput:focus {
   outline: none;
-  box-shadow: var(--vlynk-shadow-primary, 0 0 10px #FF5500);
+  border-color: var(--vlynk-primary, #ff6600);
+  box-shadow: 0 0 5px var(--vlynk-primary, #ff6600);
 }
 
-.sendButton {
-  background: var(--vlynk-primary, #FF5500);
+.modalActions {
+  display: flex;
+  gap: var(--vlynk-spacing-md, 10px);
+  justify-content: center;
+  margin-top: var(--vlynk-spacing-lg, 20px);
+}
+
+.createBtn {
+  background: var(--vlynk-success, #00ff00);
   color: var(--vlynk-text-inverse, #000);
   border: none;
-  padding: var(--vlynk-spacing-md, 12px) var(--vlynk-spacing-lg, 20px);
-  font-family: inherit;
+  padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-lg, 20px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
   font-size: var(--vlynk-font-sm, 8px);
   cursor: pointer;
-  border-radius: 4px;
   transition: var(--vlynk-transition-normal, 0.3s ease);
 }
 
-.sendButton:hover {
-  background: var(--vlynk-primary-hover, #FF8800);
-  box-shadow: var(--vlynk-shadow-primary, 0 0 10px #FF5500);
+.createBtn:hover {
+  background: var(--vlynk-text-secondary, #fff);
+  color: var(--vlynk-success, #00ff00);
+  box-shadow: 0 0 10px var(--vlynk-success, #00ff00);
 }
 
-/* Responsive Design */
+.cancelBtn {
+  background: var(--vlynk-danger, #ff0000);
+  color: var(--vlynk-text-secondary, #fff);
+  border: none;
+  padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-lg, 20px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-sm, 8px);
+  cursor: pointer;
+  transition: var(--vlynk-transition-normal, 0.3s ease);
+}
+
+.cancelBtn:hover {
+  background: var(--vlynk-text-secondary, #fff);
+  color: var(--vlynk-danger, #ff0000);
+  box-shadow: 0 0 10px var(--vlynk-danger, #ff0000);
+}
+
+/* ===== 반응형 디자인 ===== */
 @media (max-width: 768px) {
   .chatHub {
     flex-direction: column;
-    gap: var(--vlynk-spacing-md, 15px);
-  }
-
-  .chatColumn {
-    width: 100%;
-  }
-
-  .chatRoom {
-    width: 100%;
-  }
-
-  .inputArea {
-    flex-wrap: wrap;
     gap: var(--vlynk-spacing-sm, 8px);
   }
-
-  .messageInput {
-    min-width: 200px;
+  
+  .chatRoom {
+    width: 300px;
   }
-
-  .userInfo, .createSection {
-    position: relative;
-    top: auto;
-    left: auto;
+  
+  .preview {
+    width: 300px;
+  }
+  
+  .userInfo {
+    font-size: var(--vlynk-font-sm, 8px);
+    top: 70px;
+    left: 10px;
+  }
+  
+  .createSection {
+    top: 70px;
+    right: 10px;
+  }
+  
+  .createRoomBtn {
+    font-size: var(--vlynk-font-xs, 7px);
+    padding: var(--vlynk-spacing-sm, 6px) var(--vlynk-spacing-md, 10px);
+  }
+  
+  .chatHeader h1 {
+    font-size: var(--vlynk-font-xl, 14px);
+  }
+  
+  .inputArea {
+    flex-direction: column;
+    gap: var(--vlynk-spacing-sm, 8px);
+  }
+  
+  .inputContainer {
+    flex-direction: column;
+    gap: var(--vlynk-spacing-sm, 8px);
+  }
+  
+  .sendBtn {
+    width: 100%;
+    align-self: stretch;
+  }
+  
+  .fileMenu {
     right: auto;
-    margin: var(--vlynk-spacing-md, 10px);
+    left: 0;
+    flex-direction: row;
+    bottom: 100%;
+  }
+  
+  .chatImage {
+    max-width: 250px;
+    max-height: 150px;
+  }
+  
+  .chatVideo {
+    max-width: 280px;
+    max-height: 200px;
   }
 }
