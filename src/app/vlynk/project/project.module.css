@@ -1,4 +1,3 @@
-/* ===== VLYNK Project Styles (project.html 기반) ===== */
 .projectContainer {
   width: 100vw;
   height: 100vh;
@@ -102,7 +101,315 @@
   margin-left: var(--vlynk-spacing-md, 10px);
 }
 
-/* ===== 메인 컨테이너 ===== */
+/* ===== 뮤직룸 화면 ===== */
+.musicRoom {
+  width: 100vw;
+  height: 100vh;
+  background: var(--vlynk-bg-tertiary, #000);
+  color: var(--vlynk-text-secondary, #fff);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.musicRoomHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--vlynk-spacing-lg, 20px);
+  border-bottom: 1px solid var(--vlynk-border-primary, #ff6600);
+  position: fixed;
+  top: 80px;
+  left: 0;
+  right: 0;
+  background: var(--vlynk-bg-tertiary, #000);
+  z-index: 1000;
+}
+
+.roomTitle {
+  color: var(--vlynk-primary, #ff6600);
+  font-size: var(--vlynk-font-lg, 14px);
+  text-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
+}
+
+.leaveBtn {
+  background: var(--vlynk-danger, #ff0000);
+  color: var(--vlynk-text-secondary, #fff);
+  border: none;
+  padding: var(--vlynk-spacing-sm, 8px) var(--vlynk-spacing-md, 12px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-xs, 6px);
+  cursor: pointer;
+  transition: var(--vlynk-transition-normal, 0.3s ease);
+}
+
+.leaveBtn:hover {
+  background: var(--vlynk-text-secondary, #fff);
+  color: var(--vlynk-danger, #ff0000);
+  box-shadow: 0 0 10px var(--vlynk-danger, #ff0000);
+}
+
+.musicContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px;
+  overflow: hidden;
+}
+
+/* ===== 트랙 헤더 ===== */
+.trackHeaderSimple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--vlynk-spacing-md, 15px) var(--vlynk-spacing-lg, 20px);
+  border-bottom: 1px solid var(--vlynk-border-secondary, #333);
+  background: var(--vlynk-bg-secondary, #111);
+}
+
+.trackInfoLeft {
+  flex: 1;
+}
+
+.trackTitleSimple {
+  color: var(--vlynk-primary, #ff6600);
+  font-size: var(--vlynk-font-sm, 8px);
+  margin-bottom: var(--vlynk-spacing-xs, 5px);
+  font-weight: bold;
+}
+
+.trackUploaderSimple {
+  color: var(--vlynk-text-muted, #666);
+  font-size: var(--vlynk-font-xs, 6px);
+}
+
+.trackActions {
+  display: flex;
+  gap: var(--vlynk-spacing-sm, 10px);
+}
+
+.downloadBtn {
+  background: var(--vlynk-bg-tertiary, #000);
+  color: var(--vlynk-text-muted, #666);
+  border: 1px solid var(--vlynk-border-secondary, #333);
+  padding: var(--vlynk-spacing-xs, 4px) var(--vlynk-spacing-sm, 8px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-xs, 6px);
+  cursor: not-allowed;
+}
+
+.downloadBtn:not(:disabled) {
+  background: var(--vlynk-success, #00ff00);
+  color: var(--vlynk-text-inverse, #000);
+  cursor: pointer;
+}
+
+/* ===== 웨이브폼 영역 (project.html 스타일 완전 이식) ===== */
+.waveformMainArea {
+  background: #111;
+  margin: var(--vlynk-spacing-lg, 20px);
+  padding: var(--vlynk-spacing-lg, 20px);
+  border: 1px solid var(--vlynk-border-primary, #ff6600);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.waveformContainerMain {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  background: #000;
+  margin-bottom: var(--vlynk-spacing-md, 15px);
+  border: 1px solid #333;
+}
+
+.waveformCanvasMain {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  display: block;
+}
+
+.waveformLoadingMain {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--vlynk-primary, #ff6600);
+  text-align: center;
+  font-size: var(--vlynk-font-sm, 8px);
+  pointer-events: none;
+}
+
+/* ===== 시간 표시 ===== */
+.timeDisplay {
+  text-align: center;
+  margin-bottom: var(--vlynk-spacing-md, 15px);
+  font-size: var(--vlynk-font-sm, 8px);
+}
+
+.timeCurrent {
+  color: var(--vlynk-primary, #ff6600);
+}
+
+.timeSeparator {
+  color: var(--vlynk-text-muted, #666);
+  margin: 0 var(--vlynk-spacing-xs, 5px);
+}
+
+.timeTotal {
+  color: var(--vlynk-text-secondary, #fff);
+}
+
+/* ===== 컨트롤 버튼들 ===== */
+.simpleControls {
+  display: flex;
+  justify-content: center;
+  gap: var(--vlynk-spacing-lg, 20px);
+  align-items: center;
+  margin-bottom: var(--vlynk-spacing-lg, 20px);
+}
+
+.playBtnMain, .uploadBtnMain {
+  background: var(--vlynk-primary, #ff6600);
+  color: var(--vlynk-text-inverse, #000);
+  border: none;
+  padding: var(--vlynk-spacing-md, 12px) var(--vlynk-spacing-lg, 20px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-sm, 8px);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.playBtnMain:hover, .uploadBtnMain:hover {
+  background: var(--vlynk-secondary, #ffff00);
+  box-shadow: 0 0 15px var(--vlynk-primary, #ff6600);
+}
+
+.playBtnMain:disabled {
+  background: #444;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.uploadBtnMain {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== 댓글 섹션 ===== */
+.commentsSection {
+  background: var(--vlynk-bg-secondary, #111);
+  border-top: 1px solid var(--vlynk-border-primary, #ff6600);
+  padding: var(--vlynk-spacing-lg, 20px);
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.commentInputArea {
+  display: flex;
+  gap: var(--vlynk-spacing-sm, 10px);
+  margin-bottom: var(--vlynk-spacing-md, 15px);
+  align-items: center;
+}
+
+.commentTimeIndicator {
+  background: var(--vlynk-bg-tertiary, #000);
+  color: var(--vlynk-primary, #ff6600);
+  padding: var(--vlynk-spacing-xs, 4px) var(--vlynk-spacing-sm, 8px);
+  font-size: var(--vlynk-font-xs, 6px);
+  min-width: 40px;
+  text-align: center;
+  border: 1px solid var(--vlynk-border-secondary, #333);
+}
+
+.commentInput {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--vlynk-border-secondary, #333);
+  color: var(--vlynk-text-secondary, #fff);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-xs, 6px);
+  padding: var(--vlynk-spacing-sm, 8px);
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: var(--vlynk-primary, #ff6600);
+  box-shadow: 0 0 5px var(--vlynk-primary, #ff6600);
+}
+
+.commentBtn {
+  background: var(--vlynk-bg-tertiary, #000);
+  color: var(--vlynk-text-secondary, #fff);
+  border: 1px solid var(--vlynk-border-secondary, #333);
+  padding: var(--vlynk-spacing-sm, 8px) var(--vlynk-spacing-md, 12px);
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-xs, 6px);
+  cursor: pointer;
+  transition: var(--vlynk-transition-normal, 0.3s ease);
+}
+
+.commentBtn:hover {
+  background: var(--vlynk-primary, #ff6600);
+  color: var(--vlynk-text-inverse, #000);
+}
+
+.commentBtn.voice {
+  background: var(--vlynk-secondary, #ffff00);
+  color: var(--vlynk-text-inverse, #000);
+}
+
+.commentBtn.send {
+  background: var(--vlynk-primary, #ff6600);
+  color: var(--vlynk-text-inverse, #000);
+}
+
+.commentsList {
+  flex: 1;
+  overflow-y: auto;
+  font-size: var(--vlynk-font-xs, 6px);
+  line-height: 1.4;
+}
+
+.comment {
+  margin-bottom: var(--vlynk-spacing-sm, 10px);
+  padding: var(--vlynk-spacing-xs, 5px);
+  border-left: 2px solid var(--vlynk-border-secondary, #333);
+  padding-left: var(--vlynk-spacing-sm, 10px);
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--vlynk-spacing-xs, 3px);
+}
+
+.commentUser {
+  color: var(--vlynk-primary, #ff6600);
+  font-weight: bold;
+}
+
+.commentTime {
+  color: var(--vlynk-text-muted, #666);
+}
+
+.commentContent {
+  color: var(--vlynk-text-secondary, #fff);
+}
+
+.voiceComment {
+  border-left-color: var(--vlynk-secondary, #ffff00);
+}
+
+.voiceComment .commentContent {
+  color: var(--vlynk-secondary, #ffff00);
+}
+
+/* ===== 메인 컨테이너 (룸 리스트) ===== */
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -186,67 +493,59 @@
   transform: translateY(-2px);
 }
 
-.projectTitle {
+.roomName {
   color: var(--vlynk-primary, #ff6600);
-  font-size: var(--vlynk-font-lg, 12px);
-  margin-bottom: var(--vlynk-spacing-md, 15px);
+  font-size: var(--vlynk-font-md, 10px);
+  font-weight: bold;
+  word-wrap: break-word;
+  flex: 1;
+}
+
+.roomStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--vlynk-spacing-xs, 5px);
+  color: var(--vlynk-text-muted, #666);
+  font-size: var(--vlynk-font-sm, 8px);
+  flex-shrink: 0;
+}
+
+.active {
+  color: var(--vlynk-success, #00ff00);
+}
+
+.inactive {
+  color: var(--vlynk-text-muted, #666);
+}
+
+.roomInfo {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.projectStatus {
-  font-size: var(--vlynk-font-xs, 6px);
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--vlynk-bg-tertiary, #000);
-}
-
-.status-active {
-  color: var(--vlynk-success, #00ff00);
-  border: 1px solid var(--vlynk-success, #00ff00);
-}
-
-.projectInfo {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--vlynk-spacing-md, 15px);
+  margin-bottom: var(--vlynk-spacing-sm, 10px);
   font-size: var(--vlynk-font-sm, 8px);
   color: var(--vlynk-text-muted, #666);
 }
 
-.projectParticipants, .projectMusicCount {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.roomUsers {
+  color: var(--vlynk-secondary, #ffff00);
 }
 
-.projectDescription {
+.roomCreator {
   color: var(--vlynk-text-secondary, #fff);
-  font-size: var(--vlynk-font-sm, 8px);
+}
+
+.roomDescription {
+  color: var(--vlynk-text-secondary, #fff);
+  font-size: var(--vlynk-font-xs, 7px);
   line-height: 1.4;
-  margin-bottom: var(--vlynk-spacing-lg, 20px);
-  min-height: 32px;
-}
-
-.projectTech {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--vlynk-spacing-xs, 4px);
-  margin-bottom: var(--vlynk-spacing-lg, 20px);
-}
-
-.techTag {
-  background: var(--vlynk-bg-tertiary, #000);
-  color: var(--vlynk-primary, #ff6600);
-  font-size: var(--vlynk-font-xs, 6px);
-  padding: 2px 6px;
-  border: 1px solid var(--vlynk-border-secondary, #333);
+  margin-top: var(--vlynk-spacing-sm, 10px);
 }
 
 .projectLinks {
   display: flex;
   gap: var(--vlynk-spacing-sm, 8px);
+  margin-top: var(--vlynk-spacing-md, 15px);
 }
 
 .projectBtn {
@@ -305,929 +604,32 @@
   color: var(--vlynk-text-muted, #666);
 }
 
-.createFirstBtn {
-  background: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-text-inverse, #000);
-  border: none;
-  padding: var(--vlynk-spacing-md, 12px) var(--vlynk-spacing-lg, 20px);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-sm, 8px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
+.hiddenFileInput {
+  display: none;
 }
 
-.createFirstBtn:hover {
-  background: var(--vlynk-text-secondary, #fff);
-  box-shadow: 0 0 20px var(--vlynk-primary, #ff6600);
-}
-
-/* ===== 🎵 BOOMBOX.IO 스타일 음악룸 뷰 (project.html 기반) ===== */
-
-/* 음악룸 전체 화면 */
-.musicRoom {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  z-index: 1500;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 음악룸 헤더 */
-.musicRoomHeader {
-  background: #000;
-  border-bottom: 2px solid var(--vlynk-border-primary, #ff6600);
-  padding: var(--vlynk-spacing-md, 15px) var(--vlynk-spacing-lg, 20px);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 60px; /* Header 높이만큼 */
-}
-
-.roomTitle {
-  color: var(--vlynk-primary, #ff6600);
-  font-size: var(--vlynk-font-lg, 12px);
-  text-shadow: 0 0 5px var(--vlynk-primary, #ff6600);
-}
-
-.leaveBtn {
-  background: var(--vlynk-danger, #ff0000);
-  color: var(--vlynk-text-secondary, #fff);
-  border: none;
-  padding: var(--vlynk-spacing-sm, 8px) var(--vlynk-spacing-md, 15px);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-sm, 8px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-}
-
-.leaveBtn:hover {
-  background: var(--vlynk-text-secondary, #fff);
-  color: var(--vlynk-danger, #ff0000);
-  box-shadow: 0 0 10px var(--vlynk-danger, #ff0000);
-}
-
-/* 음악 콘텐츠 */
-.musicContent {
-  flex: 1;
-  display: flex;
-  min-height: calc(100vh - 80px);
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-/* 트랙 헤더 (boombox.io 스타일) */
-.trackHeaderSimple {
-  background: #111;
-  padding: var(--vlynk-spacing-md, 15px) var(--vlynk-spacing-lg, 20px);
-  border-bottom: 1px solid var(--vlynk-border-primary, #ff6600);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.trackInfoLeft {
-  display: flex;
-  flex-direction: column;
-}
-
-.trackTitleSimple {
-  color: var(--vlynk-primary, #ff6600);
-  font-size: var(--vlynk-font-lg, 12px);
-  margin-bottom: 5px;
-}
-
-.trackUploaderSimple {
-  color: var(--vlynk-secondary, #ffff00);
-  font-size: var(--vlynk-font-sm, 8px);
-}
-
-.trackActions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.downloadBtn {
-  background: transparent;
-  color: var(--vlynk-success, #00ff00);
-  border: 1px solid var(--vlynk-success, #00ff00);
-  padding: 6px 12px;
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-xs, 7px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-  text-decoration: none;
-  display: inline-block;
-}
-
-.downloadBtn:hover {
-  background: var(--vlynk-success, #00ff00);
-  color: var(--vlynk-text-inverse, #000);
-  box-shadow: 0 0 5px var(--vlynk-success, #00ff00);
-}
-
-.downloadBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  color: #666;
-  border-color: #666;
-}
-
-/* 메인 웨이브폼 영역 (boombox.io 스타일) */
-.waveformMainArea {
-  background: #111;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 300px;
-  margin-bottom: var(--vlynk-spacing-lg, 20px);
-  z-index: 1;
-}
-
-.waveformContainerMain {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-}
-
-.waveformCanvasMain {
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.waveformLoadingMain {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--vlynk-primary, #ff6600);
-  text-align: center;
-  font-size: var(--vlynk-font-sm, 8px);
-}
-
-/* 시간 표시 (boombox.io 스타일) */
-.timeDisplay {
-  background: #111;
-  color: var(--vlynk-text-secondary, #fff);
-  font-size: var(--vlynk-font-md, 10px);
-  padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-lg, 20px);
-  border-top: 1px solid var(--vlynk-border-primary, #ff6600);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.timeCurrent {
-  color: var(--vlynk-primary, #ff6600);
-}
-
-.timeSeparator {
-  color: #666;
-  margin: 0 5px;
-}
-
-.timeTotal {
-  color: var(--vlynk-text-secondary, #fff);
-}
-
-/* 간단한 컨트롤 (boombox.io 스타일) */
-.simpleControls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--vlynk-spacing-lg, 20px);
-  padding: var(--vlynk-spacing-md, 10px);
-  background: #111;
-  border-top: 1px solid var(--vlynk-border-primary, #ff6600);
-  flex-wrap: wrap;
-}
-
-.playBtnMain {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--vlynk-primary, #ff6600);
-  border: none;
-  color: var(--vlynk-text-inverse, #000);
-  font-size: var(--vlynk-font-xl, 16px);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-}
-
-.playBtnMain:hover {
-  background: #ff8800;
-  transform: scale(1.05);
-}
-
-.playBtnMain:disabled {
-  background: #333;
-  color: #666;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.uploadBtnMain {
-  background: transparent;
-  color: var(--vlynk-primary, #ff6600);
-  border: 1px solid var(--vlynk-primary, #ff6600);
-  padding: var(--vlynk-spacing-md, 10px) var(--vlynk-spacing-lg, 20px);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-sm, 8px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-}
-
-.uploadBtnMain:hover {
-  background: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-text-inverse, #000);
-}
-
-/* 댓글 섹션 (boombox.io 스타일) */
-.commentsSection {
-  background: #000;
-  border-top: 2px solid var(--vlynk-border-primary, #ff6600);
-  padding: var(--vlynk-spacing-md, 10px);
-  margin-top: 0;
-  z-index: 1;
-  flex: 1;
-  min-height: 200px;
-}
-
-.commentInputArea {
-  display: flex;
-  gap: var(--vlynk-spacing-md, 10px);
-  margin-bottom: var(--vlynk-spacing-md, 10px);
-  flex-wrap: wrap;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  background: #000;
-  padding: var(--vlynk-spacing-md, 10px);
-  border-top: 1px solid var(--vlynk-border-primary, #ff6600);
-}
-
-.commentTimeIndicator {
-  color: var(--vlynk-text-secondary, #fff);
-  font-size: var(--vlynk-font-sm, 8px);
-  background: var(--vlynk-bg-secondary, #111);
-  padding: 4px 8px;
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  min-width: 50px;
-  text-align: center;
-}
-
-.commentInput {
-  background: var(--vlynk-bg-secondary, #111);
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  color: var(--vlynk-text-secondary, #fff);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-sm, 8px);
-  padding: var(--vlynk-spacing-sm, 8px);
-  flex: 1;
-  min-width: 200px;
-}
-
-.commentInput:focus {
-  outline: none;
-  border-color: var(--vlynk-border-primary, #ff6600);
-  box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
-}
-
-.commentBtn {
-  background: transparent;
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  color: var(--vlynk-text-secondary, #fff);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-xs, 7px);
-  padding: var(--vlynk-spacing-sm, 8px) var(--vlynk-spacing-md, 12px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-}
-
-.commentBtn.voice {
-  border-color: var(--vlynk-warning, #ffff00);
-  color: var(--vlynk-warning, #ffff00);
-}
-
-.commentBtn.voice:hover {
-  background: var(--vlynk-warning, #ffff00);
-  color: var(--vlynk-text-inverse, #000);
-}
-
-.commentBtn.send {
-  border-color: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-primary, #ff6600);
-}
-
-.commentBtn.send:hover {
-  background: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-text-inverse, #000);
-}
-
-/* 댓글 목록 */
-.commentsList {
-  max-height: 300px;
-  overflow-y: auto;
-  padding: var(--vlynk-spacing-md, 10px);
-}
-
-.comment {
-  display: flex;
-  gap: var(--vlynk-spacing-sm, 8px);
-  margin-bottom: var(--vlynk-spacing-md, 12px);
-  padding: var(--vlynk-spacing-sm, 8px);
-  background: var(--vlynk-bg-secondary, #111);
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  align-items: center;
-}
-
-.commentTime {
-  color: var(--vlynk-text-muted, #666);
-  font-size: var(--vlynk-font-xs, 6px);
-  min-width: 40px;
-  text-align: center;
-}
-
-.commentUser {
-  color: var(--vlynk-secondary, #ffff00);
-  font-size: var(--vlynk-font-xs, 7px);
-  min-width: 60px;
-}
-
-.commentText {
-  color: var(--vlynk-text-secondary, #fff);
-  font-size: var(--vlynk-font-xs, 7px);
-  flex: 1;
-  word-break: break-word;
-}
-
-.voiceComment {
-  max-width: 200px;
-  height: 30px;
-}
-
-/* ===== 반응형 디자인 ===== */
+/* ===== 반응형 ===== */
 @media (max-width: 768px) {
   .projectGrid {
     grid-template-columns: 1fr;
-    padding: 0 var(--vlynk-spacing-md, 15px);
   }
   
-  .projectCard {
+  .musicRoomHeader {
+    flex-direction: column;
+    gap: var(--vlynk-spacing-sm, 10px);
     padding: var(--vlynk-spacing-md, 15px);
   }
   
-  .userInfo {
-    position: relative;
-    top: auto;
-    left: auto;
-    text-align: center;
-    margin-bottom: var(--vlynk-spacing-md, 15px);
-  }
-  
-  .mainContainer {
-    padding-top: var(--vlynk-spacing-md, 15px);
-  }
-
-  /* 음악룸 반응형 */
-  .musicRoomHeader {
-    flex-direction: column;
-    gap: var(--vlynk-spacing-sm, 8px);
-    padding: var(--vlynk-spacing-sm, 10px);
-  }
-
-  .trackHeaderSimple {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--vlynk-spacing-md, 10px);
-  }
-
-  .commentInputArea {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .commentInput {
-    min-width: auto;
-  }
-
-  .simpleControls {
-    flex-wrap: wrap;
-    gap: var(--vlynk-spacing-md, 10px);
-  }
-
-  .playBtnMain {
-    width: 40px;
-    height: 40px;
-    font-size: var(--vlynk-font-md, 14px);
-  }
-
-  .comment {
-    flex-wrap: wrap;
-  }
-
-  .commentTime, .commentUser {
-    min-width: auto;
-  }
-}
-
-/* ===== 애니메이션 ===== */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.projectCard {
-  animation: fadeIn 0.5s ease-out;
-}
-
-.projectCard:nth-child(odd) {
-  animation-delay: 0.1s;
-}
-
-.projectCard:nth-child(even) {
-  animation-delay: 0.2s;
-}
-
-/* ===== 누락된 스타일들 (기존 CSS 파일 끝에 추가하세요) ===== */
-
-/* 룸 생성 섹션 */
-.createSection {
-  text-align: center;
-  margin: var(--vlynk-spacing-xl, 20px) 0;
-  padding: 0 var(--vlynk-spacing-lg, 20px);
-}
-
-.createRoomBtn {
-  background: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-text-inverse, #000);
-  border: none;
-  padding: var(--vlynk-spacing-md, 15px) var(--vlynk-spacing-xl, 30px);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-md, 10px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-  text-transform: uppercase;
-}
-
-.createRoomBtn:hover {
-  background: var(--vlynk-text-secondary, #fff);
-  box-shadow: 0 0 20px var(--vlynk-primary, #ff6600);
-}
-
-/* 메인 컨테이너 */
-.mainContainer {
-  padding: var(--vlynk-spacing-lg, 20px);
-  height: calc(100vh - 140px);
-  overflow-y: auto;
-}
-
-/* 프로젝트 헤더 */
-.projectHeader {
-  text-align: center;
-  margin-bottom: var(--vlynk-spacing-xl, 30px);
-}
-
-.projectHeader h1 {
-  color: var(--vlynk-primary, #ff6600);
-  font-size: var(--vlynk-font-2xl, 16px);
-  text-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
-  margin-bottom: var(--vlynk-spacing-md, 15px);
-  line-height: 1.4;
-}
-
-.cursor {
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-.statusText {
-  color: var(--vlynk-text-muted, #666);
-  font-size: var(--vlynk-font-sm, 8px);
-  line-height: 1.6;
-}
-
-.connected {
-  color: var(--vlynk-success, #00ff00);
-}
-
-.disconnected {
-  color: var(--vlynk-danger, #ff0000);
-}
-
-/* 빈 룸 상태 */
-.emptyRooms {
-  text-align: center;
-  padding: var(--vlynk-spacing-2xl, 50px) var(--vlynk-spacing-lg, 20px);
-  color: var(--vlynk-text-muted, #666);
-}
-
-.emptyIcon {
-  font-size: var(--vlynk-font-4xl, 48px);
-  margin-bottom: var(--vlynk-spacing-lg, 20px);
-  color: var(--vlynk-primary, #ff6600);
-}
-
-.emptyTitle {
-  color: var(--vlynk-primary, #ff6600);
-  font-size: var(--vlynk-font-lg, 12px);
-  margin-bottom: var(--vlynk-spacing-md, 15px);
-  text-shadow: 0 0 5px var(--vlynk-primary, #ff6600);
-}
-
-.emptyDescription {
-  color: var(--vlynk-text-secondary, #fff);
-  font-size: var(--vlynk-font-sm, 8px);
-  line-height: 1.6;
-}
-
-/* 룸 그리드 */
-.roomsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--vlynk-spacing-lg, 20px);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* 룸 카드 */
-.roomCard {
-  background: var(--vlynk-bg-secondary, #111);
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  padding: var(--vlynk-spacing-lg, 20px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-  position: relative;
-}
-
-.roomCard:hover {
-  border-color: var(--vlynk-primary, #ff6600);
-  background: var(--vlynk-bg-tertiary, #1a1a1a);
-  box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
-}
-
-.roomHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--vlynk-spacing-md, 15px);
-  gap: var(--vlynk-spacing-sm, 10px);
-}
-
-.roomName {
-  color: var(--vlynk-primary, #ff6600);
-  font-size: var(--vlynk-font-md, 10px);
-  font-weight: bold;
-  word-wrap: break-word;
-  flex: 1;
-}
-
-.roomStatus {
-  display: flex;
-  align-items: center;
-  gap: var(--vlynk-spacing-xs, 5px);
-  color: var(--vlynk-text-muted, #666);
-  font-size: var(--vlynk-font-sm, 8px);
-  flex-shrink: 0;
-}
-
-.active {
-  color: var(--vlynk-success, #00ff00);
-}
-
-.inactive {
-  color: var(--vlynk-text-muted, #666);
-}
-
-.roomInfo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--vlynk-spacing-sm, 10px);
-  font-size: var(--vlynk-font-sm, 8px);
-  color: var(--vlynk-text-muted, #666);
-}
-
-.roomUsers {
-  color: var(--vlynk-secondary, #ffff00);
-}
-
-.roomCreator {
-  color: var(--vlynk-text-secondary, #fff);
-}
-
-.roomDescription {
-  color: var(--vlynk-text-secondary, #fff);
-  font-size: var(--vlynk-font-xs, 7px);
-  line-height: 1.4;
-  margin-top: var(--vlynk-spacing-sm, 10px);
-}
-
-/* 웨이브폼 영역 */
-.waveformMainArea {
-  background: #111;
-  margin: var(--vlynk-spacing-lg, 20px);
-  padding: var(--vlynk-spacing-lg, 20px);
-  border: 1px solid var(--vlynk-border-primary, #ff6600);
-  flex: 1;
-}
-
-.waveformContainerMain {
-  width: 100%;
-  height: 200px;
-  position: relative;
-  background: #000;
-  margin-bottom: var(--vlynk-spacing-md, 15px);
-}
-
-.waveformCanvasMain {
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.waveformLoadingMain {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--vlynk-primary, #ff6600);
-  text-align: center;
-  font-size: var(--vlynk-font-sm, 8px);
-}
-
-/* 시간 표시 */
-.timeDisplay {
-  text-align: center;
-  margin-bottom: var(--vlynk-spacing-md, 15px);
-}
-
-.timeCurrent {
-  color: var(--vlynk-primary, #ff6600);
-}
-
-.timeSeparator {
-  color: var(--vlynk-text-muted, #666);
-  margin: 0 var(--vlynk-spacing-xs, 5px);
-}
-
-.timeTotal {
-  color: var(--vlynk-text-secondary, #fff);
-}
-
-/* 컨트롤 버튼들 */
-.simpleControls {
-  display: flex;
-  justify-content: center;
-  gap: var(--vlynk-spacing-lg, 20px);
-  align-items: center;
-}
-
-.playBtnMain, .uploadBtnMain {
-  background: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-text-inverse, #000);
-  border: none;
-  padding: var(--vlynk-spacing-md, 12px) var(--vlynk-spacing-lg, 20px);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-sm, 8px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-}
-
-.playBtnMain:hover, .uploadBtnMain:hover {
-  background: var(--vlynk-text-secondary, #fff);
-  box-shadow: 0 0 10px var(--vlynk-primary, #ff6600);
-}
-
-.playBtnMain:disabled, .uploadBtnMain:disabled {
-  background: var(--vlynk-text-muted, #666);
-  color: var(--vlynk-bg-secondary, #333);
-  cursor: not-allowed;
-}
-
-/* 댓글 섹션 */
-.commentsSection {
-  background: var(--vlynk-bg-secondary, #111);
-  border-top: 1px solid var(--vlynk-border-primary, #ff6600);
-  padding: var(--vlynk-spacing-lg, 20px);
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-}
-
-.commentInputArea {
-  display: flex;
-  gap: var(--vlynk-spacing-sm, 8px);
-  align-items: center;
-  margin-bottom: var(--vlynk-spacing-md, 15px);
-  flex-wrap: wrap;
-}
-
-.commentTimeIndicator {
-  background: var(--vlynk-bg-tertiary, #000);
-  color: var(--vlynk-primary, #ff6600);
-  padding: var(--vlynk-spacing-xs, 4px) var(--vlynk-spacing-sm, 8px);
-  font-size: var(--vlynk-font-xs, 7px);
-  border: 1px solid var(--vlynk-border-primary, #ff6600);
-  min-width: 50px;
-  text-align: center;
-}
-
-.commentInput {
-  flex: 1;
-  background: transparent;
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  color: var(--vlynk-text-secondary, #fff);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-xs, 7px);
-  padding: var(--vlynk-spacing-sm, 8px);
-  min-width: 200px;
-}
-
-.commentInput:focus {
-  outline: none;
-  border-color: var(--vlynk-primary, #ff6600);
-  box-shadow: 0 0 5px var(--vlynk-primary, #ff6600);
-}
-
-.commentBtn {
-  background: var(--vlynk-bg-tertiary, #000);
-  color: var(--vlynk-text-secondary, #fff);
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  padding: var(--vlynk-spacing-sm, 8px) var(--vlynk-spacing-md, 12px);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-xs, 7px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-}
-
-.commentBtn:hover {
-  background: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-text-inverse, #000);
-}
-
-.commentBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.voice.recording {
-  background: var(--vlynk-danger, #ff0000);
-  color: var(--vlynk-text-secondary, #fff);
-  animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.send {
-  background: var(--vlynk-primary, #ff6600);
-  color: var(--vlynk-text-inverse, #000);
-}
-
-.send:hover {
-  background: var(--vlynk-text-secondary, #fff);
-}
-
-/* 댓글 목록 */
-.commentsList {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid var(--vlynk-border-secondary, #333);
-  background: var(--vlynk-bg-tertiary, #000);
-  padding: var(--vlynk-spacing-sm, 8px);
-}
-
-.commentItem {
-  margin-bottom: var(--vlynk-spacing-md, 15px);
-  padding: var(--vlynk-spacing-sm, 8px);
-  background: var(--vlynk-bg-secondary, #111);
-  border-left: 2px solid var(--vlynk-primary, #ff6600);
-}
-
-.commentHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--vlynk-spacing-xs, 4px);
-  font-size: var(--vlynk-font-xs, 7px);
-}
-
-.commentUser {
-  color: var(--vlynk-secondary, #ffff00);
-  font-weight: bold;
-}
-
-.commentTime {
-  color: var(--vlynk-text-muted, #666);
-}
-
-.commentContent {
-  color: var(--vlynk-text-secondary, #fff);
-  font-size: var(--vlynk-font-xs, 7px);
-  line-height: 1.4;
-  word-wrap: break-word;
-}
-
-.voiceMessage {
-  width: 100%;
-  max-width: 300px;
-  height: 30px;
-}
-
-/* 다운로드 버튼 */
-.downloadBtn {
-  background: transparent;
-  color: var(--vlynk-success, #00ff00);
-  border: 1px solid var(--vlynk-success, #00ff00);
-  padding: var(--vlynk-spacing-sm, 6px) var(--vlynk-spacing-md, 12px);
-  font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: var(--vlynk-font-xs, 7px);
-  cursor: pointer;
-  transition: var(--vlynk-transition-normal, 0.3s ease);
-  text-decoration: none;
-  display: inline-block;
-}
-
-.downloadBtn:hover {
-  background: var(--vlynk-success, #00ff00);
-  color: var(--vlynk-text-inverse, #000);
-  box-shadow: 0 0 5px var(--vlynk-success, #00ff00);
-}
-
-.downloadBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  color: var(--vlynk-text-muted, #666);
-  border-color: var(--vlynk-text-muted, #666);
-}
-
-.downloadBtn:disabled:hover {
-  background: transparent;
-  color: var(--vlynk-text-muted, #666);
-  box-shadow: none;
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .roomsGrid {
-    grid-template-columns: 1fr;
-    gap: var(--vlynk-spacing-md, 15px);
-  }
-  
-  .roomHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .commentInputArea {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .commentInput {
-    min-width: unset;
-  }
-  
   .simpleControls {
     flex-direction: column;
     gap: var(--vlynk-spacing-md, 15px);
   }
   
-  .musicContent {
-    padding: var(--vlynk-spacing-sm, 10px);
-  }
-}
-
-@media (max-width: 480px) {
-  .projectHeader h1 {
-    font-size: var(--vlynk-font-lg, 12px);
+  .commentInputArea {
+    flex-wrap: wrap;
   }
   
-  .waveformMainArea {
-    margin: var(--vlynk-spacing-sm, 10px);
-    padding: var(--vlynk-spacing-sm, 10px);
-  }
-  
-  .waveformContainerMain {
-    height: 150px;
+  .commentInput {
+    min-width: 200px;
   }
 }
