@@ -119,26 +119,23 @@ export default function ChatroomPage() {
       }
     });
 
+    // 룸 참여 성공 (수정됨)
+    newSocket.on('room:joined', (data) => {
+      console.log('🚪 Successfully joined room:', data.room);
+      setCurrentRoom(data.room);
+      setMessages(data.messages || []); // 기존 메시지도 로드
+      setShowChatView(true);
+    });
+
     // 룸 에러
     newSocket.on('room:error', (data) => {
       console.error('❌ Room error:', data.message);
       alert(data.message);
     });
 
-    // 채팅 메시지 이벤트
-    newSocket.on('chat:messages', (messagesList: Message[]) => {
-      console.log('💬 Received messages:', messagesList.length);
-      setMessages(messagesList);
-    });
-
-    newSocket.on('chat:room_joined', (data) => {
-      console.log('🚪 Joined room:', data.room);
-      setCurrentRoom(data.room);
-      setShowChatView(true);
-    });
-
-    newSocket.on('chat:new_message', (message: Message) => {
-      console.log('💬 New message:', message);
+    // 채팅 메시지 이벤트 (수정됨)
+    newSocket.on('chat:message', (message: Message) => {
+      console.log('💬 New message received:', message);
       setMessages(prev => [...prev, message]);
     });
 
@@ -165,11 +162,6 @@ export default function ChatroomPage() {
         timestamp: new Date().toISOString(),
         type: 'system'
       }]);
-    });
-
-    newSocket.on('chat:error', (data) => {
-      console.error('💬 Chat error:', data.message);
-      alert(data.message);
     });
 
     return () => {
@@ -229,6 +221,20 @@ export default function ChatroomPage() {
     socket.emit('room:join', joinData);
   }, [socket]);
 
+  // ===== 룸 나가기 (추가됨) =====
+  const leaveRoom = useCallback(() => {
+    if (!socket || !currentRoom) return;
+    
+    console.log('🚪 Leaving room:', currentRoom.name);
+    
+    // 상태 초기화
+    setCurrentRoom(null);
+    setMessages([]);
+    setShowChatView(false);
+    
+    // 서버에는 자동으로 disconnect될 때 처리되므로 별도 이벤트 불필요
+  }, [socket, currentRoom]);
+
   // ===== 메시지 전송 =====
   const sendMessage = useCallback(() => {
     if (!newMessage.trim() || !socket || !currentRoom) return;
@@ -282,118 +288,11 @@ export default function ChatroomPage() {
       alert('파일 업로드에 실패했습니다.');
     } finally {
       setIsUploading(false);
-      setSelectedFile(null);
     }
   }, [socket, currentRoom]);
 
-  // ===== 룸 나가기 =====
-  const leaveRoom = useCallback(() => {
-    setCurrentRoom(null);
-    setMessages([]);
-    setShowChatView(false);
-    console.log('🚪 Left current room');
-  }, []);
-
-  // ===== 유틸리티 함수 =====
-  const formatTime = (timestamp: number) => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    
-    if (minutes < 1) return 'NOW';
-    if (minutes < 60) return `${minutes}M`;
-    if (minutes < 1440) return `${Math.floor(minutes / 60)}H`;
-    return `${Math.floor(minutes / 1440)}D`;
-  };
-
-  const formatMessageTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // ===== 메시지 렌더링 =====
-  const renderMessage = (msg: Message) => {
-    switch (msg.type) {
-      case 'image':
-        return (
-          <div className={styles.fileMessage}>
-            <div className={styles.fileName}>🖼️ {msg.message}</div>
-            <img 
-              src={msg.fileUrl} 
-              alt={msg.message}
-              className={styles.chatImage}
-              onClick={() => window.open(msg.fileUrl, '_blank')}
-            />
-            {msg.fileSize && (
-              <div className={styles.fileSize}>{formatFileSize(msg.fileSize)}</div>
-            )}
-          </div>
-        );
-      
-      case 'audio':
-        return (
-          <div className={styles.fileMessage}>
-            <div className={styles.fileName}>🎵 {msg.message}</div>
-            <audio controls className={styles.chatAudio}>
-              <source src={msg.fileUrl} />
-              브라우저가 오디오를 지원하지 않습니다.
-            </audio>
-            {msg.fileSize && (
-              <div className={styles.fileSize}>{formatFileSize(msg.fileSize)}</div>
-            )}
-          </div>
-        );
-      
-      case 'video':
-        return (
-          <div className={styles.fileMessage}>
-            <div className={styles.fileName}>🎬 {msg.message}</div>
-            <video 
-              controls 
-              className={styles.chatVideo}
-              preload="metadata"
-            >
-              <source src={msg.fileUrl} />
-              브라우저가 비디오를 지원하지 않습니다.
-            </video>
-            {msg.fileSize && (
-              <div className={styles.fileSize}>{formatFileSize(msg.fileSize)}</div>
-            )}
-          </div>
-        );
-      
-      default:
-        return (
-          <div className={styles.fileMessage}>
-            <div className={styles.fileName}>📎 {msg.message}</div>
-            <a 
-              href={msg.fileUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className={styles.fileDownload}
-            >
-              파일 다운로드
-            </a>
-            {msg.fileSize && (
-              <div className={styles.fileSize}>{formatFileSize(msg.fileSize)}</div>
-            )}
-          </div>
-        );
-    }
-  };
-
-  // ===== 키보드 이벤트 처리 =====
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  // ===== 키보드 이벤트 핸들러 =====
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (showLogin) {
@@ -402,54 +301,125 @@ export default function ChatroomPage() {
         sendMessage();
       }
     }
+  }, [showLogin, handleLogin, sendMessage]);
+
+  // ===== 유틸리티 함수들 =====
+  const formatTime = (timestamp: number) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('ko-KR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
 
-  // ===== 렌더링 =====
+  const formatMessageTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('ko-KR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
 
-  // 로그인 화면
+  const renderMessage = (msg: Message) => {
+    switch (msg.type) {
+      case 'image':
+        return (
+          <div className={styles.fileMessage}>
+            <div className={styles.fileName}>📷 {msg.message}</div>
+            {msg.fileUrl && (
+              <img 
+                src={msg.fileUrl} 
+                alt={msg.message}
+                className={styles.chatImage}
+                onClick={() => window.open(msg.fileUrl, '_blank')}
+              />
+            )}
+          </div>
+        );
+      case 'audio':
+        return (
+          <div className={styles.fileMessage}>
+            <div className={styles.fileName}>🎵 {msg.message}</div>
+            {msg.fileUrl && (
+              <audio controls src={msg.fileUrl} className={styles.chatAudio} />
+            )}
+          </div>
+        );
+      case 'video':
+        return (
+          <div className={styles.fileMessage}>
+            <div className={styles.fileName}>🎬 {msg.message}</div>
+            {msg.fileUrl && (
+              <video controls src={msg.fileUrl} className={styles.chatVideo} />
+            )}
+          </div>
+        );
+      default:
+        return (
+          <div className={styles.fileMessage}>
+            <div className={styles.fileName}>📎 {msg.message}</div>
+            {msg.fileSize && (
+              <div className={styles.fileSize}>
+                {(msg.fileSize / 1024 / 1024).toFixed(2)} MB
+              </div>
+            )}
+            {msg.fileUrl && (
+              <a 
+                href={msg.fileUrl} 
+                download 
+                className={styles.fileDownload}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                📥 다운로드
+              </a>
+            )}
+          </div>
+        );
+    }
+  };
+
+  // ===== 로그인 화면 렌더링 =====
   if (showLogin) {
     return (
       <div className={styles.container}>
         <Header />
         
-        <div className={styles.loginOverlay}>
+        <div className={styles.userInfo}>
+          USER: GUEST
+          <span className={styles.userRole}>[GUEST]</span>
+        </div>
+
+        <div className={styles.loginModal}>
           <div className={styles.loginBox}>
-            <h2 className={styles.loginTitle}>ENTER VVCKD CHAT</h2>
-            <p className={styles.loginSubtext}>CHOOSE YOUR USERNAME</p>
-            
+            <div className={styles.loginTitle}>CHAT ACCESS TERMINAL</div>
+            <div className={styles.loginSubtitle}>ENTER USER CREDENTIALS</div>
             <input
               ref={loginInputRef}
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="ENTER USERNAME"
+              placeholder="USERNAME"
               className={styles.loginInput}
+              maxLength={20}
               onKeyPress={handleKeyPress}
               autoFocus
-              maxLength={20}
             />
-            
             <button
               onClick={handleLogin}
               disabled={!username.trim()}
               className={styles.loginBtn}
             >
-              JOIN CHAT
+              INITIALIZE CONNECTION
             </button>
-            
-            <div className={styles.connectionStatus}>
-              STATUS: <span className={connectionStatus === '연결됨' ? 
-                styles.connected : styles.disconnected}>
-                {connectionStatus}
-              </span>
-            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // 채팅룸 뷰
+  // ===== 채팅룸 화면 렌더링 =====
   if (showChatView && currentRoom) {
     return (
       <div className={styles.container}>
@@ -592,7 +562,7 @@ export default function ChatroomPage() {
     );
   }
 
-  // 메인 채팅룸 리스트
+  // ===== 메인 룸 목록 화면 렌더링 =====
   const leftColumnRooms = rooms.filter((_, index) => index % 2 === 0);
   const rightColumnRooms = rooms.filter((_, index) => index % 2 === 1);
 
@@ -737,44 +707,49 @@ export default function ChatroomPage() {
       {showCreateRoom && (
         <div className={styles.createModal}>
           <div className={styles.createBox}>
-            <h3 className={styles.createTitle}>새 채팅룸 만들기</h3>
+            <div className={styles.createTitle}>새 채팅룸 만들기</div>
             
-            <input
-              type="text"
-              value={newRoomName}
-              onChange={(e) => setNewRoomName(e.target.value)}
-              placeholder="룸 이름"
-              className={styles.createInput}
-              maxLength={30}
-            />
-            
-            <input
-              type="password"
-              value={newRoomPassword}
-              onChange={(e) => setNewRoomPassword(e.target.value)}
-              placeholder="비밀번호 (선택사항)"
-              className={styles.createInput}
-            />
-            
-            <div className={styles.createRow}>
-              <label className={styles.createLabel}>최대 인원:</label>
-              <select
-                value={newRoomMaxUsers}
-                onChange={(e) => setNewRoomMaxUsers(Number(e.target.value))}
-                className={styles.createSelect}
-              >
-                <option value={5}>5명</option>
-                <option value={10}>10명</option>
-                <option value={20}>20명</option>
-                <option value={50}>50명</option>
-              </select>
+            <div className={styles.createField}>
+              <label>룸 이름</label>
+              <input
+                type="text"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                placeholder="룸 이름을 입력하세요"
+                className={styles.createInput}
+                maxLength={30}
+              />
             </div>
             
-            <div className={styles.createButtons}>
+            <div className={styles.createField}>
+              <label>비밀번호 (선택사항)</label>
+              <input
+                type="password"
+                value={newRoomPassword}
+                onChange={(e) => setNewRoomPassword(e.target.value)}
+                placeholder="비밀번호를 입력하세요"
+                className={styles.createInput}
+                maxLength={20}
+              />
+            </div>
+            
+            <div className={styles.createField}>
+              <label>최대 인원</label>
+              <input
+                type="number"
+                value={newRoomMaxUsers}
+                onChange={(e) => setNewRoomMaxUsers(Math.max(2, Math.min(50, parseInt(e.target.value) || 10)))}
+                min="2"
+                max="50"
+                className={styles.createInput}
+              />
+            </div>
+            
+            <div className={styles.createActions}>
               <button
                 onClick={createRoom}
                 disabled={!newRoomName.trim()}
-                className={styles.createConfirm}
+                className={styles.createBtn}
               >
                 CREATE
               </button>
@@ -785,7 +760,7 @@ export default function ChatroomPage() {
                   setNewRoomPassword('');
                   setNewRoomMaxUsers(10);
                 }}
-                className={styles.createCancel}
+                className={styles.cancelBtn}
               >
                 CANCEL
               </button>

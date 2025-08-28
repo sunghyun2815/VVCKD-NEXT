@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Header from '@/app/components/Header';
 import { io, Socket } from 'socket.io-client';
 import styles from './project.module.css';
@@ -12,21 +12,17 @@ interface MusicRoom {
   maxUsers: number;
   hasPassword: boolean;
   creator: string;
-  description?: string;
-  status?: string;
-}
-
-interface User {
-  id: string;
-  username: string;
-  role: string;
+  description: string;
+  tech: string[];
+  status: 'active' | 'inactive';
 }
 
 interface Track {
-  filename: string;
   originalName: string;
+  filename: string;
   url: string;
   uploader: string;
+  uploadedAt?: string;
 }
 
 interface Comment {
@@ -35,42 +31,55 @@ interface Comment {
   message: string;
   timestamp: number;
   time: string;
-  type?: 'voice' | 'text';
+  type?: 'text' | 'voice';
+  voiceUrl?: string;
+}
+
+interface User {
+  id: string;
+  username: string;
+  role: 'ADMIN' | 'MEMBER';
+  namespace: 'project';
 }
 
 export default function ProjectPage() {
-  // ===== 기존 상태 변수들 (그대로 유지) =====
+  // ===== Socket & Connection State =====
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState('Connecting...');
+  const [connectionStatus, setConnectionStatus] = useState('연결 중...');
   const [connectedUsers, setConnectedUsers] = useState<number>(0);
   
-  const [currentUser, setCurrentUser] = useState<User>({ id: 'GUEST', username: 'GUEST', role: 'MEMBER' });
+  // ===== User State =====
+  const [currentUser, setCurrentUser] = useState<User>({ id: '', username: '', role: 'MEMBER', namespace: 'project' });
   const [username, setUsername] = useState('');
   const [showLogin, setShowLogin] = useState(true);
   
+  // ===== Music Room State =====
   const [musicRooms, setMusicRooms] = useState<MusicRoom[]>([]);
   const [currentMusicRoom, setCurrentMusicRoom] = useState<MusicRoom | null>(null);
   const [showMusicRoom, setShowMusicRoom] = useState(false);
   
+  // ===== Audio State =====
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [commentTime, setCommentTime] = useState(0);
   
+  // ===== Comments State =====
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   
+  // ===== Voice Recording State =====
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   
-  // ===== 기존 refs (그대로 유지) =====
+  // ===== Refs =====
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const waveformData = useRef<number[]>([]);
 
-  // ===== Socket 연결 부분만 수정 =====
+  // ===== Socket 연결 및 이벤트 리스너 =====
   useEffect(() => {
     const newSocket = io('http://localhost:3001/project', {
       transports: ['websocket', 'polling'],
@@ -124,16 +133,34 @@ export default function ProjectPage() {
       setShowMusicRoom(true);
     });
 
-    // 음악 업로드 이벤트 (기존 이벤트명 유지)
+    // 음악 업로드 이벤트 (수정됨)
     newSocket.on('music uploaded', (data) => {
-      console.log('🎵 Music uploaded:', data.track);
-      setCurrentTrack(data.track);
-      loadAudioTrack(data.track.url);
+      console.log('🎵 Music uploaded event received:', data);
       
+      // 트랙 데이터 구조 정리
+      const track: Track = {
+        originalName: data.track?.originalName || 'Unknown',
+        filename: data.track?.filename || '',
+        url: data.track?.url || '',
+        uploader: data.uploader || 'Unknown'
+      };
+      
+      console.log('🎵 Setting current track:', track);
+      
+      // 현재 트랙 설정
+      setCurrentTrack(track);
+      
+      // 오디오 로드
+      if (track.url) {
+        console.log('🎵 Loading audio track:', track.url);
+        loadAudioTrack(track.url);
+      }
+      
+      // 시스템 메시지 추가
       const systemComment: Comment = {
         id: `system_${Date.now()}`,
         user: 'SYSTEM',
-        message: `🎵 ${data.uploader}님이 "${data.track.originalName}"을 업로드했습니다.`,
+        message: `🎵 ${track.uploader}님이 "${track.originalName}"을 업로드했습니다.`,
         timestamp: 0,
         time: new Date().toISOString(),
         type: 'text'
@@ -147,7 +174,7 @@ export default function ProjectPage() {
       setIsPlaying(data.isPlaying);
       if (audioRef.current) {
         if (data.isPlaying) {
-          audioRef.current.play();
+          audioRef.current.play().catch(e => console.error('Play error:', e));
         } else {
           audioRef.current.pause();
         }
@@ -193,28 +220,156 @@ export default function ProjectPage() {
     };
   }, []);
 
-  // ===== 기존 오디오 트랙 로드 함수 (그대로 유지) =====
-  const loadAudioTrack = (url: string) => {
-    if (audioRef.current) {
-      audioRef.current.src = url;
-      audioRef.current.addEventListener('loadedmetadata', () => {
-        if (audioRef.current) {
-          setTotalTime(audioRef.current.duration);
-          generateWaveform();
-        }
-      });
-      
-      audioRef.current.addEventListener('timeupdate', () => {
-        if (audioRef.current) {
-          setCurrentTime(audioRef.current.currentTime);
-          setCommentTime(audioRef.current.currentTime);
-        }
-      });
+  // ===== 강화된 오디오 트랙 로드 함수 =====
+  const loadAudioTrack = useCallback((url: string) => {
+    console.log('🎵 Loading audio track:', url);
+    
+    if (!audioRef.current) {
+      console.error('❌ Audio ref is null');
+      return;
     }
-  };
 
-  // ===== 기존 웨이브폼 생성 함수 (그대로 유지) =====
-  const generateWaveform = async () => {
+    const audio = audioRef.current;
+
+    // 기존 이벤트 리스너 모두 제거
+    const events = ['loadedmetadata', 'timeupdate', 'error', 'canplay', 'loadstart', 'loadeddata'];
+    events.forEach(event => {
+      audio.removeEventListener(event, () => {});
+    });
+
+    // 오디오 초기화
+    audio.pause();
+    audio.currentTime = 0;
+    
+    // 새로운 이벤트 리스너들
+    let metadataLoaded = false;
+    let loadTimeout: NodeJS.Timeout;
+
+    const onLoadStart = () => {
+      console.log('🎵 Audio load started');
+    };
+
+    const onLoadedData = () => {
+      console.log('🎵 Audio data loaded');
+    };
+
+    const onCanPlay = () => {
+      console.log('🎵 Audio can play');
+    };
+
+    const onLoadedMetadata = () => {
+      if (metadataLoaded) return;
+      metadataLoaded = true;
+      
+      console.log('✅ Audio metadata loaded');
+      console.log('🎵 Duration:', audio.duration);
+      console.log('🎵 Ready state:', audio.readyState);
+      
+      if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+        setTotalTime(audio.duration);
+        generateWaveform();
+        clearTimeout(loadTimeout);
+      } else {
+        console.error('❌ Invalid duration:', audio.duration);
+      }
+    };
+
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      setCommentTime(audio.currentTime);
+    };
+
+    const onError = (e: Event) => {
+      clearTimeout(loadTimeout);
+      console.error('❌ Audio error:', e);
+      
+      if (audio.error) {
+        console.error('Error code:', audio.error.code);
+        console.error('Error message:', audio.error.message);
+        
+        let errorMsg = '';
+        switch(audio.error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMsg = '재생이 중단되었습니다';
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMsg = '네트워크 오류';
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMsg = '디코딩 오류';
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMsg = '지원하지 않는 파일 형식';
+            break;
+          default:
+            errorMsg = '알 수 없는 오류';
+        }
+        
+        alert(`오디오 로딩 실패: ${errorMsg}`);
+      }
+    };
+
+    // 이벤트 리스너 등록
+    audio.addEventListener('loadstart', onLoadStart);
+    audio.addEventListener('loadeddata', onLoadedData);
+    audio.addEventListener('canplay', onCanPlay);
+    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('error', onError);
+
+    // 파일 URL 먼저 검증
+    fetch(url, { method: 'HEAD' })
+      .then(response => {
+        console.log('📡 File access test:', response.status, response.statusText);
+        console.log('📡 Content-Type:', response.headers.get('content-type'));
+        console.log('📡 Content-Length:', response.headers.get('content-length'));
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // 파일 접근 가능하면 오디오 로드
+        console.log('🎵 Setting audio source');
+        audio.src = url;
+        audio.load();
+        
+        // 10초 타임아웃 설정
+        loadTimeout = setTimeout(() => {
+          if (!metadataLoaded) {
+            console.error('❌ Audio loading timeout after 10 seconds');
+            console.log('Current audio state:', {
+              src: audio.src,
+              readyState: audio.readyState,
+              networkState: audio.networkState,
+              duration: audio.duration,
+              error: audio.error
+            });
+            
+            // 브라우저 호환성 체크
+            const canPlayMp3 = audio.canPlayType('audio/mpeg');
+            const canPlayWav = audio.canPlayType('audio/wav');
+            const canPlayOgg = audio.canPlayType('audio/ogg');
+            
+            console.log('Browser audio support:', {
+              mp3: canPlayMp3,
+              wav: canPlayWav,
+              ogg: canPlayOgg
+            });
+            
+            alert('오디오 로딩 시간이 초과되었습니다. 파일 형식이나 크기를 확인해주세요.');
+          }
+        }, 10000);
+        
+      })
+      .catch(error => {
+        console.error('📡 File access failed:', error);
+        alert(`파일에 접근할 수 없습니다: ${error.message}`);
+      });
+
+  }, []);
+
+  // ===== 웨이브폼 생성 함수 =====
+  const generateWaveform = useCallback(async () => {
     if (!audioRef.current || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
@@ -231,10 +386,10 @@ export default function ProjectPage() {
     waveformData.current = Array.from({length: samples}, () => Math.random() * height * 0.8);
     
     drawWaveform();
-  };
+  }, []);
 
-  // ===== 기존 웨이브폼 그리기 함수 (그대로 유지) =====
-  const drawWaveform = () => {
+  // ===== 웨이브폼 그리기 함수 =====
+  const drawWaveform = useCallback(() => {
     if (!canvasRef.current) return;
     
     const canvas = canvasRef.current;
@@ -261,9 +416,31 @@ export default function ProjectPage() {
       ctx.fillStyle = isPlayed ? '#ff6600' : '#333';
       ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
     });
+  }, [currentTime, totalTime]);
+
+  // ===== 유틸리티 함수들 =====
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // ===== 수정된 함수들 =====
+  const handleWaveformClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    const audio = audioRef.current;
+    if (!canvas || !audio || !totalTime) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const progress = x / canvas.width;
+    const newTime = progress * totalTime;
+
+    audio.currentTime = newTime;
+    setCurrentTime(newTime);
+    drawWaveform();
+  };
+
+  // ===== 기본 함수들 =====
   const handleLogin = () => {
     if (!username.trim() || !socket) return;
 
@@ -313,7 +490,7 @@ export default function ProjectPage() {
     }
   };
 
-  // ===== 기존 플레이어 제어 함수 (수정) =====
+  // ===== 플레이어 제어 함수 =====
   const togglePlayback = () => {
     if (!audioRef.current || !currentTrack) return;
 
@@ -321,11 +498,14 @@ export default function ProjectPage() {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
+      audioRef.current.play().catch(e => {
+        console.error('Play error:', e);
+        alert('재생에 실패했습니다. 오디오 파일을 확인해주세요.');
+      });
       setIsPlaying(true);
     }
 
-    // 서버에 동기화 알림 (기존 이벤트명 유지)
+    // 서버에 동기화 알림
     if (socket && currentMusicRoom) {
       socket.emit('toggle playback', {
         roomId: currentMusicRoom.id
@@ -333,8 +513,8 @@ export default function ProjectPage() {
     }
   };
 
-  // ===== 기존 파일 업로드 함수 (수정) =====
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // ===== 파일 업로드 함수 (개선됨) =====
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !currentMusicRoom) return;
 
@@ -348,17 +528,30 @@ export default function ProjectPage() {
       return;
     }
 
+    console.log('🎵 Starting file upload...', file.name);
+
     const formData = new FormData();
     formData.append('music', file);
     
-    fetch('/api/upload/music', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+      const response = await fetch('/api/upload/music', {
+        method: 'POST',
+        body: formData
+      });
+
+      console.log('📡 Upload response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Upload failed:', errorText);
+        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Upload success:', data);
+      
       if (data.success && socket) {
-        // 기존 이벤트명 유지
+        // 서버 응답 구조에 맞게 수정
         socket.emit('music uploaded', {
           roomId: currentMusicRoom.id,
           musicData: {
@@ -367,15 +560,23 @@ export default function ProjectPage() {
             url: data.file.url
           }
         });
+        
+        console.log('🎵 Music upload event sent to server');
+      } else {
+        throw new Error('Upload response indicates failure');
       }
-    })
-    .catch(error => {
-      console.error('Upload error:', error);
-      alert('Upload failed');
-    });
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    // 파일 입력 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
-  // ===== 기존 댓글 추가 함수 (수정) =====
+  // ===== 댓글 추가 함수 =====
   const addComment = () => {
     if (!newComment.trim() || !currentMusicRoom || !socket) return;
 
@@ -390,7 +591,7 @@ export default function ProjectPage() {
     setNewComment('');
   };
 
-  // ===== 기존 음성 녹음 함수 (수정) =====
+  // ===== 음성 녹음 함수 =====
   const toggleVoiceRecording = async () => {
     if (isRecording) {
       if (mediaRecorder) {
@@ -423,6 +624,7 @@ export default function ProjectPage() {
                   user: currentUser.username,
                   message: `🎤 음성 메시지`,
                   timestamp: commentTime,
+                  type: 'voice',
                   voiceUrl: data.file.url
                 });
               }
@@ -444,29 +646,14 @@ export default function ProjectPage() {
     }
   };
 
-  // ===== 기존 유틸리티 함수들 (그대로 유지) =====
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  // ===== useEffect for waveform drawing =====
+  useEffect(() => {
+    if (currentTrack && totalTime > 0) {
+      drawWaveform();
+    }
+  }, [currentTime, totalTime, currentTrack, drawWaveform]);
 
-  const handleWaveformClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    const audio = audioRef.current;
-    if (!canvas || !audio || !totalTime) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const progress = x / canvas.width;
-    const newTime = progress * totalTime;
-
-    audio.currentTime = newTime;
-    setCurrentTime(newTime);
-    drawWaveform();
-  };
-
-  // ===== 기존 렌더링 부분 (그대로 유지) =====
+  // ===== 렌더링 부분 =====
 
   // 로그인 화면
   if (showLogin) {
@@ -475,7 +662,7 @@ export default function ProjectPage() {
         <Header />
         
         <div className={styles.userInfo}>
-          USER: <span>{currentUser.username}</span>
+          USER: <span>{currentUser.username || 'Guest'}</span>
           <span className={styles.userRole}>[{currentUser.role}]</span>
         </div>
 
@@ -519,6 +706,9 @@ export default function ProjectPage() {
         </div>
 
         <div className={styles.musicContent}>
+          {/* 숨겨진 오디오 엘리먼트 */}
+          <audio ref={audioRef} style={{ display: 'none' }} />
+
           {/* 트랙 헤더 */}
           <div className={styles.trackHeaderSimple}>
             <div className={styles.trackInfoLeft}>
@@ -575,11 +765,18 @@ export default function ProjectPage() {
               >
                 {isPlaying ? '⏸' : '▶'}
               </button>
-              <button 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="audio/*"
+                style={{ display: 'none' }}
+              />
+              <button
                 onClick={() => fileInputRef.current?.click()}
                 className={styles.uploadBtnMain}
               >
-                📎 UPLOAD MUSIC
+                🎵 UPLOAD MUSIC
               </button>
             </div>
           </div>
@@ -600,13 +797,9 @@ export default function ProjectPage() {
               />
               <button
                 onClick={toggleVoiceRecording}
-                className={`${styles.commentBtn} ${styles.voice}`}
-                style={{ 
-                  backgroundColor: isRecording ? '#ff0000' : 'transparent',
-                  color: isRecording ? '#fff' : '#ffff00'
-                }}
+                className={`${styles.commentBtn} ${styles.voice} ${isRecording ? styles.recording : ''}`}
               >
-                🎤 {isRecording ? 'STOP' : 'VOICE'}
+                {isRecording ? '🛑 STOP' : '🎤 VOICE'}
               </button>
               <button
                 onClick={addComment}
@@ -617,43 +810,32 @@ export default function ProjectPage() {
               </button>
             </div>
 
-            {/* 댓글 목록 */}
             <div className={styles.commentsList}>
-              {comments.map((comment, index) => (
-                <div key={comment.id || index} className={styles.comment}>
-                  <strong style={{ color: comment.user === 'SYSTEM' ? '#ffff00' : '#ff6600' }}>
-                    {comment.user}
-                  </strong>
-                  <span style={{ color: '#666', fontSize: '7px', marginLeft: '10px' }}>
-                    [{formatTime(comment.timestamp)}]
-                  </span>
-                  <div style={{ marginTop: '5px', fontSize: '8px' }}>
-                    {comment.message}
+              {comments.map((comment) => (
+                <div key={comment.id} className={styles.commentItem}>
+                  <div className={styles.commentHeader}>
+                    <span className={styles.commentUser}>{comment.user}</span>
+                    <span className={styles.commentTime}>
+                      {formatTime(comment.timestamp)}
+                    </span>
+                  </div>
+                  <div className={styles.commentContent}>
+                    {comment.type === 'voice' && comment.voiceUrl ? (
+                      <audio controls src={comment.voiceUrl} className={styles.voiceMessage} />
+                    ) : (
+                      comment.message
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* 오디오 엘리먼트 */}
-        {currentTrack && (
-          <audio ref={audioRef} style={{ display: 'none' }} />
-        )}
-
-        {/* 파일 입력 */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileUpload}
-          style={{ display: 'none' }}
-          accept="audio/*"
-        />
       </div>
     );
   }
 
-  // 메인 프로젝트 리스트 (기존 UI 그대로)
+  // 메인 룸 목록 화면
   return (
     <div className={styles.projectContainer}>
       <Header />
@@ -663,73 +845,73 @@ export default function ProjectPage() {
         <span className={styles.userRole}>[{currentUser.role}]</span>
       </div>
 
+      <div className={styles.createSection}>
+        <button onClick={createMusicRoom} className={styles.createRoomBtn}>
+          CREATE MUSIC ROOM
+        </button>
+      </div>
+
       <div className={styles.mainContainer}>
         <div className={styles.projectHeader}>
-          <h1>VVCKD MUSIC ROOMS <span className={styles.cursor}>▌</span></h1>
-          <div className={styles.projectSubtitle}>ENHANCED COLLABORATIVE MUSIC WORKSPACE</div>
+          <h1>MUSIC COLLABORATION<span className={styles.cursor}>_</span></h1>
+          <div className={styles.statusText}>
+            연결된 사용자: {connectedUsers} | 활성 룸: {musicRooms.length}
+            <br />
+            상태: <span className={connectionStatus === 'Connected' ? styles.connected : styles.disconnected}>
+              {connectionStatus}
+            </span>
+          </div>
         </div>
 
-        <div className={styles.addProjectSection}>
-          <h3 style={{ color: '#ff6600', marginBottom: '20px' }}>CREATE MUSIC ROOM</h3>
-          <button className={styles.addBtn} onClick={createMusicRoom}>
-            + CREATE ROOM
-          </button>
-        </div>
-
-        <div className={styles.projectGrid}>
-          {musicRooms.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
-              gridColumn: '1 / -1', 
-              padding: '50px',
-              color: '#666' 
-            }}>
-              <div style={{ fontSize: '32px', marginBottom: '20px' }}>🎵</div>
-              <div>음악 룸이 없습니다. 첫 번째 룸을 만들어보세요!</div>
+        {musicRooms.length === 0 ? (
+          <div className={styles.emptyRooms}>
+            <div className={styles.emptyIcon}>🎵</div>
+            <div className={styles.emptyTitle}>음악 룸이 없습니다</div>
+            <div className={styles.emptyDescription}>
+              첫 번째 음악 협업 룸을 만들어보세요!
             </div>
-          ) : (
-            musicRooms.map((room) => (
-              <div key={room.id} className={styles.projectCard}>
-                <div className={styles.projectTitle}>
-                  {room.name}
-                  <span className={styles.projectStatus}>
-                    {room.status?.toUpperCase() || 'ACTIVE'}
-                  </span>
+          </div>
+        ) : (
+          <div className={styles.roomsGrid}>
+            {musicRooms.map((room) => (
+              <div
+                key={room.id}
+                className={styles.roomCard}
+                onClick={() => {
+                  if (room.hasPassword) {
+                    const password = prompt('비밀번호를 입력하세요:');
+                    if (password) joinMusicRoom(room.id, password);
+                  } else {
+                    joinMusicRoom(room.id);
+                  }
+                }}
+              >
+                <div className={styles.roomHeader}>
+                  <div className={styles.roomName}>{room.name}</div>
+                  <div className={styles.roomStatus}>
+                    {room.hasPassword && '🔒'}
+                    <span className={room.status === 'active' ? styles.active : styles.inactive}>
+                      ●
+                    </span>
+                  </div>
                 </div>
-                
-                <div className={styles.projectInfo}>
-                  <div className={styles.projectParticipants}>
+                <div className={styles.roomInfo}>
+                  <div className={styles.roomUsers}>
                     👥 {room.userCount}/{room.maxUsers}
                   </div>
-                  <div className={styles.projectMusicCount}>
-                    🎵 Music Room
+                  <div className={styles.roomCreator}>
+                    by {room.creator}
                   </div>
                 </div>
-                
-                <div className={styles.projectDescription}>
-                  {room.description || '음악 협업을 위한 룸입니다.'}
-                </div>
-                
-                <div className={styles.projectLinks}>
-                  <button
-                    onClick={() => {
-                      const password = room.hasPassword ? 
-                        prompt('비밀번호를 입력하세요:') : '';
-                      if (room.hasPassword && !password) return;
-                      joinMusicRoom(room.id, password || '');
-                    }}
-                    className={`${styles.projectBtn} ${styles.join}`}
-                  >
-                    JOIN ROOM
-                  </button>
-                  <button className={styles.projectBtn}>
-                    BY {room.creator}
-                  </button>
-                </div>
+                {room.description && (
+                  <div className={styles.roomDescription}>
+                    {room.description}
+                  </div>
+                )}
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

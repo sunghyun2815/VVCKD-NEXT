@@ -43,15 +43,34 @@ uploadDirs.forEach(dir => {
 // ===== MULTER 설정 =====
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const type = req.baseUrl.includes('chat') ? 'chat' : 
-                req.baseUrl.includes('music') ? 'music' : 'voice';
+    let type = 'voice';
+    
+    if (req.path.includes('/chat') || req.url.includes('/chat')) {
+      type = 'chat';
+    } else if (req.path.includes('/music') || req.url.includes('/music')) {
+      type = 'music';
+    } else if (req.path.includes('/voice') || req.url.includes('/voice')) {
+      type = 'voice';
+    }
+    
+    console.log(`📁 File destination: ${type} (from ${req.path})`);
     cb(null, `uploads/${type}/`);
   },
   filename: (req, file, cb) => {
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
-    const name = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9]/g, '_');
-    cb(null, `${timestamp}_${name}${ext}`);
+    
+    // 파일명을 안전하게 처리 (한글 및 특수문자 처리)
+    const originalName = path.basename(file.originalname, ext);
+    const safeName = originalName
+      .replace(/[^\w\s-가-힣]/g, '') // 영문, 숫자, 공백, 하이픈, 한글만 허용
+      .replace(/\s+/g, '_') // 공백을 언더스코어로 변경
+      .substring(0, 50); // 길이 제한
+    
+    const finalName = `${timestamp}_${safeName}${ext}`;
+    console.log(`📝 Generated filename: ${file.originalname} -> ${finalName}`);
+    
+    cb(null, finalName);
   }
 });
 
@@ -59,39 +78,47 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|mp3|wav|ogg|mp4|webm|pdf|txt|doc|docx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    console.log('🔍 File check:', {
+      name: file.originalname,
+      mime: file.mimetype,
+      path: req.path
+    });
+
+    // 위험한 파일 확장자만 차단
+    const dangerousExtensions = /\.(exe|bat|cmd|scr|pif|com|vbs|jar)$/i;
     
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('지원하지 않는 파일 형식입니다.'));
+    if (dangerousExtensions.test(file.originalname)) {
+      console.error('❌ Dangerous file blocked:', file.originalname);
+      return cb(new Error('보안상 위험한 파일 형식입니다.'));
     }
+    
+    // 나머지는 모두 허용
+    console.log('✅ File accepted:', file.originalname);
+    return cb(null, true);
   }
 });
 
-// ===== 데이터 저장소 =====
+// ===== 데이터 저장소 클래스 =====
 class DataStore {
   constructor() {
-    this.users = new Map(); // userId -> user info
-    this.chatRooms = new Map(); // roomId -> room info  
-    this.musicRooms = new Map(); // roomId -> music room info
-    this.chatMessages = new Map(); // roomId -> messages[]
-    this.musicComments = new Map(); // roomId -> comments[]
+    this.users = new Map();
+    this.chatRooms = new Map();
+    this.musicRooms = new Map();
+    this.chatMessages = new Map();
+    this.musicComments = new Map();
   }
 
   // 사용자 관리
-  addUser(userId, userInfo) {
-    this.users.set(userId, { ...userInfo, connectedAt: Date.now() });
+  addUser(socketId, user) {
+    this.users.set(socketId, user);
   }
 
-  removeUser(userId) {
-    this.users.delete(userId);
+  removeUser(socketId) {
+    this.users.delete(socketId);
   }
 
-  getUser(userId) {
-    return this.users.get(userId);
+  getUser(socketId) {
+    return this.users.get(socketId);
   }
 
   getAllUsers() {
@@ -99,17 +126,19 @@ class DataStore {
   }
 
   // 채팅룸 관리
-  createChatRoom(roomInfo) {
+  createChatRoom(roomData) {
     const roomId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    this.chatRooms.set(roomId, {
+    const room = {
       id: roomId,
-      ...roomInfo,
-      createdAt: Date.now(),
+      ...roomData,
       users: new Set(),
+      messages: [],
+      createdAt: new Date().toISOString(),
       type: 'chat'
-    });
-    this.chatMessages.set(roomId, []);
-    return this.chatRooms.get(roomId);
+    };
+    
+    this.chatRooms.set(roomId, room);
+    return room;
   }
 
   getChatRoom(roomId) {
@@ -124,8 +153,9 @@ class DataStore {
       maxUsers: room.maxUsers,
       hasPassword: !!room.password,
       creator: room.creator,
-      lastMessage: this.getLastMessage(room.id),
-      lastMessageTime: this.getLastMessageTime(room.id)
+      lastMessage: room.lastMessage || '',
+      lastMessageTime: room.lastMessageTime || 0,
+      type: 'chat'
     }));
   }
 
@@ -152,49 +182,21 @@ class DataStore {
     }
   }
 
-  // 채팅 메시지 관리
-  addChatMessage(roomId, message) {
-    if (!this.chatMessages.has(roomId)) {
-      this.chatMessages.set(roomId, []);
-    }
-    const messages = this.chatMessages.get(roomId);
-    messages.push(message);
-    
-    // 최대 1000개 메시지만 유지
-    if (messages.length > 1000) {
-      messages.shift();
-    }
-  }
-
-  getChatMessages(roomId) {
-    return this.chatMessages.get(roomId) || [];
-  }
-
-  getLastMessage(roomId) {
-    const messages = this.getChatMessages(roomId);
-    return messages.length > 0 ? messages[messages.length - 1].message : '';
-  }
-
-  getLastMessageTime(roomId) {
-    const messages = this.getChatMessages(roomId);
-    return messages.length > 0 ? new Date(messages[messages.length - 1].timestamp).getTime() : Date.now();
-  }
-
-  // 뮤직룸 관리 (기존 logic 유지)
-  createMusicRoom(roomInfo) {
+  // 뮤직룸 관리
+  createMusicRoom(roomData) {
     const roomId = `music_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    this.musicRooms.set(roomId, {
+    const room = {
       id: roomId,
-      ...roomInfo,
-      createdAt: Date.now(),
+      ...roomData,
       users: new Set(),
-      type: 'music',
       currentTrack: null,
       isPlaying: false,
-      currentTime: 0
-    });
-    this.musicComments.set(roomId, []);
-    return this.musicRooms.get(roomId);
+      createdAt: new Date().toISOString(),
+      type: 'music'
+    };
+    
+    this.musicRooms.set(roomId, room);
+    return room;
   }
 
   getMusicRoom(roomId) {
@@ -310,6 +312,8 @@ app.post('/api/upload/music', upload.single('music'), (req, res) => {
   }
 
   const fileUrl = `/api/files/music/${req.file.filename}`;
+  console.log('🎵 Music file uploaded:', req.file.filename);
+  
   res.json({
     success: true,
     file: {
@@ -340,16 +344,78 @@ app.post('/api/upload/voice', upload.single('voice'), (req, res) => {
   });
 });
 
-// ===== 파일 제공 및 다운로드 =====
+// ===== 파일 제공 및 다운로드 (CORS 헤더 추가) =====
 app.get('/api/files/:type/:filename', (req, res) => {
   const { type, filename } = req.params;
   const filePath = path.join(__dirname, 'uploads', type, filename);
 
+  console.log('📁 File request:', filePath);
+
   if (!fs.existsSync(filePath)) {
+    console.error('❌ File not found:', filePath);
     return res.status(404).json({ error: 'File not found' });
   }
 
+  // CORS 헤더 추가
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+  
+  // 파일 타입에 따른 Content-Type 설정
+  const ext = path.extname(filename).toLowerCase();
+  let contentType = 'application/octet-stream';
+  
+  switch(ext) {
+    case '.mp3':
+      contentType = 'audio/mpeg';
+      break;
+    case '.wav':
+      contentType = 'audio/wav';
+      break;
+    case '.ogg':
+      contentType = 'audio/ogg';
+      break;
+    case '.m4a':
+      contentType = 'audio/mp4';
+      break;
+    case '.flac':
+      contentType = 'audio/flac';
+      break;
+    case '.webm':
+      contentType = 'audio/webm';
+      break;
+    case '.jpg':
+    case '.jpeg':
+      contentType = 'image/jpeg';
+      break;
+    case '.png':
+      contentType = 'image/png';
+      break;
+    case '.gif':
+      contentType = 'image/gif';
+      break;
+    case '.mp4':
+      contentType = 'video/mp4';
+      break;
+    default:
+      contentType = 'application/octet-stream';
+  }
+  
+  res.header('Content-Type', contentType);
+  res.header('Accept-Ranges', 'bytes');
+  res.header('Cache-Control', 'public, max-age=3600');
+  
+  console.log('✅ Serving file:', filename, 'as', contentType);
   res.sendFile(filePath);
+});
+
+// OPTIONS 핸들러 추가 (CORS preflight)
+app.options('/api/files/:type/:filename', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.sendStatus(200);
 });
 
 app.get('/api/download/:type/:filename', (req, res) => {
@@ -389,76 +455,56 @@ chatNamespace.on('connection', (socket) => {
     socket.emit('rooms:list', dataStore.getAllChatRooms());
   });
 
-  // 채팅룸 생성
+  // 룸 생성
   socket.on('room:create', (roomData) => {
-    if (!socket.user) {
-      socket.emit('room:error', { message: 'Please login first' });
-      return;
-    }
-
+    if (!socket.user) return;
+    
     const room = dataStore.createChatRoom({
-      name: roomData.name,
-      password: roomData.password,
-      maxUsers: roomData.maxUsers || 10,
+      ...roomData,
       creator: socket.user.username
     });
-
+    
     console.log(`🏠 Chat room created: ${room.name} by ${socket.user.username}`);
-    
-    // 생성자에게 성공 알림
+    chatNamespace.emit('rooms:list', dataStore.getAllChatRooms());
     socket.emit('room:created', { room });
-    
-    // 모든 클라이언트에게 업데이트된 룸 리스트 전송
-    chatNamespace.emit('rooms:list', dataStore.getAllChatRooms());
   });
 
-  // 채팅룸 참여
+  // 룸 참여
   socket.on('room:join', (joinData) => {
-    if (!socket.user) {
-      socket.emit('room:error', { message: 'Please login first' });
-      return;
-    }
-
+    if (!socket.user) return;
+    
     const result = dataStore.joinChatRoom(joinData.roomId, socket.id, joinData.password);
-    
-    if (!result.success) {
+    if (result.success) {
+      socket.join(joinData.roomId);
+      socket.currentRoom = joinData.roomId;
+      
+      socket.emit('room:joined', { 
+        room: result.room,
+        messages: result.room.messages || []
+      });
+      
+      socket.to(joinData.roomId).emit('chat:user_joined', {
+        message: `${socket.user.username}님이 입장했습니다.`,
+        user: socket.user
+      });
+      
+      chatNamespace.emit('rooms:list', dataStore.getAllChatRooms());
+      console.log(`🚪 ${socket.user.username} joined chat room: ${result.room.name}`);
+    } else {
       socket.emit('room:error', { message: result.message });
-      return;
     }
-
-    // 룸에 참여
-    socket.join(joinData.roomId);
-    socket.currentRoom = joinData.roomId;
-    
-    // 기존 메시지 전송
-    const messages = dataStore.getChatMessages(joinData.roomId);
-    socket.emit('chat:messages', messages);
-    
-    // 룸 정보 전송
-    socket.emit('chat:room_joined', { room: result.room });
-    
-    // 다른 사용자들에게 참여 알림
-    socket.to(joinData.roomId).emit('chat:user_joined', {
-      message: `${socket.user.username}님이 입장했습니다.`,
-      user: socket.user
-    });
-
-    // 업데이트된 룸 리스트 전송
-    chatNamespace.emit('rooms:list', dataStore.getAllChatRooms());
-    
-    console.log(`🚪 ${socket.user.username} joined chat room: ${result.room.name}`);
   });
 
-  // 채팅 메시지 전송
+  // 메시지 전송
   socket.on('chat:message', (messageData) => {
-    if (!socket.user || !socket.currentRoom) {
-      socket.emit('chat:error', { message: 'Not in a room' });
-      return;
-    }
-
+    if (!socket.user || !socket.currentRoom) return;
+    
+    const room = dataStore.getChatRoom(socket.currentRoom);
+    if (!room) return;
+    
     const message = {
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: socket.user.id,
+      userId: socket.id,
       username: socket.user.username,
       message: messageData.message,
       timestamp: new Date().toISOString(),
@@ -466,39 +512,13 @@ chatNamespace.on('connection', (socket) => {
       fileUrl: messageData.fileUrl,
       fileSize: messageData.fileSize
     };
-
-    // 메시지 저장
-    dataStore.addChatMessage(socket.currentRoom, message);
     
-    // 룸의 모든 사용자에게 메시지 전송
-    chatNamespace.to(socket.currentRoom).emit('chat:new_message', message);
+    room.messages.push(message);
+    room.lastMessage = messageData.message;
+    room.lastMessageTime = Date.now();
     
-    // 업데이트된 룸 리스트 전송 (마지막 메시지 업데이트)
+    chatNamespace.to(socket.currentRoom).emit('chat:message', message);
     chatNamespace.emit('rooms:list', dataStore.getAllChatRooms());
-    
-    console.log(`💬 Chat message from ${socket.user.username}: ${messageData.message}`);
-  });
-
-  // 파일 업로드 완료 알림
-  socket.on('file:uploaded', (fileData) => {
-    if (!socket.user || !socket.currentRoom) return;
-
-    const message = {
-      id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: socket.user.id,
-      username: socket.user.username,
-      message: fileData.originalName,
-      timestamp: new Date().toISOString(),
-      type: fileData.type,
-      fileUrl: fileData.url,
-      fileSize: fileData.size
-    };
-
-    dataStore.addChatMessage(socket.currentRoom, message);
-    chatNamespace.to(socket.currentRoom).emit('chat:new_message', message);
-    chatNamespace.emit('rooms:list', dataStore.getAllChatRooms());
-    
-    console.log(`📎 File uploaded in chat: ${fileData.originalName}`);
   });
 
   // 연결 해제
@@ -520,7 +540,7 @@ chatNamespace.on('connection', (socket) => {
   });
 });
 
-// 🎵 PROJECT/MUSIC 네임스페이스
+// 🎵 PROJECT 네임스페이스
 const projectNamespace = io.of('/project');
 projectNamespace.on('connection', (socket) => {
   console.log(`🎵 Project user connected: ${socket.id}`);
@@ -544,58 +564,44 @@ projectNamespace.on('connection', (socket) => {
     socket.emit('rooms:list', dataStore.getAllMusicRooms());
   });
 
-  // 뮤직룸 생성
+  // 룸 생성
   socket.on('room:create', (roomData) => {
-    if (!socket.user) {
-      socket.emit('room:error', { message: 'Please login first' });
-      return;
-    }
-
-    const room = dataStore.createMusicRoom({
-      name: roomData.name,
-      description: roomData.description || '',
-      password: roomData.password,
-      maxUsers: roomData.maxUsers || 10,
-      creator: socket.user.username,
-      tech: roomData.tech || []
-    });
-
-    console.log(`🎵 Music room created: ${room.name} by ${socket.user.username}`);
+    if (!socket.user) return;
     
-    socket.emit('room:created', { room });
+    const room = dataStore.createMusicRoom({
+      ...roomData,
+      creator: socket.user.username
+    });
+    
+    console.log(`🎵 Music room created: ${room.name} by ${socket.user.username}`);
     projectNamespace.emit('rooms:list', dataStore.getAllMusicRooms());
+    socket.emit('room:created', { room });
   });
 
-  // 뮤직룸 참여
+  // 룸 참여
   socket.on('room:join', (joinData) => {
-    if (!socket.user) {
-      socket.emit('room:error', { message: 'Please login first' });
-      return;
-    }
-
+    if (!socket.user) return;
+    
     const result = dataStore.joinMusicRoom(joinData.roomId, socket.id, joinData.password);
-    
-    if (!result.success) {
+    if (result.success) {
+      socket.join(joinData.roomId);
+      socket.currentRoom = joinData.roomId;
+      
+      socket.emit('music:room_joined', { 
+        room: result.room,
+        comments: dataStore.getMusicComments(joinData.roomId)
+      });
+      
+      socket.to(joinData.roomId).emit('music:user_joined', {
+        message: `${socket.user.username}님이 입장했습니다.`,
+        user: socket.user
+      });
+      
+      projectNamespace.emit('rooms:list', dataStore.getAllMusicRooms());
+      console.log(`🎵 ${socket.user.username} joined music room: ${result.room.name}`);
+    } else {
       socket.emit('room:error', { message: result.message });
-      return;
     }
-
-    socket.join(joinData.roomId);
-    socket.currentRoom = joinData.roomId;
-    
-    const comments = dataStore.getMusicComments(joinData.roomId);
-    socket.emit('music:room_joined', { 
-      room: result.room,
-      comments: comments
-    });
-    
-    socket.to(joinData.roomId).emit('music:user_joined', {
-      message: `${socket.user.username}님이 참여했습니다.`,
-      user: socket.user
-    });
-
-    projectNamespace.emit('rooms:list', dataStore.getAllMusicRooms());
-    console.log(`🎵 ${socket.user.username} joined music room: ${result.room.name}`);
   });
 
   // 음악 업로드 (기존 이벤트명 유지)
@@ -604,19 +610,23 @@ projectNamespace.on('connection', (socket) => {
     
     const room = dataStore.getMusicRoom(socket.currentRoom);
     if (room) {
-      room.currentTrack = {
-        filename: data.musicData.filename,
+      const track = {
         originalName: data.musicData.originalname,
+        filename: data.musicData.filename,
         url: data.musicData.url,
-        uploader: socket.user.username
+        uploader: socket.user.username,
+        uploadedAt: new Date().toISOString()
       };
       
+      room.currentTrack = track;
+      
+      // 룸의 모든 사용자에게 음악 업로드 알림
       projectNamespace.to(socket.currentRoom).emit('music uploaded', {
-        track: room.currentTrack,
+        track: track,
         uploader: socket.user.username
       });
       
-      console.log(`🎵 Music uploaded: ${data.musicData.originalname}`);
+      console.log(`🎵 Music uploaded: ${data.musicData.originalname} by ${socket.user.username}`);
     }
   });
 
@@ -645,7 +655,9 @@ projectNamespace.on('connection', (socket) => {
       user: socket.user.username,
       message: data.message,
       timestamp: data.timestamp || 0,
-      time: new Date().toISOString()
+      time: new Date().toISOString(),
+      type: data.type || 'text',
+      voiceUrl: data.voiceUrl
     };
     
     dataStore.addMusicComment(socket.currentRoom, comment);
@@ -721,6 +733,7 @@ server.listen(PORT, () => {
 ║  Chat Namespace: ✅ /chat             ║
 ║  Project Namespace: ✅ /project       ║
 ║  File Upload: ✅ Ready                ║
+║  CORS: ✅ Configured                  ║
 ╚═══════════════════════════════════════╝
 
 🎯 Namespaced Features:
@@ -728,6 +741,7 @@ server.listen(PORT, () => {
    • /project - Music Collaboration Rooms
    • Professional File Upload System
    • Separated Data Management
+   • Audio Streaming with CORS Support
    
 🔗 API Endpoints:
    • Main: http://localhost:${PORT}
@@ -735,6 +749,7 @@ server.listen(PORT, () => {
    • Chat Upload: POST /api/upload/chat
    • Music Upload: POST /api/upload/music
    • Voice Upload: POST /api/upload/voice
+   • File Serving: GET /api/files/:type/:filename
   `);
 });
 
