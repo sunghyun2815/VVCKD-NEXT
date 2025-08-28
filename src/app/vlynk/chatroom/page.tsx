@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Header from '@/app/components/Header';
 import { io, Socket } from 'socket.io-client';
 import styles from './chatroom.module.css';
@@ -14,6 +14,7 @@ interface Room {
   creator: string;
   lastMessage: string;
   lastMessageTime: number;
+  type: 'chat';
 }
 
 interface Message {
@@ -22,7 +23,7 @@ interface Message {
   username: string;
   message: string;
   timestamp: string;
-  type: string;
+  type: 'text' | 'image' | 'audio' | 'video' | 'file' | 'system';
   fileUrl?: string;
   fileSize?: number;
 }
@@ -30,147 +31,122 @@ interface Message {
 interface User {
   id: string;
   username: string;
-  role: string;
+  role: 'ADMIN' | 'MEMBER';
+  namespace: 'chat';
 }
 
 export default function ChatroomPage() {
-  // Socket 및 연결 상태
+  // ===== Socket & Connection State =====
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState('Connecting...');
+  const [connectionStatus, setConnectionStatus] = useState('연결 중...');
   const [connectedUsers, setConnectedUsers] = useState<number>(0);
   
-  // 사용자 상태
-  const [currentUser, setCurrentUser] = useState<User>({ id: 'GUEST', username: 'GUEST', role: 'MEMBER' });
+  // ===== User State =====
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [username, setUsername] = useState('');
   const [showLogin, setShowLogin] = useState(true);
   
-  // 채팅 상태
+  // ===== Chat State =====
   const [rooms, setRooms] = useState<Room[]>([]);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showChatView, setShowChatView] = useState(false);
   
-  // 룸 생성
+  // ===== Room Creation State =====
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [newRoomPassword, setNewRoomPassword] = useState('');
   const [newRoomMaxUsers, setNewRoomMaxUsers] = useState(10);
   
-  // 파일 업로드 상태
+  // ===== File Upload State =====
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showFileMenu, setShowFileMenu] = useState(false);
   
+  // ===== Refs =====
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const loginInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // ===== Socket 초기화 및 이벤트 리스너 =====
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Socket.IO 연결
-  useEffect(() => {
-    const newSocket = io('http://localhost:3001', {
-      autoConnect: true,
-      timeout: 20000,
-      transports: ['polling', 'websocket'],
+    const newSocket = io('http://localhost:3001/chat', {
+      transports: ['websocket', 'polling'],
+      timeout: 10000,
       forceNew: true
     });
-    
-    setSocket(newSocket);
 
-    // 연결 이벤트
+    // 연결 상태 관리
     newSocket.on('connect', () => {
-      setConnectionStatus('Connected');
-      console.log('🔗 Socket connected:', newSocket.id);
-    });
-
-    newSocket.on('connect_error', (error) => {
-      setConnectionStatus('Connection Failed');
-      console.error('❌ Connection error:', error);
+      console.log('🗨️ Connected to chat namespace');
+      setConnectionStatus('연결됨');
+      setSocket(newSocket);
     });
 
     newSocket.on('disconnect', (reason) => {
-      setConnectionStatus('Disconnected');
-      console.log('🔌 Disconnected:', reason);
-    });
-
-    // VLYNK 서버 이벤트
-    newSocket.on('welcome', (data) => {
-      console.log('🎉 Welcome:', data.message);
-    });
-
-    newSocket.on('user:registered', (userData) => {
-      setCurrentUser({
-        id: userData.id,
-        username: userData.username || 'GUEST',
-        role: 'MEMBER'
-      });
-      console.log('👤 User registered:', userData);
-    });
-
-    newSocket.on('users:updated', (data) => {
-      const userCount = data.totalUsers || data.length || 0;
-      setConnectedUsers(userCount);
-    });
-
-    // 방 목록 관련 이벤트
-    newSocket.on('rooms:list', (data) => {
-      console.log('📝 Rooms list received:', data.rooms);
-      setRooms(data.rooms || []);
-    });
-
-    newSocket.on('room:created', (data) => {
-      console.log('🏠 Room created:', data.room);
-      // 방 생성 성공 시 바로 입장
-      if (data.room) {
-        joinRoom(data.room);
+      console.log('🗨️ Disconnected from chat:', reason);
+      setConnectionStatus('연결 끊김');
+      if (reason === 'io server disconnect') {
+        newSocket.connect();
       }
     });
 
+    newSocket.on('connect_error', (error) => {
+      console.error('🗨️ Connection error:', error);
+      setConnectionStatus('연결 실패');
+    });
+
+    // 사용자 인증 응답
+    newSocket.on('user:login_success', (data) => {
+      console.log('👤 Login success:', data.user);
+      setCurrentUser(data.user);
+      setConnectedUsers(data.connectedUsers);
+      setShowLogin(false);
+    });
+
+    // 룸 목록 업데이트
+    newSocket.on('rooms:list', (roomsList: Room[]) => {
+      console.log('🏠 Rooms updated:', roomsList.length);
+      setRooms(roomsList);
+    });
+
+    // 룸 생성 성공
+    newSocket.on('room:created', (data) => {
+      console.log('🏠 Room created:', data.room);
+      if (data.room) {
+        joinRoom(data.room.id);
+      }
+    });
+
+    // 룸 에러
     newSocket.on('room:error', (data) => {
       console.error('❌ Room error:', data.message);
       alert(data.message);
     });
 
-    // 채팅룸 이벤트
-    newSocket.on('chat:messages', (messages: Message[]) => {
-      setMessages(messages);
+    // 채팅 메시지 이벤트
+    newSocket.on('chat:messages', (messagesList: Message[]) => {
+      console.log('💬 Received messages:', messagesList.length);
+      setMessages(messagesList);
     });
 
-    newSocket.on('chat:room_info', (roomInfo) => {
-      console.log('🏠 Room info:', roomInfo);
+    newSocket.on('chat:room_joined', (data) => {
+      console.log('🚪 Joined room:', data.room);
+      setCurrentRoom(data.room);
+      setShowChatView(true);
     });
 
-    newSocket.on('chat:new_message', (messageData: Message) => {
-      setMessages(prev => [...prev, messageData]);
+    newSocket.on('chat:new_message', (message: Message) => {
+      console.log('💬 New message:', message);
+      setMessages(prev => [...prev, message]);
     });
 
-    // 파일 업로드 완료 이벤트
-    newSocket.on('file:uploaded', (fileData) => {
-      console.log('📎 File uploaded:', fileData);
-      // 파일 메시지를 채팅에 추가
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        userId: currentUser.id,
-        username: currentUser.username,
-        message: fileData.originalName,
-        timestamp: new Date().toISOString(),
-        type: fileData.type,
-        fileUrl: fileData.url,
-        fileSize: fileData.size
-      }]);
-    });
-
+    // 사용자 입장/퇴장
     newSocket.on('chat:user_joined', (data) => {
+      console.log('👋 User joined:', data.user?.username);
       setMessages(prev => [...prev, {
-        id: Date.now().toString(),
+        id: `system_${Date.now()}`,
         userId: 'system',
         username: 'SYSTEM',
         message: data.message,
@@ -180,8 +156,9 @@ export default function ChatroomPage() {
     });
 
     newSocket.on('chat:user_left', (data) => {
+      console.log('👋 User left:', data.user?.username);
       setMessages(prev => [...prev, {
-        id: Date.now().toString(),
+        id: `system_${Date.now()}`,
         userId: 'system',
         username: 'SYSTEM',
         message: data.message,
@@ -190,143 +167,150 @@ export default function ChatroomPage() {
       }]);
     });
 
+    newSocket.on('chat:error', (data) => {
+      console.error('💬 Chat error:', data.message);
+      alert(data.message);
+    });
+
     return () => {
-      if (newSocket) {
-        newSocket.disconnect();
-      }
+      console.log('🗨️ Cleaning up socket connection');
+      newSocket.disconnect();
     };
   }, []);
 
+  // ===== 메시지 자동 스크롤 =====
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
+  // ===== 로그인 처리 =====
+  const handleLogin = useCallback(() => {
+    if (!username.trim() || !socket) return;
 
-  const handleLogin = () => {
-    if (username.trim() && socket) {
-      setShowLogin(false);
-      socket.emit('user:register', {
-        username: username.trim(),
-        joinedAt: new Date().toISOString()
-      });
-      
-      // 로그인 후 방 목록 요청
-      setTimeout(() => {
-        if (socket) {
-          socket.emit('rooms:get');
-        }
-      }, 500);
-    }
-  };
+    const userData = {
+      username: username.trim(),
+      role: 'MEMBER' as const
+    };
 
-  const joinRoom = (room: Room) => {
-    if (socket && room) {
-      setCurrentRoom(room);
-      setMessages([]);
-      setShowChatView(true);
-      socket.emit('chat:join', room.id);
-    }
-  };
+    console.log('🚀 Attempting login:', userData);
+    socket.emit('user:login', userData);
+  }, [username, socket]);
 
-  const leaveRoom = () => {
-    if (socket && currentRoom) {
-      socket.emit('chat:leave', currentRoom.id);
-      setShowChatView(false);
-      setCurrentRoom(null);
-      setMessages([]);
-    }
-  };
+  // ===== 룸 생성 =====
+  const createRoom = useCallback(() => {
+    if (!newRoomName.trim() || !socket) return;
 
-  const sendMessage = () => {
-    if (socket && newMessage.trim() && currentRoom) {
-      socket.emit('chat:message', {
-        roomId: currentRoom.id,
-        message: newMessage.trim(),
-        type: 'text'
-      });
-      setNewMessage('');
-    }
-  };
+    const roomData = {
+      name: newRoomName.trim(),
+      password: newRoomPassword.trim(),
+      maxUsers: newRoomMaxUsers
+    };
 
-  // 파일 업로드 관련 함수들
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // 파일 크기 체크 (100MB)
-      if (file.size > 100 * 1024 * 1024) {
-        alert('파일 크기는 100MB를 초과할 수 없습니다.');
-        return;
-      }
-
-      // 파일 타입 체크
-      const allowedTypes = [
-        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-        'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/aac', 'audio/flac',
-        'video/mp4', 'video/webm'
-      ];
-
-      if (!allowedTypes.includes(file.type)) {
-        alert('지원하지 않는 파일 형식입니다.\n지원 형식: 이미지(jpg, png, gif, webp), 음성(mp3, wav, ogg, aac, flac), 동영상(mp4, webm)');
-        return;
-      }
-
-      setSelectedFile(file);
-      uploadFile(file);
-    }
+    console.log('🏠 Creating room:', roomData);
+    socket.emit('room:create', roomData);
     
-    // 파일 입력 리셋
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    setShowFileMenu(false);
-  };
+    // 모달 닫기 및 초기화
+    setShowCreateRoom(false);
+    setNewRoomName('');
+    setNewRoomPassword('');
+    setNewRoomMaxUsers(10);
+  }, [newRoomName, newRoomPassword, newRoomMaxUsers, socket]);
 
-  const uploadFile = async (file: File) => {
-    if (!file || !currentRoom) return;
+  // ===== 룸 참여 =====
+  const joinRoom = useCallback((roomId: string, password: string = '') => {
+    if (!socket) return;
+
+    const joinData = {
+      roomId,
+      password
+    };
+
+    console.log('🚪 Joining room:', joinData);
+    socket.emit('room:join', joinData);
+  }, [socket]);
+
+  // ===== 메시지 전송 =====
+  const sendMessage = useCallback(() => {
+    if (!newMessage.trim() || !socket || !currentRoom) return;
+
+    const messageData = {
+      message: newMessage.trim(),
+      type: 'text' as const
+    };
+
+    console.log('💬 Sending message:', messageData);
+    socket.emit('chat:message', messageData);
+    setNewMessage('');
+  }, [newMessage, socket, currentRoom]);
+
+  // ===== 파일 업로드 =====
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (!file || !socket || !currentRoom) return;
 
     setIsUploading(true);
-    
+    setShowFileMenu(false);
+
     try {
       const formData = new FormData();
-      formData.append('files', file);
-
+      formData.append('file', file);
+      
       const response = await fetch('/api/upload/chat', {
         method: 'POST',
         body: formData
       });
 
       if (!response.ok) {
-        throw new Error('업로드 실패');
+        throw new Error('Upload failed');
       }
 
-      const result = await response.json();
+      const data = await response.json();
       
-      if (result.success && result.data && result.data.length > 0) {
-        const fileData = result.data[0];
-        
-        // 파일 메시지 전송
-        if (socket) {
-          socket.emit('chat:message', {
-            roomId: currentRoom.id,
-            message: fileData.originalName,
-            type: file.type.startsWith('image/') ? 'image' : 
-                  file.type.startsWith('audio/') ? 'audio' : 
-                  file.type.startsWith('video/') ? 'video' : 'file',
-            fileUrl: fileData.url,
-            fileSize: fileData.size,
-            originalName: fileData.originalName
-          });
-        }
-        
-        console.log('📎 File uploaded successfully:', fileData);
-      } else {
-        throw new Error('서버 응답 오류');
+      if (data.success) {
+        // 파일 메시지로 전송
+        const messageData = {
+          message: data.file.originalName,
+          type: data.file.type,
+          fileUrl: data.file.url,
+          fileSize: data.file.size
+        };
+
+        socket.emit('chat:message', messageData);
+        console.log('📎 File uploaded and sent:', data.file.originalName);
       }
-      
     } catch (error) {
-      console.error('❌ File upload error:', error);
-      alert('파일 업로드에 실패했습니다. 다시 시도해주세요.');
+      console.error('📎 Upload failed:', error);
+      alert('파일 업로드에 실패했습니다.');
     } finally {
       setIsUploading(false);
       setSelectedFile(null);
     }
+  }, [socket, currentRoom]);
+
+  // ===== 룸 나가기 =====
+  const leaveRoom = useCallback(() => {
+    setCurrentRoom(null);
+    setMessages([]);
+    setShowChatView(false);
+    console.log('🚪 Left current room');
+  }, []);
+
+  // ===== 유틸리티 함수 =====
+  const formatTime = (timestamp: number) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    
+    if (minutes < 1) return 'NOW';
+    if (minutes < 60) return `${minutes}M`;
+    if (minutes < 1440) return `${Math.floor(minutes / 60)}H`;
+    return `${Math.floor(minutes / 1440)}D`;
+  };
+
+  const formatMessageTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const formatFileSize = (bytes: number) => {
@@ -337,21 +321,18 @@ export default function ChatroomPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const renderFileMessage = (msg: Message) => {
-    if (!msg.fileUrl) return msg.message;
-
+  // ===== 메시지 렌더링 =====
+  const renderMessage = (msg: Message) => {
     switch (msg.type) {
       case 'image':
         return (
           <div className={styles.fileMessage}>
-            <div className={styles.fileName}>📷 {msg.message}</div>
+            <div className={styles.fileName}>🖼️ {msg.message}</div>
             <img 
               src={msg.fileUrl} 
               alt={msg.message}
               className={styles.chatImage}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
+              onClick={() => window.open(msg.fileUrl, '_blank')}
             />
             {msg.fileSize && (
               <div className={styles.fileSize}>{formatFileSize(msg.fileSize)}</div>
@@ -363,11 +344,7 @@ export default function ChatroomPage() {
         return (
           <div className={styles.fileMessage}>
             <div className={styles.fileName}>🎵 {msg.message}</div>
-            <audio 
-              controls 
-              className={styles.chatAudio}
-              preload="metadata"
-            >
+            <audio controls className={styles.chatAudio}>
               <source src={msg.fileUrl} />
               브라우저가 오디오를 지원하지 않습니다.
             </audio>
@@ -415,51 +392,26 @@ export default function ChatroomPage() {
     }
   };
 
-  const createRoom = () => {
-    if (newRoomName.trim() && socket) {
-      // 서버에 방 생성 요청
-      socket.emit('room:create', {
-        name: newRoomName.trim(),
-        password: newRoomPassword.trim(),
-        maxUsers: newRoomMaxUsers
-      });
-      
-      // 모달 닫기 및 입력 초기화
-      setShowCreateRoom(false);
-      setNewRoomName('');
-      setNewRoomPassword('');
-      setNewRoomMaxUsers(10);
+  // ===== 키보드 이벤트 처리 =====
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (showLogin) {
+        handleLogin();
+      } else {
+        sendMessage();
+      }
     }
   };
 
-  const formatTime = (timestamp: number) => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    
-    if (minutes < 1) return 'NOW';
-    if (minutes < 60) return `${minutes}M`;
-    if (minutes < 1440) return `${Math.floor(minutes / 60)}H`;
-    return `${Math.floor(minutes / 1440)}D`;
-  };
+  // ===== 렌더링 =====
 
-  const formatMessageTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // 컬럼 분배 (index.html과 동일)
-  const leftColumnRooms = rooms.filter((_, index) => index % 2 === 0);
-  const rightColumnRooms = rooms.filter((_, index) => index % 2 === 1);
-
+  // 로그인 화면
   if (showLogin) {
     return (
       <div className={styles.container}>
         <Header />
         
-        {/* 로그인 오버레이 */}
         <div className={styles.loginOverlay}>
           <div className={styles.loginBox}>
             <h2 className={styles.loginTitle}>ENTER VVCKD CHAT</h2>
@@ -472,12 +424,9 @@ export default function ChatroomPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="ENTER USERNAME"
               className={styles.loginInput}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleLogin();
-                }
-              }}
+              onKeyPress={handleKeyPress}
               autoFocus
+              maxLength={20}
             />
             
             <button
@@ -489,7 +438,8 @@ export default function ChatroomPage() {
             </button>
             
             <div className={styles.connectionStatus}>
-              STATUS: <span className={connectionStatus === 'Connected' ? styles.connected : styles.disconnected}>
+              STATUS: <span className={connectionStatus === '연결됨' ? 
+                styles.connected : styles.disconnected}>
                 {connectionStatus}
               </span>
             </div>
@@ -499,133 +449,142 @@ export default function ChatroomPage() {
     );
   }
 
+  // 채팅룸 뷰
   if (showChatView && currentRoom) {
     return (
       <div className={styles.container}>
         <Header />
         
-        {/* 채팅 뷰 */}
-        <div className={styles.chatView}>
-          <div className={styles.chatHeaderBar}>
+        {/* 사용자 정보 */}
+        <div className={styles.userInfo}>
+          USER: {currentUser?.username}
+          <span className={`${styles.userRole} ${currentUser?.role === 'ADMIN' ? styles.admin : ''}`}>
+            [{currentUser?.role}]
+          </span>
+        </div>
+
+        {/* 채팅 인터페이스 */}
+        <div className={styles.chatInterface}>
+          {/* 헤더 */}
+          <div className={styles.chatHeader}>
             <div className={styles.roomInfo}>
-              ROOM: {currentRoom.name} | USERS: {currentRoom.userCount}/{currentRoom.maxUsers}
+              <h2 className={styles.roomName}>{currentRoom.name}</h2>
+              <div className={styles.roomStats}>
+                👥 {currentRoom.userCount}/{currentRoom.maxUsers} | 
+                🏠 BY {currentRoom.creator}
+              </div>
             </div>
-            <button onClick={leaveRoom} className={styles.backBtn}>
-              BACK TO LOBBY
+            <button 
+              onClick={leaveRoom}
+              className={styles.leaveBtn}
+            >
+              LEAVE
             </button>
           </div>
-          
-          <div className={styles.chatArea}>
-            <div className={styles.messagesContainer}>
-              {messages.length === 0 ? (
-                <div className={styles.noMessages}>
-                  <p>NO MESSAGES YET</p>
-                  <p>BE THE FIRST TO SAY SOMETHING!</p>
-                </div>
-              ) : (
-                messages.map((msg) => (
-                  <div key={msg.id} className={`${styles.message} ${
-                    msg.type === 'system' ? styles.systemMessage : 
-                    msg.userId === currentUser.id ? styles.myMessage : styles.otherMessage
-                  }`}>
-                    <div className={styles.messageHeader}>
-                      <span className={styles.messageUser}>
-                        {msg.username === currentUser.username ? 'YOU' : msg.username}
-                      </span>
-                      <span className={styles.messageTime}>
-                        {formatMessageTime(msg.timestamp)}
-                      </span>
-                    </div>
-                    <div className={styles.messageContent}>
-                      {msg.type === 'text' ? msg.message : renderFileMessage(msg)}
-                    </div>
+
+          {/* 메시지 목록 */}
+          <div className={styles.messageArea}>
+            {messages.length === 0 ? (
+              <div className={styles.emptyChat}>
+                <div className={styles.emptyIcon}>💬</div>
+                <div className={styles.emptyText}>대화를 시작해보세요!</div>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className={`${styles.message} ${
+                    msg.userId === currentUser?.id ? styles.ownMessage : 
+                    msg.type === 'system' ? styles.systemMessage : ''
+                  }`}
+                >
+                  <div className={styles.messageHeader}>
+                    <span className={styles.messageUser}>{msg.username}</span>
+                    <span className={styles.messageTime}>
+                      {formatMessageTime(msg.timestamp)}
+                    </span>
                   </div>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-            
-            <div className={styles.inputArea}>
-              <div className={styles.inputContainer}>
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="TYPE YOUR MESSAGE..."
-                  className={styles.messageInput}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage();
+                  <div className={styles.messageContent}>
+                    {msg.type === 'text' || msg.type === 'system' ? 
+                      msg.message : renderMessage(msg)
                     }
-                  }}
-                  maxLength={500}
-                  disabled={isUploading}
-                />
-                
-                <div className={styles.fileUploadSection}>
-                  <button
-                    onClick={() => setShowFileMenu(!showFileMenu)}
-                    className={styles.fileBtn}
-                    disabled={isUploading}
-                    title="파일 업로드"
-                  >
-                    📎
-                  </button>
-                  
-                  {showFileMenu && (
-                    <div className={styles.fileMenu}>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className={styles.fileMenuBtn}
-                      >
-                        📷 IMAGE
-                      </button>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className={styles.fileMenuBtn}
-                      >
-                        🎵 AUDIO
-                      </button>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className={styles.fileMenuBtn}
-                      >
-                        🎬 VIDEO
-                      </button>
-                    </div>
-                  )}
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* 입력 영역 */}
+          <div className={styles.inputArea}>
+            {isUploading && (
+              <div className={styles.uploadStatus}>
+                <div className={styles.uploadProgress}>
+                  파일 업로드 중<span className={styles.loadingDots}>
+                    <span>.</span><span>.</span><span>.</span>
+                  </span>
                 </div>
               </div>
+            )}
+            
+            <div className={styles.inputContainer}>
+              {/* 파일 업로드 버튼 */}
+              <div className={styles.fileUploadSection}>
+                <button
+                  onClick={() => setShowFileMenu(!showFileMenu)}
+                  className={styles.fileBtn}
+                  disabled={isUploading}
+                >
+                  📎
+                </button>
+                
+                {showFileMenu && (
+                  <div className={styles.fileMenu}>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file);
+                      }}
+                      style={{ display: 'none' }}
+                      accept="image/*,audio/*,video/*,.pdf,.txt,.doc,.docx"
+                    />
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className={styles.fileMenuBtn}
+                    >
+                      📁 파일 선택
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 메시지 입력 */}
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="메시지를 입력하세요..."
+                className={styles.messageInput}
+                onKeyPress={handleKeyPress}
+                disabled={isUploading}
+                rows={1}
+                style={{
+                  minHeight: '40px',
+                  maxHeight: '120px',
+                  resize: 'none',
+                  overflow: 'auto'
+                }}
+              />
               
+              {/* 전송 버튼 */}
               <button
                 onClick={sendMessage}
                 disabled={!newMessage.trim() || isUploading}
                 className={styles.sendBtn}
               >
-                {isUploading ? 'UPLOADING...' : 'SEND'}
+                SEND
               </button>
-              
-              {/* 숨겨진 파일 입력 */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,audio/*,video/*"
-                onChange={handleFileSelect}
-                style={{ display: 'none' }}
-              />
-              
-              {/* 업로드 상태 표시 */}
-              {isUploading && selectedFile && (
-                <div className={styles.uploadStatus}>
-                  <div className={styles.uploadProgress}>
-                    📤 UPLOADING: {selectedFile.name}
-                    <div className={styles.loadingDots}>
-                      <span>.</span><span>.</span><span>.</span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -633,17 +592,23 @@ export default function ChatroomPage() {
     );
   }
 
+  // 메인 채팅룸 리스트
+  const leftColumnRooms = rooms.filter((_, index) => index % 2 === 0);
+  const rightColumnRooms = rooms.filter((_, index) => index % 2 === 1);
+
   return (
     <div className={styles.container}>
       <Header />
       
       {/* 사용자 정보 */}
       <div className={styles.userInfo}>
-        USER: <span>{currentUser.username}</span>
-        <span className={styles.userRole}>[{currentUser.role}]</span>
+        USER: {currentUser?.username}
+        <span className={`${styles.userRole} ${currentUser?.role === 'ADMIN' ? styles.admin : ''}`}>
+          [{currentUser?.role}]
+        </span>
       </div>
 
-      {/* CREATE ROOM 버튼 */}
+      {/* 룸 생성 버튼 */}
       <div className={styles.createSection}>
         <button
           onClick={() => setShowCreateRoom(true)}
@@ -656,131 +621,172 @@ export default function ChatroomPage() {
       {/* 메인 컨테이너 */}
       <div className={styles.mainContainer}>
         <div className={styles.chatHeader}>
-          <h1>VVCKD ROOM <span className={styles.cursor}>▌</span></h1>
-          <p className={styles.statusText}>
-            ONLINE: {connectedUsers} USERS | STATUS: {connectionStatus}
-          </p>
+          <h1>VVCKD CHATROOM<span className={styles.cursor}>_</span></h1>
+          <div className={styles.statusText}>
+            연결된 사용자: {connectedUsers} | 활성 룸: {rooms.length}
+            <br />
+            상태: <span className={connectionStatus === '연결됨' ? 
+              styles.connected : styles.disconnected}>
+              {connectionStatus}
+            </span>
+          </div>
         </div>
-        
-        <div className={styles.chatHub}>
-          {rooms.length === 0 ? (
-            <div className={styles.noRooms}>
-              <p>NO ACTIVE ROOMS</p>
-              <p>CREATE A ROOM TO GET STARTED!</p>
+
+        {rooms.length === 0 ? (
+          <div className={styles.emptyRooms}>
+            <div className={styles.emptyIcon}>🏠</div>
+            <div className={styles.emptyTitle}>채팅룸이 없습니다</div>
+            <div className={styles.emptyDescription}>
+              첫 번째 채팅룸을 만들어보세요!
             </div>
-          ) : (
-            <>
-              <div className={styles.chatColumn}>
-                {leftColumnRooms.map((room) => (
-                  <div
-                    key={room.id}
-                    className={styles.chatRoom}
-                    onClick={() => joinRoom(room)}
-                  >
-                    <div className={styles.chatTitle}>
-                      {room.name} [{room.userCount}/{room.maxUsers}]
-                      {room.hasPassword && ' 🔒'}
-                    </div>
-                    <div className={styles.chatTime}>
+          </div>
+        ) : (
+          <div className={styles.chatHub}>
+            <div className={styles.chatColumn}>
+              {leftColumnRooms.map((room) => (
+                <div 
+                  key={room.id} 
+                  className={styles.chatRoom}
+                  onClick={() => {
+                    const password = room.hasPassword ? 
+                      prompt('비밀번호를 입력하세요:') : '';
+                    if (room.hasPassword && !password) return;
+                    joinRoom(room.id, password || '');
+                  }}
+                >
+                  <div className={styles.roomHeader}>
+                    <div className={styles.roomName}>{room.name}</div>
+                    <div className={styles.roomTime}>
                       {formatTime(room.lastMessageTime)}
                     </div>
-                    
-                    <div className={styles.preview}>
-                      ROOM: {room.name}
-                      <br />
-                      CREATOR: {room.creator}
-                      <br />
-                      USERS: {room.userCount}/{room.maxUsers}
-                      <br />
-                      LAST MSG: {room.lastMessage}
-                      <br />
-                      {room.hasPassword ? 'PASSWORD PROTECTED' : 'PUBLIC ROOM'}
-                    </div>
                   </div>
-                ))}
-              </div>
-              
-              <div className={styles.chatColumn}>
-                {rightColumnRooms.map((room) => (
-                  <div
-                    key={room.id}
-                    className={styles.chatRoom}
-                    onClick={() => joinRoom(room)}
-                  >
-                    <div className={styles.chatTitle}>
-                      {room.name} [{room.userCount}/{room.maxUsers}]
-                      {room.hasPassword && ' 🔒'}
+                  
+                  <div className={styles.roomInfo}>
+                    <div className={styles.roomUsers}>
+                      👥 {room.userCount}/{room.maxUsers}
                     </div>
-                    <div className={styles.chatTime}>
+                    {room.hasPassword && (
+                      <div className={styles.roomLock}>🔒</div>
+                    )}
+                  </div>
+                  
+                  <div className={styles.roomCreator}>
+                    BY {room.creator}
+                  </div>
+                  
+                  {room.lastMessage && (
+                    <div className={styles.roomLastMessage}>
+                      {room.lastMessage.length > 30 ? 
+                        room.lastMessage.substring(0, 30) + '...' : 
+                        room.lastMessage
+                      }
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            <div className={styles.chatColumn}>
+              {rightColumnRooms.map((room) => (
+                <div 
+                  key={room.id} 
+                  className={styles.chatRoom}
+                  onClick={() => {
+                    const password = room.hasPassword ? 
+                      prompt('비밀번호를 입력하세요:') : '';
+                    if (room.hasPassword && !password) return;
+                    joinRoom(room.id, password || '');
+                  }}
+                >
+                  <div className={styles.roomHeader}>
+                    <div className={styles.roomName}>{room.name}</div>
+                    <div className={styles.roomTime}>
                       {formatTime(room.lastMessageTime)}
                     </div>
-                    
-                    <div className={styles.preview}>
-                      ROOM: {room.name}
-                      <br />
-                      CREATOR: {room.creator}
-                      <br />
-                      USERS: {room.userCount}/{room.maxUsers}
-                      <br />
-                      LAST MSG: {room.lastMessage}
-                      <br />
-                      {room.hasPassword ? 'PASSWORD PROTECTED' : 'PUBLIC ROOM'}
-                    </div>
                   </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+                  
+                  <div className={styles.roomInfo}>
+                    <div className={styles.roomUsers}>
+                      👥 {room.userCount}/{room.maxUsers}
+                    </div>
+                    {room.hasPassword && (
+                      <div className={styles.roomLock}>🔒</div>
+                    )}
+                  </div>
+                  
+                  <div className={styles.roomCreator}>
+                    BY {room.creator}
+                  </div>
+                  
+                  {room.lastMessage && (
+                    <div className={styles.roomLastMessage}>
+                      {room.lastMessage.length > 30 ? 
+                        room.lastMessage.substring(0, 30) + '...' : 
+                        room.lastMessage
+                      }
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* CREATE ROOM 모달 */}
+      {/* 룸 생성 모달 */}
       {showCreateRoom && (
-        <div className={styles.createRoomModal}>
-          <div className={styles.createRoomContent}>
-            <h2>CREATE NEW ROOM</h2>
+        <div className={styles.createModal}>
+          <div className={styles.createBox}>
+            <h3 className={styles.createTitle}>새 채팅룸 만들기</h3>
             
-            <div className={styles.formGroup}>
-              <label>ROOM NAME:</label>
-              <input
-                type="text"
-                value={newRoomName}
-                onChange={(e) => setNewRoomName(e.target.value)}
-                placeholder="ENTER ROOM NAME"
-                className={styles.formInput}
-                maxLength={30}
-              />
-            </div>
+            <input
+              type="text"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              placeholder="룸 이름"
+              className={styles.createInput}
+              maxLength={30}
+            />
             
-            <div className={styles.formGroup}>
-              <label>PASSWORD (OPTIONAL):</label>
-              <input
-                type="password"
-                value={newRoomPassword}
-                onChange={(e) => setNewRoomPassword(e.target.value)}
-                placeholder="LEAVE EMPTY FOR PUBLIC"
-                className={styles.formInput}
-                maxLength={20}
-              />
-            </div>
+            <input
+              type="password"
+              value={newRoomPassword}
+              onChange={(e) => setNewRoomPassword(e.target.value)}
+              placeholder="비밀번호 (선택사항)"
+              className={styles.createInput}
+            />
             
-            <div className={styles.formGroup}>
-              <label>MAX USERS:</label>
-              <input
-                type="number"
+            <div className={styles.createRow}>
+              <label className={styles.createLabel}>최대 인원:</label>
+              <select
                 value={newRoomMaxUsers}
-                onChange={(e) => setNewRoomMaxUsers(Math.max(2, Math.min(100, parseInt(e.target.value) || 10)))}
-                min="2"
-                max="100"
-                className={styles.formInput}
-              />
+                onChange={(e) => setNewRoomMaxUsers(Number(e.target.value))}
+                className={styles.createSelect}
+              >
+                <option value={5}>5명</option>
+                <option value={10}>10명</option>
+                <option value={20}>20명</option>
+                <option value={50}>50명</option>
+              </select>
             </div>
             
-            <div className={styles.modalActions}>
-              <button onClick={createRoom} className={styles.createBtn}>
+            <div className={styles.createButtons}>
+              <button
+                onClick={createRoom}
+                disabled={!newRoomName.trim()}
+                className={styles.createConfirm}
+              >
                 CREATE
               </button>
-              <button onClick={() => setShowCreateRoom(false)} className={styles.cancelBtn}>
+              <button
+                onClick={() => {
+                  setShowCreateRoom(false);
+                  setNewRoomName('');
+                  setNewRoomPassword('');
+                  setNewRoomMaxUsers(10);
+                }}
+                className={styles.createCancel}
+              >
                 CANCEL
               </button>
             </div>

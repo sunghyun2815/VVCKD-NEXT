@@ -14,13 +14,13 @@
   font-display: swap;
 }
 
-/* ====== VLYNK 디자인 토큰 ====== */
+/* ====== VLYNK 디자인 토큰 - 통합 버전 ====== */
 :root {
   /* 기본 색상 */
   --background: #ffffff;
   --foreground: #171717;
-  
-  /* VLYNK 전용 색상 */
+   
+  /* VLYNK 기본 색상 팔레트 */
   --vlynk-primary: #FF5500;
   --vlynk-primary-hover: #FF8800;
   --vlynk-primary-light: #FF8800;
@@ -29,29 +29,29 @@
   --vlynk-danger: #FF0000;
   --vlynk-warning: #FFAA00;
   --vlynk-info: #0099FF;
-  
+   
   /* 배경 색상 */
   --vlynk-bg-primary: #181818;
   --vlynk-bg-secondary: #111111;
   --vlynk-bg-tertiary: #000000;
   --vlynk-bg-card: #191919;
-  
+   
   /* 텍스트 색상 */
   --vlynk-text-primary: #FF5500;
   --vlynk-text-secondary: #FFFFFF;
   --vlynk-text-muted: #666666;
   --vlynk-text-inverse: #000000;
-  
+   
   /* 테두리 색상 */
   --vlynk-border-primary: #FF5500;
   --vlynk-border-secondary: #333333;
   --vlynk-border-muted: #222222;
-  
+   
   /* 그림자 */
   --vlynk-shadow-primary: 0 0 20px rgba(255, 85, 0, 0.3);
   --vlynk-shadow-secondary: 0 8px 26px rgba(255, 85, 0, 0.24);
   --vlynk-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5);
-  
+   
   /* 간격 */
   --vlynk-spacing-xs: 4px;
   --vlynk-spacing-sm: 8px;
@@ -59,7 +59,7 @@
   --vlynk-spacing-lg: 24px;
   --vlynk-spacing-xl: 32px;
   --vlynk-spacing-2xl: 48px;
-  
+   
   /* 폰트 크기 */
   --vlynk-font-xs: 7px;
   --vlynk-font-sm: 8px;
@@ -68,16 +68,45 @@
   --vlynk-font-xl: 14px;
   --vlynk-font-2xl: 16px;
   --vlynk-font-3xl: 24px;
-  
+  --vlynk-font-4xl: 32px;
+   
   /* 전환 효과 */
   --vlynk-transition-fast: 0.15s ease;
   --vlynk-transition-normal: 0.3s ease;
   --vlynk-transition-slow: 0.5s ease;
-  
+   
   /* 애니메이션 지속 시간 */
   --vlynk-animation-fast: 0.2s;
   --vlynk-animation-normal: 0.4s;
   --vlynk-animation-slow: 0.8s;
+
+  /* ====== 추가 VLYNK 색상 변수 (채팅/프로젝트 호환) ====== */
+  /* 기본 Orange 색상을 FF6600으로 통일 */
+  --vlynk-primary-alt: #ff6600;
+  --vlynk-primary-bright: #ff8800;
+  
+  /* 상태별 색상 확장 */
+  --vlynk-error: #ff0000;
+  --vlynk-warning-alt: #ffaa00;
+  --vlynk-success-alt: #00ff00;
+  --vlynk-info-alt: #00ccff;
+  
+  /* 그라디언트 */
+  --vlynk-gradient-primary: linear-gradient(45deg, #FF5500, #FF8800);
+  --vlynk-gradient-secondary: linear-gradient(45deg, #FFFF00, #FFAA00);
+  --vlynk-gradient-dark: linear-gradient(45deg, #000000, #111111);
+  
+  /* 특수 효과 */
+  --vlynk-glow-primary: 0 0 10px #FF5500, 0 0 20px #FF5500, 0 0 30px #FF5500;
+  --vlynk-glow-secondary: 0 0 10px #FFFF00, 0 0 20px #FFFF00, 0 0 30px #FFFF00;
+  --vlynk-neon-primary: 0 0 5px #FF5500, 0 0 10px #FF5500, 0 0 15px #FF5500, 0 0 20px #FF5500;
+  
+  /* 반투명 배경 */
+  --vlynk-overlay-light: rgba(255, 85, 0, 0.1);
+  --vlynk-overlay-medium: rgba(255, 85, 0, 0.2);
+  --vlynk-overlay-heavy: rgba(255, 85, 0, 0.4);
+  --vlynk-overlay-dark: rgba(0, 0, 0, 0.8);
+  --vlynk-overlay-black: rgba(0, 0, 0, 0.95);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -105,11 +134,11 @@ html, body {
 }
 
 @keyframes vlynk-pulse {
-  0%, 100% { 
-    text-shadow: 0 0 5px var(--vlynk-primary), 0 0 10px var(--vlynk-primary), 0 0 20px var(--vlynk-primary);
+  0%, 100% {
+     text-shadow: 0 0 5px var(--vlynk-primary), 0 0 10px var(--vlynk-primary), 0 0 20px var(--vlynk-primary);
   }
-  50% { 
-    text-shadow: 0 0 10px var(--vlynk-primary), 0 0 20px var(--vlynk-primary), 0 0 30px var(--vlynk-primary), 0 0 40px var(--vlynk-primary);
+  50% {
+     text-shadow: 0 0 10px var(--vlynk-primary), 0 0 20px var(--vlynk-primary), 0 0 30px var(--vlynk-primary), 0 0 40px var(--vlynk-primary);
   }
 }
 
@@ -128,6 +157,72 @@ html, body {
   to { box-shadow: 0 0 20px var(--vlynk-primary), 0 0 30px var(--vlynk-primary); }
 }
 
+/* ====== 추가 VLYNK 애니메이션 ====== */
+@keyframes vlynk-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vlynk-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vlynk-slide-down {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vlynk-bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+@keyframes vlynk-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+@keyframes vlynk-typing {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+}
+
+@keyframes vlynk-neon-flicker {
+  0%, 100% { 
+    text-shadow: var(--vlynk-neon-primary);
+    opacity: 1;
+  }
+  50% { 
+    text-shadow: 0 0 2px #FF5500;
+    opacity: 0.8;
+  }
+}
+
+@keyframes vlynk-matrix-rain {
+  0% { transform: translateY(-100vh) translateX(0); }
+  100% { transform: translateY(100vh) translateX(0); }
+}
+
+@keyframes vlynk-glitch-1 {
+  0%   { transform: translate(-1.5px, 0); }
+  20%  { transform: translate(-1px, 1.5px); }
+  40%  { transform: translate(-1.5px, -1px); }
+  60%  { transform: translate(-1px, 2px); }
+  80%  { transform: translate(-1px, -2px); }
+  100% { transform: translate(-1.5px, 0); }
+}
+
+@keyframes vlynk-glitch-2 {
+  0%   { transform: translate(1.5px, 0); }
+  20%  { transform: translate(1px, -2px); }
+  40%  { transform: translate(1.5px, 1px); }
+  60%  { transform: translate(1px, -1.5px); }
+  80%  { transform: translate(1px, 2px); }
+  100% { transform: translate(1.5px, 0); }
+}
+
 /* ====== 유틸리티 클래스 ====== */
 .vlynk-blink {
   animation: vlynk-blink 1s step-start infinite;
@@ -143,4 +238,279 @@ html, body {
 
 .vlynk-glow {
   animation: vlynk-glow 2s ease-in-out infinite alternate;
+}
+
+.vlynk-fade-in {
+  animation: vlynk-fade-in 0.3s ease-out forwards;
+}
+
+.vlynk-slide-up {
+  animation: vlynk-slide-up 0.3s ease-out forwards;
+}
+
+.vlynk-slide-down {
+  animation: vlynk-slide-down 0.3s ease-out forwards;
+}
+
+.vlynk-shake {
+  animation: vlynk-shake 0.5s ease-in-out;
+}
+
+.vlynk-neon-flicker {
+  animation: vlynk-neon-flicker 2s ease-in-out infinite;
+}
+
+.vlynk-typing {
+  animation: vlynk-typing 1.4s ease-in-out infinite;
+}
+
+/* ====== VLYNK 컴포넌트 기본 스타일 ====== */
+.vlynk-button {
+  background: var(--vlynk-primary);
+  color: var(--vlynk-text-inverse);
+  border: none;
+  padding: var(--vlynk-spacing-sm) var(--vlynk-spacing-md);
+  font-family: 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-sm);
+  cursor: pointer;
+  transition: var(--vlynk-transition-normal);
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.vlynk-button:hover {
+  background: var(--vlynk-text-secondary);
+  color: var(--vlynk-primary);
+  box-shadow: var(--vlynk-glow-primary);
+}
+
+.vlynk-button:active {
+  transform: translateY(1px);
+}
+
+.vlynk-button:disabled {
+  background: var(--vlynk-text-muted);
+  color: var(--vlynk-bg-secondary);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.vlynk-input {
+  background: transparent;
+  border: 1px solid var(--vlynk-border-primary);
+  color: var(--vlynk-text-secondary);
+  font-family: 'Press Start 2P', monospace;
+  font-size: var(--vlynk-font-sm);
+  padding: var(--vlynk-spacing-sm);
+  transition: var(--vlynk-transition-normal);
+}
+
+.vlynk-input:focus {
+  outline: none;
+  box-shadow: var(--vlynk-glow-primary);
+  border-color: var(--vlynk-primary-bright);
+}
+
+.vlynk-input::placeholder {
+  color: var(--vlynk-text-muted);
+  opacity: 0.8;
+}
+
+.vlynk-card {
+  background: var(--vlynk-bg-card);
+  border: 1px solid var(--vlynk-border-primary);
+  padding: var(--vlynk-spacing-lg);
+  position: relative;
+  transition: var(--vlynk-transition-normal);
+}
+
+.vlynk-card:hover {
+  border-color: var(--vlynk-primary-bright);
+  box-shadow: var(--vlynk-shadow-primary);
+  transform: translateY(-2px);
+}
+
+.vlynk-text-glow {
+  text-shadow: var(--vlynk-glow-primary);
+}
+
+.vlynk-text-neon {
+  text-shadow: var(--vlynk-neon-primary);
+}
+
+.vlynk-bg-gradient {
+  background: var(--vlynk-gradient-primary);
+}
+
+.vlynk-border-glow {
+  border: 1px solid var(--vlynk-primary);
+  box-shadow: 0 0 10px var(--vlynk-primary);
+}
+
+/* ====== 스크롤바 스타일링 ====== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vlynk-bg-tertiary);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vlynk-primary);
+  border-radius: 0;
+  border: 1px solid var(--vlynk-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vlynk-primary-bright);
+  box-shadow: 0 0 5px var(--vlynk-primary);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--vlynk-bg-tertiary);
+}
+
+/* ====== 선택 영역 스타일링 ====== */
+::selection {
+  background: var(--vlynk-primary);
+  color: var(--vlynk-text-inverse);
+  text-shadow: none;
+}
+
+::-moz-selection {
+  background: var(--vlynk-primary);
+  color: var(--vlynk-text-inverse);
+  text-shadow: none;
+}
+
+/* ====== 로딩 스피너 ====== */
+.vlynk-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--vlynk-border-secondary);
+  border-top: 2px solid var(--vlynk-primary);
+  border-radius: 50%;
+  animation: vlynk-spin 1s linear infinite;
+  display: inline-block;
+}
+
+.vlynk-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.vlynk-dots span {
+  width: 4px;
+  height: 4px;
+  background: var(--vlynk-primary);
+  animation: vlynk-bounce 1.4s ease-in-out infinite both;
+}
+
+.vlynk-dots span:nth-child(1) { animation-delay: -0.32s; }
+.vlynk-dots span:nth-child(2) { animation-delay: -0.16s; }
+.vlynk-dots span:nth-child(3) { animation-delay: 0s; }
+
+/* ====== 반응형 유틸리티 ====== */
+@media (max-width: 768px) {
+  :root {
+    --vlynk-font-xs: 6px;
+    --vlynk-font-sm: 7px;
+    --vlynk-font-md: 8px;
+    --vlynk-font-lg: 10px;
+    --vlynk-font-xl: 12px;
+    --vlynk-font-2xl: 14px;
+    --vlynk-font-3xl: 18px;
+    --vlynk-font-4xl: 24px;
+    
+    --vlynk-spacing-xs: 2px;
+    --vlynk-spacing-sm: 4px;
+    --vlynk-spacing-md: 8px;
+    --vlynk-spacing-lg: 12px;
+    --vlynk-spacing-xl: 16px;
+    --vlynk-spacing-2xl: 24px;
+  }
+  
+  .vlynk-button {
+    padding: var(--vlynk-spacing-xs) var(--vlynk-spacing-sm);
+    font-size: var(--vlynk-font-xs);
+  }
+  
+  .vlynk-input {
+    font-size: var(--vlynk-font-xs);
+    padding: var(--vlynk-spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  html, body {
+    overflow-y: auto !important;
+  }
+  
+  .vlynk-card {
+    padding: var(--vlynk-spacing-md);
+  }
+}
+
+/* ====== 접근성 개선 ====== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .vlynk-blink,
+  .vlynk-pulse,
+  .vlynk-neon-flicker {
+    animation: none !important;
+  }
+}
+
+/* ====== 고대비 모드 지원 ====== */
+@media (prefers-contrast: high) {
+  :root {
+    --vlynk-primary: #FF0000;
+    --vlynk-text-secondary: #FFFFFF;
+    --vlynk-bg-primary: #000000;
+    --vlynk-border-primary: #FFFFFF;
+  }
+}
+
+/* ====== 다크 모드 추가 조정 ====== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --vlynk-bg-primary: #000000;
+    --vlynk-bg-secondary: #0a0a0a;
+    --vlynk-bg-tertiary: #050505;
+  }
+}
+
+/* ====== 디버그 모드 (개발용) ====== */
+.vlynk-debug * {
+  outline: 1px solid var(--vlynk-danger) !important;
+}
+
+.vlynk-debug-grid {
+  background-image: 
+    linear-gradient(rgba(255, 85, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 85, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ====== 프린트 스타일 ====== */
+@media print {
+  * {
+    color: #000 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  .vlynk-button {
+    border: 1px solid #000 !important;
+  }
 }
