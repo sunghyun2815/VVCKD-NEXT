@@ -14,7 +14,26 @@
   position: relative;
 }
 
-/* ===== 로그인 화면 ===== */
+/* ===== 사용자 정보 ===== */
+.userInfo {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  font-size: 10px;
+  color: #ff6600;
+  z-index: 1001;
+}
+
+.userRole {
+  color: #ffff00;
+  margin-left: 10px;
+}
+
+.admin {
+  color: #ff0000;
+}
+
+/* ===== 로그인 화면 (index.html 스타일) ===== */
 .loginOverlay {
   position: fixed;
   top: 0;
@@ -36,7 +55,7 @@
   text-align: center;
   animation: glow 2s ease-in-out infinite alternate;
   max-width: 90vw;
-  max-width: 400px;
+  width: 400px;
 }
 
 @keyframes glow {
@@ -114,31 +133,12 @@
   color: #ff0000;
 }
 
-/* ===== 사용자 정보 ===== */
-.userInfo {
-  position: fixed;
-  top: 80px;
-  left: 20px;
-  font-size: 10px;
-  color: #ff6600;
-  z-index: 1001;
-}
-
-.userRole {
-  color: #ffff00;
-  margin-left: 10px;
-}
-
-.userRole.admin {
-  color: #ff0000;
-}
-
-/* ===== CREATE ROOM 섹션 ===== */
-.createSection {
-  position: fixed;
+/* ===== CREATE ROOM 버튼 (index.html 스타일) ===== */
+.createRoomSection {
+  position: absolute;
   top: 80px;
   right: 20px;
-  z-index: 1001;
+  z-index: 1000;
 }
 
 .createRoomBtn {
@@ -149,7 +149,7 @@
   font-family: 'PressStart2P', 'Press Start 2P', monospace;
   font-size: 8px;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: all 0.3s;
 }
 
 .createRoomBtn:hover {
@@ -159,31 +159,25 @@
 
 /* ===== 메인 컨테이너 ===== */
 .mainContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 160px);
-  padding: 20px;
-  margin-top: 80px;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow-y: auto;
+  padding-bottom: 20px;
 }
 
+/* ===== 메인 헤더 (index.html 스타일) ===== */
 .chatHeader {
   text-align: center;
   margin-bottom: 30px;
+  padding-top: 120px;
 }
 
 .chatHeader h1 {
   font-size: 24px;
   color: #ff6600;
   text-shadow: 0 0 5px #ff6600, 0 0 10px #ff6600, 0 0 20px #ff6600;
-  margin-bottom: 10px;
-}
-
-.statusText {
-  font-size: 8px;
-  color: #666;
-  margin-top: 10px;
+  margin: 0;
 }
 
 .cursor {
@@ -195,14 +189,22 @@
   50% { opacity: 0; }
 }
 
-/* ===== 채팅 허브 ===== */
+.statusText {
+  color: #666;
+  font-size: 8px;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+/* ===== 룸 목록 레이아웃 (index.html 스타일) ===== */
 .chatHub {
   display: flex;
   gap: 16px;
   justify-content: center;
   align-items: flex-start;
-  max-width: 900px;
-  width: 100%;
+  padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .chatColumn {
@@ -210,199 +212,163 @@
   flex-direction: column;
   gap: 8px;
   align-items: flex-start;
-  flex: 1;
 }
 
+/* ===== 개별 룸 카드 (index.html 스타일) ===== */
 .chatRoom {
   position: relative;
   border: 1px solid #ff6600;
-  padding: 15px;
-  background: #111;
+  padding: 10px;
   cursor: pointer;
-  transition: 0.3s ease;
-  width: 100%;
+  width: 400px;
   box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #000;
+  transition: all 0.3s;
 }
 
 .chatRoom:hover {
-  border-color: #ff6600;
-  box-shadow: 0 0 15px #ff6600;
-  transform: translateY(-2px);
+  background-color: #ff6600;
+  color: #000;
 }
 
-.roomHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.roomName {
-  color: #ff6600;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.roomTime {
-  color: #666;
-  font-size: 7px;
-}
-
-.roomInfo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.roomUsers {
-  color: #ffff00;
-  font-size: 8px;
-}
-
-.roomLock {
-  color: #ffaa00;
-  font-size: 8px;
-}
-
-.roomCreator {
-  color: #666;
-  font-size: 7px;
-  margin-bottom: 8px;
-}
-
-.roomLastMessage {
-  color: #fff;
-  font-size: 7px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-/* ===== 빈 상태 ===== */
-.emptyRooms {
-  text-align: center;
-  color: #666;
-  padding: 50px;
+.chatTitle {
+  flex: 1;
+  margin-right: 6px;
   font-size: 10px;
 }
 
-.emptyIcon {
-  font-size: 32px;
-  margin-bottom: 20px;
+.chatTime {
+  background-color: #ff6600;
+  color: #000;
+  font-size: 8px;
+  padding: 2px 4px;
+  white-space: nowrap;
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+}
+
+.chatRoom:hover .chatTime {
+  background-color: #000;
   color: #ff6600;
 }
 
-.emptyTitle {
+/* ===== 프리뷰 툴팁 (index.html 스타일) ===== */
+.preview {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #111;
   color: #ff6600;
-  text-shadow: 0 0 5px #ff6600;
-  margin-bottom: 15px;
+  font-family: 'PressStart2P', 'Press Start 2P', monospace;
+  padding: 8px;
+  border: 1px solid #ff6600;
+  z-index: 100;
+  white-space: pre-line;
+  width: 400px;
+  font-size: 8px;
 }
 
-.emptyDescription {
-  margin-bottom: 20px;
+.chatRoom:hover .preview {
+  display: block;
 }
 
-/* ===== 채팅 인터페이스 ===== */
-.chatInterface {
+/* ===== 채팅 뷰 전체 화면 (index.html 스타일) ===== */
+.chatView {
+  display: flex;
   position: fixed;
-  top: 80px;
+  top: 0;
   left: 0;
   width: 100%;
-  height: calc(100vh - 80px);
+  height: 100%;
   background: #000;
-  display: flex;
-  flex-direction: column;
   z-index: 1500;
+  flex-direction: column;
 }
 
-.chatInterface .chatHeader {
-  background: #111;
+/* ===== 채팅 헤더바 (index.html 스타일) ===== */
+.chatHeaderBar {
+  background: #000;
   border-bottom: 2px solid #ff6600;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 60px;
   flex-shrink: 0;
 }
 
-.roomInfo h2.roomName {
+.roomInfo {
   color: #ff6600;
   font-size: 12px;
-  margin: 0;
-  text-shadow: 0 0 5px #ff6600;
 }
 
-.roomStats {
-  color: #666;
-  font-size: 7px;
-  margin-top: 4px;
-}
-
-.leaveBtn {
+.backBtn {
   background: #ff0000;
   color: #fff;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 15px;
   font-family: 'PressStart2P', 'Press Start 2P', monospace;
   font-size: 8px;
   cursor: pointer;
   transition: 0.3s ease;
 }
 
-.leaveBtn:hover {
+.backBtn:hover {
   background: #fff;
   color: #ff0000;
   box-shadow: 0 0 10px #ff0000;
 }
 
-/* ===== 메시지 영역 ===== */
-.messageArea {
+/* ===== 채팅 영역 ===== */
+.chatArea {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== 메시지 컨테이너 (index.html 스타일) ===== */
+.messagesContainer {
+  flex: 1;
+  padding: 20px;
   overflow-y: auto;
-  padding: 15px;
+  background: #000;
+  scrollbar-width: thin;
+  scrollbar-color: #ff6600 #000;
+}
+
+.messagesContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messagesContainer::-webkit-scrollbar-track {
   background: #000;
 }
 
-.emptyChat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #666;
+.messagesContainer::-webkit-scrollbar-thumb {
+  background: #ff6600;
+  border-radius: 4px;
 }
 
-.emptyChat .emptyIcon {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.emptyText {
-  font-size: 10px;
-}
-
+/* ===== 메시지 스타일 ===== */
 .message {
   margin-bottom: 15px;
-  max-width: 80%;
+  animation: slideIn 0.3s ease-in;
+  position: relative;
 }
 
-.message.ownMessage {
-  margin-left: auto;
-  margin-right: 0;
-}
-
-.message.ownMessage .messageContent {
-  background: #ff6600;
-  color: #000;
-  border-color: #ff6600;
-}
-
-.message.systemMessage .messageContent {
-  background: rgba(255, 255, 0, 0.1);
-  border-color: #ffff00;
-  color: #ffff00;
-  font-style: italic;
-  text-align: center;
+@keyframes slideIn {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-10px);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
 }
 
 .messageHeader {
@@ -429,6 +395,37 @@
   padding: 8px;
   word-wrap: break-word;
   line-height: 1.4;
+}
+
+/* ===== 시스템 메시지 스타일 ===== */
+.systemMessage {
+  text-align: center;
+  font-style: italic;
+  color: #ffff00;
+  background: rgba(255, 255, 0, 0.1);
+  padding: 5px;
+  border: 1px solid #ffff00;
+  margin: 10px 0;
+}
+
+.systemMessage .messageContent {
+  background: transparent;
+  border: none;
+  text-align: center;
+  font-style: italic;
+  color: #ffff00;
+}
+
+/* ===== 내 메시지 스타일 ===== */
+.ownMessage {
+  text-align: right;
+}
+
+.ownMessage .messageContent {
+  background: #333;
+  border-color: #ff6600;
+  margin-left: auto;
+  max-width: 70%;
 }
 
 /* ===== 입력 영역 ===== */
@@ -672,97 +669,106 @@
   background: #000;
   border: 2px solid #ff6600;
   padding: 30px;
-  max-width: 90vw;
-  max-width: 500px;
-  width: 100%;
+  max-width: 400px;
+  width: 90%;
+  animation: glow 2s ease-in-out infinite alternate;
 }
 
 .createTitle {
   color: #ff6600;
-  font-size: 12px;
-  margin-bottom: 30px;
+  font-size: 16px;
+  margin-bottom: 20px;
   text-align: center;
   text-shadow: 0 0 10px #ff6600;
 }
 
-.createInput, .createSelect, .createTextarea {
+.createField {
+  margin-bottom: 15px;
+}
+
+.createField label {
+  display: block;
+  color: #fff;
+  font-size: 8px;
+  margin-bottom: 5px;
+}
+
+.createInput {
+  width: 100%;
   background: transparent;
   border: 1px solid #ff6600;
   color: #fff;
   font-family: 'PressStart2P', 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-size: 10px;
   padding: 8px;
-  margin-bottom: 15px;
-  width: 100%;
   box-sizing: border-box;
 }
 
-.createTextarea {
-  min-height: 60px;
-  resize: vertical;
-}
-
-.createInput:focus, .createSelect:focus, .createTextarea:focus {
+.createInput:focus {
   outline: none;
   box-shadow: 0 0 10px #ff6600;
 }
 
-.createRow {
+.createActions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.createLabel {
-  color: #fff;
-  font-size: 8px;
-  flex: 1;
-}
-
-.createSelect {
-  flex: 1;
-  margin-left: 15px;
-  margin-bottom: 0;
-}
-
-.createButtons {
-  display: flex;
-  gap: 15px;
+  gap: 10px;
   justify-content: center;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
-.createConfirm, .createCancel {
+.createBtn, .cancelBtn {
   background: #ff6600;
   color: #000;
   border: none;
-  padding: 8px 20px;
+  padding: 10px 20px;
   font-family: 'PressStart2P', 'Press Start 2P', monospace;
   font-size: 8px;
   cursor: pointer;
   transition: 0.3s ease;
-  flex: 1;
 }
 
-.createCancel {
+.cancelBtn {
   background: #666;
   color: #fff;
 }
 
-.createConfirm:hover:not(:disabled) {
+.createBtn:hover:not(:disabled) {
   background: #fff;
-  box-shadow: 0 0 20px #ff6600;
+  box-shadow: 0 0 10px #ff6600;
 }
 
-.createCancel:hover {
-  background: #ff0000;
-  color: #fff;
+.cancelBtn:hover {
+  background: #999;
 }
 
-.createConfirm:disabled {
+.createBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ===== 빈 상태 스타일 ===== */
+.emptyRooms {
+  text-align: center;
+  color: #666;
+  padding: 100px 20px;
+  font-size: 12px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #ff6600;
+}
+
+.emptyTitle {
+  color: #ff6600;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.emptyDescription {
+  font-size: 8px;
+  color: #999;
 }
 
 /* ===== 반응형 디자인 ===== */
@@ -770,36 +776,91 @@
   .chatHub {
     flex-direction: column;
     gap: 8px;
+    align-items: center;
   }
   
-  .chatColumn {
+  .chatRoom {
+    width: 300px;
+  }
+  
+  .preview {
+    width: 300px;
+  }
+  
+  .createRoomBtn {
+    font-size: 7px;
+    padding: 6px 10px;
+  }
+
+  .chatHeader h1 {
+    font-size: 18px;
+  }
+
+  .roomInfo {
+    font-size: 10px;
+  }
+
+  .messagesContainer {
+    padding: 10px;
+  }
+
+  .chatHeaderBar {
+    padding: 10px 15px;
+  }
+
+  .userInfo {
+    top: 70px;
+    left: 10px;
+    font-size: 8px;
+  }
+
+  .createRoomSection {
+    top: 70px;
+    right: 10px;
+  }
+
+  .chatHeader {
+    padding-top: 100px;
+  }
+
+  .loginBox {
+    padding: 30px;
+    margin: 0 20px;
+  }
+
+  .loginTitle {
+    font-size: 14px;
+  }
+
+  .loginInput {
     width: 100%;
+    font-size: 10px;
   }
-  
-  .userInfo, .createSection {
-    position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
-    padding: 8px;
-    text-align: center;
+}
+
+@media (max-width: 480px) {
+  .chatRoom {
+    width: 250px;
   }
-  
-  .mainContainer {
-    padding: 8px;
-    margin-top: 120px;
+
+  .preview {
+    width: 250px;
   }
-  
-  .createBox {
-    margin: 15px;
-    padding: 20px;
+
+  .chatHeader h1 {
+    font-size: 16px;
   }
-  
-  .inputContainer {
-    flex-wrap: wrap;
+
+  .loginTitle {
+    font-size: 12px;
   }
-  
+
   .messageInput {
-    min-width: 200px;
+    font-size: 8px;
+  }
+
+  .sendBtn {
+    font-size: 7px;
+    padding: 8px 15px;
   }
 }

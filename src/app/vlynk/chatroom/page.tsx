@@ -36,40 +36,31 @@ interface User {
 }
 
 export default function ChatroomPage() {
-  // ===== Socket & Connection State =====
+  // ===== 모든 기존 state와 함수들 그대로 유지 =====
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('연결 중...');
   const [connectedUsers, setConnectedUsers] = useState<number>(0);
-  
-  // ===== User State =====
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [username, setUsername] = useState('');
   const [showLogin, setShowLogin] = useState(true);
-  
-  // ===== Chat State =====
   const [rooms, setRooms] = useState<Room[]>([]);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showChatView, setShowChatView] = useState(false);
-  
-  // ===== Room Creation State =====
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [newRoomPassword, setNewRoomPassword] = useState('');
   const [newRoomMaxUsers, setNewRoomMaxUsers] = useState(10);
-  
-  // ===== File Upload State =====
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showFileMenu, setShowFileMenu] = useState(false);
   
-  // ===== Refs =====
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const loginInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ===== Socket 초기화 및 이벤트 리스너 =====
+  // ===== 모든 기존 useEffect와 함수들 그대로 유지 =====
   useEffect(() => {
     const newSocket = io('http://localhost:3001/chat', {
       transports: ['websocket', 'polling'],
@@ -77,7 +68,6 @@ export default function ChatroomPage() {
       forceNew: true
     });
 
-    // 연결 상태 관리
     newSocket.on('connect', () => {
       console.log('🗨️ Connected to chat namespace');
       setConnectionStatus('연결됨');
@@ -97,7 +87,6 @@ export default function ChatroomPage() {
       setConnectionStatus('연결 실패');
     });
 
-    // 사용자 인증 응답
     newSocket.on('user:login_success', (data) => {
       console.log('👤 Login success:', data.user);
       setCurrentUser(data.user);
@@ -105,13 +94,11 @@ export default function ChatroomPage() {
       setShowLogin(false);
     });
 
-    // 룸 목록 업데이트
     newSocket.on('rooms:list', (roomsList: Room[]) => {
       console.log('🏠 Rooms updated:', roomsList.length);
       setRooms(roomsList);
     });
 
-    // 룸 생성 성공
     newSocket.on('room:created', (data) => {
       console.log('🏠 Room created:', data.room);
       if (data.room) {
@@ -119,27 +106,23 @@ export default function ChatroomPage() {
       }
     });
 
-    // 룸 참여 성공 (수정됨)
     newSocket.on('room:joined', (data) => {
       console.log('🚪 Successfully joined room:', data.room);
       setCurrentRoom(data.room);
-      setMessages(data.messages || []); // 기존 메시지도 로드
+      setMessages(data.messages || []);
       setShowChatView(true);
     });
 
-    // 룸 에러
     newSocket.on('room:error', (data) => {
       console.error('❌ Room error:', data.message);
       alert(data.message);
     });
 
-    // 채팅 메시지 이벤트 (수정됨)
     newSocket.on('chat:message', (message: Message) => {
       console.log('💬 New message received:', message);
       setMessages(prev => [...prev, message]);
     });
 
-    // 사용자 입장/퇴장
     newSocket.on('chat:user_joined', (data) => {
       console.log('👋 User joined:', data.user?.username);
       setMessages(prev => [...prev, {
@@ -170,12 +153,10 @@ export default function ChatroomPage() {
     };
   }, []);
 
-  // ===== 메시지 자동 스크롤 =====
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // ===== 로그인 처리 =====
   const handleLogin = useCallback(() => {
     if (!username.trim() || !socket) return;
 
@@ -188,7 +169,6 @@ export default function ChatroomPage() {
     socket.emit('user:login', userData);
   }, [username, socket]);
 
-  // ===== 룸 생성 =====
   const createRoom = useCallback(() => {
     if (!newRoomName.trim() || !socket) return;
 
@@ -201,14 +181,12 @@ export default function ChatroomPage() {
     console.log('🏠 Creating room:', roomData);
     socket.emit('room:create', roomData);
     
-    // 모달 닫기 및 초기화
     setShowCreateRoom(false);
     setNewRoomName('');
     setNewRoomPassword('');
     setNewRoomMaxUsers(10);
   }, [newRoomName, newRoomPassword, newRoomMaxUsers, socket]);
 
-  // ===== 룸 참여 =====
   const joinRoom = useCallback((roomId: string, password: string = '') => {
     if (!socket) return;
 
@@ -221,21 +199,15 @@ export default function ChatroomPage() {
     socket.emit('room:join', joinData);
   }, [socket]);
 
-  // ===== 룸 나가기 (추가됨) =====
   const leaveRoom = useCallback(() => {
     if (!socket || !currentRoom) return;
     
     console.log('🚪 Leaving room:', currentRoom.name);
-    
-    // 상태 초기화
     setCurrentRoom(null);
     setMessages([]);
     setShowChatView(false);
-    
-    // 서버에는 자동으로 disconnect될 때 처리되므로 별도 이벤트 불필요
   }, [socket, currentRoom]);
 
-  // ===== 메시지 전송 =====
   const sendMessage = useCallback(() => {
     if (!newMessage.trim() || !socket || !currentRoom) return;
 
@@ -249,7 +221,6 @@ export default function ChatroomPage() {
     setNewMessage('');
   }, [newMessage, socket, currentRoom]);
 
-  // ===== 파일 업로드 =====
   const handleFileUpload = useCallback(async (file: File) => {
     if (!file || !socket || !currentRoom) return;
 
@@ -272,7 +243,6 @@ export default function ChatroomPage() {
       const data = await response.json();
       
       if (data.success) {
-        // 파일 메시지로 전송
         const messageData = {
           message: data.file.originalName,
           type: data.file.type,
@@ -291,7 +261,6 @@ export default function ChatroomPage() {
     }
   }, [socket, currentRoom]);
 
-  // ===== 키보드 이벤트 핸들러 =====
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -303,7 +272,6 @@ export default function ChatroomPage() {
     }
   }, [showLogin, handleLogin, sendMessage]);
 
-  // ===== 유틸리티 함수들 =====
   const formatTime = (timestamp: number) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -380,7 +348,9 @@ export default function ChatroomPage() {
     }
   };
 
-  // ===== 로그인 화면 렌더링 =====
+  // ===== 🎨 index.html 스타일로 변경된 렌더링 부분 =====
+
+  // 로그인 화면
   if (showLogin) {
     return (
       <div className={styles.container}>
@@ -391,10 +361,10 @@ export default function ChatroomPage() {
           <span className={styles.userRole}>[GUEST]</span>
         </div>
 
-        <div className={styles.loginModal}>
+        <div className={styles.loginOverlay}>
           <div className={styles.loginBox}>
             <div className={styles.loginTitle}>CHAT ACCESS TERMINAL</div>
-            <div className={styles.loginSubtitle}>ENTER USER CREDENTIALS</div>
+            <div className={styles.loginSubtext}>ENTER USER CREDENTIALS</div>
             <input
               ref={loginInputRef}
               type="text"
@@ -413,51 +383,42 @@ export default function ChatroomPage() {
             >
               INITIALIZE CONNECTION
             </button>
+            <div className={styles.connectionStatus}>
+              상태: <span className={connectionStatus === '연결됨' ? styles.connected : styles.disconnected}>
+                {connectionStatus}
+              </span>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // ===== 채팅룸 화면 렌더링 =====
+  // 채팅룸 화면 (index.html의 chat-view 스타일)
   if (showChatView && currentRoom) {
     return (
-      <div className={styles.container}>
+      <div className={styles.chatView}>
         <Header />
         
-        {/* 사용자 정보 */}
-        <div className={styles.userInfo}>
-          USER: {currentUser?.username}
-          <span className={`${styles.userRole} ${currentUser?.role === 'ADMIN' ? styles.admin : ''}`}>
-            [{currentUser?.role}]
-          </span>
+        <div className={styles.chatHeaderBar}>
+          <div className={styles.roomInfo}>
+            🏠 {currentRoom.name} | 👥 {currentRoom.userCount}/{currentRoom.maxUsers} | BY {currentRoom.creator}
+          </div>
+          <button onClick={leaveRoom} className={styles.backBtn}>
+            BACK
+          </button>
         </div>
 
-        {/* 채팅 인터페이스 */}
-        <div className={styles.chatInterface}>
-          {/* 헤더 */}
-          <div className={styles.chatHeader}>
-            <div className={styles.roomInfo}>
-              <h2 className={styles.roomName}>{currentRoom.name}</h2>
-              <div className={styles.roomStats}>
-                👥 {currentRoom.userCount}/{currentRoom.maxUsers} | 
-                🏠 BY {currentRoom.creator}
-              </div>
-            </div>
-            <button 
-              onClick={leaveRoom}
-              className={styles.leaveBtn}
-            >
-              LEAVE
-            </button>
-          </div>
-
-          {/* 메시지 목록 */}
-          <div className={styles.messageArea}>
+        <div className={styles.chatArea}>
+          <div className={styles.messagesContainer}>
             {messages.length === 0 ? (
-              <div className={styles.emptyChat}>
-                <div className={styles.emptyIcon}>💬</div>
-                <div className={styles.emptyText}>대화를 시작해보세요!</div>
+              <div style={{ 
+                textAlign: 'center', 
+                color: '#666', 
+                padding: '50px',
+                fontSize: '10px' 
+              }}>
+                💬 대화를 시작해보세요!
               </div>
             ) : (
               messages.map((msg) => (
@@ -485,7 +446,7 @@ export default function ChatroomPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* 입력 영역 */}
+          {/* index.html 스타일의 입력 영역 */}
           <div className={styles.inputArea}>
             {isUploading && (
               <div className={styles.uploadStatus}>
@@ -498,7 +459,6 @@ export default function ChatroomPage() {
             )}
             
             <div className={styles.inputContainer}>
-              {/* 파일 업로드 버튼 */}
               <div className={styles.fileUploadSection}>
                 <button
                   onClick={() => setShowFileMenu(!showFileMenu)}
@@ -530,7 +490,6 @@ export default function ChatroomPage() {
                 )}
               </div>
 
-              {/* 메시지 입력 */}
               <textarea
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -547,7 +506,6 @@ export default function ChatroomPage() {
                 }}
               />
               
-              {/* 전송 버튼 */}
               <button
                 onClick={sendMessage}
                 disabled={!newMessage.trim() || isUploading}
@@ -562,7 +520,7 @@ export default function ChatroomPage() {
     );
   }
 
-  // ===== 메인 룸 목록 화면 렌더링 =====
+  // 메인 룸 목록 화면 (index.html 스타일)
   const leftColumnRooms = rooms.filter((_, index) => index % 2 === 0);
   const rightColumnRooms = rooms.filter((_, index) => index % 2 === 1);
 
@@ -570,16 +528,14 @@ export default function ChatroomPage() {
     <div className={styles.container}>
       <Header />
       
-      {/* 사용자 정보 */}
+      {/* index.html 스타일의 사용자 정보 */}
       <div className={styles.userInfo}>
-        USER: {currentUser?.username}
-        <span className={`${styles.userRole} ${currentUser?.role === 'ADMIN' ? styles.admin : ''}`}>
-          [{currentUser?.role}]
-        </span>
+        USER: <span id="currentUser">{currentUser?.username}</span>
+        <span className={styles.userRole} id="userRole">[{currentUser?.role}]</span>
       </div>
 
-      {/* 룸 생성 버튼 */}
-      <div className={styles.createSection}>
+      {/* index.html 스타일의 CREATE ROOM 버튼 */}
+      <div className={styles.createRoomSection}>
         <button
           onClick={() => setShowCreateRoom(true)}
           className={styles.createRoomBtn}
@@ -588,27 +544,22 @@ export default function ChatroomPage() {
         </button>
       </div>
 
-      {/* 메인 컨테이너 */}
+      {/* index.html 스타일의 메인 컨테이너 */}
       <div className={styles.mainContainer}>
         <div className={styles.chatHeader}>
-          <h1>VVCKD CHATROOM<span className={styles.cursor}>_</span></h1>
-          <div className={styles.statusText}>
-            연결된 사용자: {connectedUsers} | 활성 룸: {rooms.length}
-            <br />
-            상태: <span className={connectionStatus === '연결됨' ? 
-              styles.connected : styles.disconnected}>
-              {connectionStatus}
-            </span>
-          </div>
+          <h1>VVCKD ROOM <span className={styles.cursor}>▌</span></h1>
         </div>
 
         {rooms.length === 0 ? (
-          <div className={styles.emptyRooms}>
-            <div className={styles.emptyIcon}>🏠</div>
-            <div className={styles.emptyTitle}>채팅룸이 없습니다</div>
-            <div className={styles.emptyDescription}>
-              첫 번째 채팅룸을 만들어보세요!
-            </div>
+          <div style={{ 
+            textAlign: 'center', 
+            color: '#666', 
+            padding: '100px 20px',
+            fontSize: '12px' 
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px', color: '#ff6600' }}>🏠</div>
+            <div style={{ color: '#ff6600', marginBottom: '10px' }}>채팅룸이 없습니다</div>
+            <div>첫 번째 채팅룸을 만들어보세요!</div>
           </div>
         ) : (
           <div className={styles.chatHub}>
@@ -624,34 +575,19 @@ export default function ChatroomPage() {
                     joinRoom(room.id, password || '');
                   }}
                 >
-                  <div className={styles.roomHeader}>
-                    <div className={styles.roomName}>{room.name}</div>
-                    <div className={styles.roomTime}>
-                      {formatTime(room.lastMessageTime)}
-                    </div>
+                  <div className={styles.chatTitle}>
+                    {room.hasPassword && '🔒 '}{room.name}
+                  </div>
+                  <div className={styles.chatTime}>
+                    {formatTime(room.lastMessageTime)}
                   </div>
                   
-                  <div className={styles.roomInfo}>
-                    <div className={styles.roomUsers}>
-                      👥 {room.userCount}/{room.maxUsers}
-                    </div>
-                    {room.hasPassword && (
-                      <div className={styles.roomLock}>🔒</div>
-                    )}
+                  {/* index.html 스타일의 프리뷰 */}
+                  <div className={styles.preview}>
+                    👥 {room.userCount}/{room.maxUsers}
+{room.creator && `\nBY ${room.creator}`}
+{room.lastMessage && `\n\n마지막 메시지:\n${room.lastMessage.length > 50 ? room.lastMessage.substring(0, 50) + '...' : room.lastMessage}`}
                   </div>
-                  
-                  <div className={styles.roomCreator}>
-                    BY {room.creator}
-                  </div>
-                  
-                  {room.lastMessage && (
-                    <div className={styles.roomLastMessage}>
-                      {room.lastMessage.length > 30 ? 
-                        room.lastMessage.substring(0, 30) + '...' : 
-                        room.lastMessage
-                      }
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -668,34 +604,18 @@ export default function ChatroomPage() {
                     joinRoom(room.id, password || '');
                   }}
                 >
-                  <div className={styles.roomHeader}>
-                    <div className={styles.roomName}>{room.name}</div>
-                    <div className={styles.roomTime}>
-                      {formatTime(room.lastMessageTime)}
-                    </div>
+                  <div className={styles.chatTitle}>
+                    {room.hasPassword && '🔒 '}{room.name}
+                  </div>
+                  <div className={styles.chatTime}>
+                    {formatTime(room.lastMessageTime)}
                   </div>
                   
-                  <div className={styles.roomInfo}>
-                    <div className={styles.roomUsers}>
-                      👥 {room.userCount}/{room.maxUsers}
-                    </div>
-                    {room.hasPassword && (
-                      <div className={styles.roomLock}>🔒</div>
-                    )}
+                  <div className={styles.preview}>
+                    👥 {room.userCount}/{room.maxUsers}
+{room.creator && `\nBY ${room.creator}`}
+{room.lastMessage && `\n\n마지막 메시지:\n${room.lastMessage.length > 50 ? room.lastMessage.substring(0, 50) + '...' : room.lastMessage}`}
                   </div>
-                  
-                  <div className={styles.roomCreator}>
-                    BY {room.creator}
-                  </div>
-                  
-                  {room.lastMessage && (
-                    <div className={styles.roomLastMessage}>
-                      {room.lastMessage.length > 30 ? 
-                        room.lastMessage.substring(0, 30) + '...' : 
-                        room.lastMessage
-                      }
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
