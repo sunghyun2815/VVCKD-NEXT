@@ -530,20 +530,10 @@ io.on('connection', (socket) => {
           isPrevious: true
         });
       });
-    } else {
-      // 음악룸 메시지 전송
-      if (room.messages && room.messages.length > 0) {
-        room.messages.forEach(message => {
-          socket.emit('room:message', {
-            ...message,
-            isPrevious: true
-          });
-        });
-      }
     }
   });
 
-  // 채팅 메시지 (채팅룸과 음악룸 공통)
+  // 채팅 메시지 (채팅룸용)
   socket.on('room:message', (data) => {
     const { roomId, message, type = 'text', fileUrl, fileSize, originalName } = data;
     const user = dataStore.getUser(socket.id);
@@ -563,19 +553,233 @@ io.on('connection', (socket) => {
       fileSize: fileSize
     });
 
-    // 채팅룸과 음악룸 모두 지원
-    const room = dataStore.getChatRoom(roomId) || dataStore.getMusicRoom(roomId);
-    if (room) {
-      const roomPrefix = dataStore.getChatRoom(roomId) ? 'chat_' : 'music_';
-      
+    // 채팅룸에서만 작동
+    const room = dataStore.getChatRoom(roomId);
+    if (room) {      
       // 같은 방의 모든 사용자에게 메시지 전송
-      io.to(`${roomPrefix}${roomId}`).emit('room:new_message', messageData);
+      io.to(`chat_${roomId}`).emit('room:new_message', messageData);
       
-      console.log(`💬 Message in room ${roomId}: ${type === 'text' ? message : `File: ${originalName}`}`);
+      console.log(`💬 Message in chat room ${roomId}: ${type === 'text' ? message : `File: ${originalName}`}`);
     }
   });
 
-  // 연결 해제
+  // ===== 🎵 음악룸 전용 이벤트 핸들러들 =====
+  
+  // 음악 파일 업로드 이벤트
+  socket.on('music uploaded', (data) => {
+    const { roomId, musicData } = data;
+    const room = dataStore.getMusicRoom(roomId);
+    const user = dataStore.getUser(socket.id);
+    
+    if (!room || !user || !room.participants.has(socket.id)) {
+      socket.emit('room:error', { message: '음악 업로드 권한이 없습니다.' });
+      return;
+    }
+
+    // 트랙 데이터 생성
+    const trackData = {
+      id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      title: musicData.originalname.replace(/\.[^/.]+$/, ""), // 확장자 제거
+      filename: musicData.filename,
+      originalname: musicData.originalname,
+      url: musicData.url,
+      uploader: user.username,
+      uploadTime: Date.now(),
+      duration: '0:00',
+      votes: 0,
+      roomId: roomId
+    };
+    
+    // 룸의 플레이리스트에 추가
+    if (!room.playlist) room.playlist = [];
+    room.playlist.push(trackData);
+    
+    console.log(`🎵 Music added to ${room.name}: ${trackData.title} by ${user.username}`);
+    
+    // 같은 방의 모든 사용자에게 트랙 정보 전송
+    io.to(`music_${roomId}`).emit('music uploaded', {
+      roomId: roomId,
+      trackData: trackData
+    });
+    
+    // 시스템 메시지로 업로드 알림
+    const systemMessage = {
+      id: Date.now() + '_system',
+      type: 'system',
+      user: 'SYSTEM',
+      message: `${user.username} uploaded "${trackData.title}"`,
+      timestamp: 0, // 시스템 메시지는 타임스탬프 0
+      time: new Date().toISOString(),
+      roomId: roomId
+    };
+    
+    // 룸 메시지에 추가
+    dataStore.addChatMessage(roomId, {
+      userId: 'system',
+      username: 'SYSTEM',
+      message: systemMessage.message,
+      type: 'system'
+    });
+    
+    io.to(`music_${roomId}`).emit('music chat message', systemMessage);
+  });
+
+  // 음악 채팅 메시지 이벤트
+  socket.on('music chat message', (data) => {
+    const { roomId, user, message, timestamp } = data;
+    const room = dataStore.getMusicRoom(roomId);
+    const socketUser = dataStore.getUser(socket.id);
+    
+    if (!room || !socketUser || !room.participants.has(socket.id)) {
+      socket.emit('room:error', { message: '메시지 전송 권한이 없습니다.' });
+      return;
+    }
+
+    const messageData = {
+      id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      roomId: roomId,
+      user: user || socketUser.username,
+      message: message,
+      timestamp: timestamp || 0,
+      time: new Date().toISOString(),
+      type: 'text'
+    };
+    
+    // DataStore에 메시지 저장
+    dataStore.addChatMessage(roomId, {
+      userId: socket.id,
+      username: messageData.user,
+      message: messageData.message,
+      type: 'text'
+    });
+    
+    console.log(`💬 [Music Room: ${room.name}] ${messageData.user}: ${messageData.message}`);
+    
+    // 같은 방의 모든 사용자에게 메시지 전송
+    io.to(`music_${roomId}`).emit('music chat message', messageData);
+  });
+
+  // 음성 메시지 이벤트
+  socket.on('music voice message', (data) => {
+    const { roomId, user, timestamp, audioUrl } = data;
+    const room = dataStore.getMusicRoom(roomId);
+    const socketUser = dataStore.getUser(socket.id);
+    
+    if (!room || !socketUser || !room.participants.has(socket.id)) {
+      socket.emit('room:error', { message: '음성 메시지 전송 권한이 없습니다.' });
+      return;
+    }
+
+    const voiceData = {
+      id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      roomId: roomId,
+      user: user || socketUser.username,
+      message: 'Voice message',
+      timestamp: timestamp || 0,
+      time: new Date().toISOString(),
+      audioUrl: audioUrl,
+      type: 'voice'
+    };
+    
+    // DataStore에 음성 메시지 저장
+    dataStore.addChatMessage(roomId, {
+      userId: socket.id,
+      username: voiceData.user,
+      message: 'Voice message',
+      type: 'voice',
+      fileUrl: audioUrl
+    });
+    
+    console.log(`🎤 [Music Room: ${room.name}] ${voiceData.user}: voice message`);
+    
+    // 같은 방의 모든 사용자에게 음성 메시지 전송
+    io.to(`music_${roomId}`).emit('music chat message', voiceData);
+  });
+
+  // 재생/일시정지 토글
+  socket.on('toggle playback', (data) => {
+    const { roomId } = data;
+    const room = dataStore.getMusicRoom(roomId);
+    const user = dataStore.getUser(socket.id);
+    
+    if (!room || !user || !room.participants.has(socket.id)) {
+      return;
+    }
+
+    // 재생 상태 토글
+    room.isPlaying = !room.isPlaying;
+    
+    if (room.isPlaying) {
+      room.playStartTime = Date.now();
+    }
+    
+    console.log(`${room.isPlaying ? '▶️' : '⏸️'} Playback ${room.isPlaying ? 'resumed' : 'paused'} in ${room.name} by ${user.username}`);
+    
+    // 같은 방의 모든 사용자에게 재생 상태 동기화
+    io.to(`music_${roomId}`).emit('playback synced', {
+      isPlaying: room.isPlaying,
+      playStartTime: room.playStartTime,
+      currentTime: 0 // 현재 재생 시간 (실제로는 클라이언트에서 계산)
+    });
+  });
+
+  // 음악룸 나가기 이벤트
+  socket.on('leave music room', (data) => {
+    const { roomId } = data;
+    const room = dataStore.getMusicRoom(roomId);
+    const user = dataStore.getUser(socket.id);
+    
+    if (!room || !user) return;
+
+    if (room.participants.has(socket.id)) {
+      room.participants.delete(socket.id);
+      socket.leave(`music_${roomId}`);
+      
+      console.log(`👋 ${user.username} left music room: ${room.name}`);
+      
+      // 다른 참가자들에게 알림
+      socket.to(`music_${roomId}`).emit('room:user_left', {
+        userId: socket.id,
+        username: user.username,
+        userCount: room.participants.size
+      });
+      
+      // 룸 목록 업데이트
+      broadcastRoomList();
+    }
+  });
+
+  // 기존 메시지 요청 이벤트 (방 참여 시 호출)
+  socket.on('get music room messages', (data) => {
+    const { roomId } = data;
+    const room = dataStore.getMusicRoom(roomId);
+    const user = dataStore.getUser(socket.id);
+    
+    if (!room || !user || !room.participants.has(socket.id)) {
+      return;
+    }
+
+    // 최근 메시지들 전송 (최대 50개)
+    const recentMessages = dataStore.getChatMessages(roomId).slice(-50);
+    
+    recentMessages.forEach(message => {
+      socket.emit('music chat message', {
+        id: message.id,
+        roomId: roomId,
+        user: message.username,
+        message: message.message,
+        timestamp: 0, // 이전 메시지는 타임스탬프 0
+        time: message.timestamp,
+        audioUrl: message.fileUrl,
+        type: message.type,
+        isPrevious: true
+      });
+    });
+    
+    console.log(`📜 Sent ${recentMessages.length} previous messages to ${user.username} in room ${room.name}`);
+  });
+
+  // ===== 연결 해제 =====
   socket.on('disconnect', (reason) => {
     console.log(`🔌 User disconnected: ${socket.id} (${reason})`);
     
