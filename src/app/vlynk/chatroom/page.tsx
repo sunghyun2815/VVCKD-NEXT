@@ -120,6 +120,25 @@ export default function ChatroomPage() {
       setConnectedUsers(userCount);
     });
 
+    // 방 목록 관련 이벤트
+    newSocket.on('rooms:list', (data) => {
+      console.log('📝 Rooms list received:', data.rooms);
+      setRooms(data.rooms || []);
+    });
+
+    newSocket.on('room:created', (data) => {
+      console.log('🏠 Room created:', data.room);
+      // 방 생성 성공 시 바로 입장
+      if (data.room) {
+        joinRoom(data.room);
+      }
+    });
+
+    newSocket.on('room:error', (data) => {
+      console.error('❌ Room error:', data.message);
+      alert(data.message);
+    });
+
     // 채팅룸 이벤트
     newSocket.on('chat:messages', (messages: Message[]) => {
       setMessages(messages);
@@ -187,6 +206,13 @@ export default function ChatroomPage() {
         username: username.trim(),
         joinedAt: new Date().toISOString()
       });
+      
+      // 로그인 후 방 목록 요청
+      setTimeout(() => {
+        if (socket) {
+          socket.emit('rooms:get');
+        }
+      }, 500);
     }
   };
 
@@ -390,26 +416,19 @@ export default function ChatroomPage() {
   };
 
   const createRoom = () => {
-    if (newRoomName.trim()) {
-      const newRoom: Room = {
-        id: `room_${Date.now()}`,
+    if (newRoomName.trim() && socket) {
+      // 서버에 방 생성 요청
+      socket.emit('room:create', {
         name: newRoomName.trim(),
-        userCount: 1,
-        maxUsers: newRoomMaxUsers,
-        hasPassword: newRoomPassword.length > 0,
-        creator: currentUser.username,
-        lastMessage: 'Room created!',
-        lastMessageTime: Date.now()
-      };
+        password: newRoomPassword.trim(),
+        maxUsers: newRoomMaxUsers
+      });
       
-      setRooms(prev => [...prev, newRoom]);
+      // 모달 닫기 및 입력 초기화
       setShowCreateRoom(false);
       setNewRoomName('');
       setNewRoomPassword('');
       setNewRoomMaxUsers(10);
-      
-      // 방 생성 후 바로 입장
-      joinRoom(newRoom);
     }
   };
 

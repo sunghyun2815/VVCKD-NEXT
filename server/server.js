@@ -188,6 +188,12 @@ class DataStore {
       name: roomData.name || `Chat Room ${roomId}`,
       participants: new Set(),
       createdAt: new Date().toISOString(),
+      creator: roomData.creator || 'Anonymous',
+      hasPassword: roomData.hasPassword || false,
+      password: roomData.password || '',
+      maxUsers: roomData.maxUsers || 50,
+      lastMessage: roomData.lastMessage || 'Room created!',
+      lastMessageTime: roomData.lastMessageTime || Date.now(),
       ...roomData
     };
     this.chatRooms.set(roomId, room);
@@ -564,6 +570,20 @@ io.on('connection', (socket) => {
     
     socket.emit('user:registered', user);
     
+    // 새로운 사용자에게 현재 방 목록 전송
+    socket.emit('rooms:list', {
+      rooms: Array.from(dataStore.chatRooms.values()).map(room => ({
+        id: room.id,
+        name: room.name,
+        userCount: room.participants.size,
+        maxUsers: room.maxUsers || 50,
+        hasPassword: room.hasPassword || false,
+        creator: room.creator,
+        lastMessage: room.lastMessage || 'Room created!',
+        lastMessageTime: room.lastMessageTime || Date.now()
+      }))
+    });
+    
     // 모든 클라이언트에게 사용자 목록 업데이트 알림
     io.emit('users:updated', {
       users: dataStore.getAllUsers(),
@@ -571,6 +591,79 @@ io.on('connection', (socket) => {
     });
 
     console.log(`👤 User registered: ${userData.username || socket.id}`);
+  });
+
+  // === 방 관리 이벤트 ===
+  socket.on('room:create', (roomData) => {
+    const { name, password, maxUsers } = roomData;
+    const user = dataStore.getUser(socket.id);
+    
+    if (!name || !user) {
+      socket.emit('room:error', { message: '방 생성에 필요한 정보가 없습니다.' });
+      return;
+    }
+
+    // 중복 방 이름 체크
+    if (dataStore.getChatRoom(name)) {
+      socket.emit('room:error', { message: '이미 존재하는 방 이름입니다.' });
+      return;
+    }
+
+    const newRoom = dataStore.createChatRoom(name, {
+      name: name,
+      creator: user.username || user.id,
+      hasPassword: password && password.length > 0,
+      password: password,
+      maxUsers: maxUsers || 50,
+      lastMessage: 'Room created!',
+      lastMessageTime: Date.now()
+    });
+
+    console.log(`🏠 Room created: ${name} by ${user.username}`);
+
+    // 모든 클라이언트에게 새로운 방 목록 전송
+    const roomsList = Array.from(dataStore.chatRooms.values()).map(room => ({
+      id: room.id,
+      name: room.name,
+      userCount: room.participants.size,
+      maxUsers: room.maxUsers || 50,
+      hasPassword: room.hasPassword || false,
+      creator: room.creator,
+      lastMessage: room.lastMessage || 'Room created!',
+      lastMessageTime: room.lastMessageTime || Date.now()
+    }));
+
+    io.emit('rooms:list', { rooms: roomsList });
+    
+    // 방 생성자에게 성공 알림
+    socket.emit('room:created', {
+      room: {
+        id: newRoom.id,
+        name: newRoom.name,
+        userCount: 0,
+        maxUsers: newRoom.maxUsers || 50,
+        hasPassword: newRoom.hasPassword || false,
+        creator: newRoom.creator,
+        lastMessage: 'Room created!',
+        lastMessageTime: Date.now()
+      }
+    });
+  });
+
+  socket.on('rooms:get', () => {
+    // 방 목록 요청 시 현재 방 목록 전송
+    const roomsList = Array.from(dataStore.chatRooms.values()).map(room => ({
+      id: room.id,
+      name: room.name,
+      userCount: room.participants.size,
+      maxUsers: room.maxUsers || 50,
+      hasPassword: room.hasPassword || false,
+      creator: room.creator,
+      lastMessage: room.lastMessage || 'Room created!',
+      lastMessageTime: room.lastMessageTime || Date.now()
+    }));
+
+    socket.emit('rooms:list', { rooms: roomsList });
   });
 
   // === 채팅룸 이벤트 ===
